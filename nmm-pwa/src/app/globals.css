@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --background: #000000;
+  --background: #050505;
   --foreground: #00ff41;
 }
 
 @theme {
-  --font-mono: "Courier New", Courier, monospace;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "Fira Code", "Courier New", monospace;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-mono);
   overflow-x: hidden;
 }
