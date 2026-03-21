@@ -2,7 +2,7 @@
 # .gitignore – Nový Matrix Media (koreňový adresár)
 # ============================================================
 
-# Citlivé súbory – NIKDY do Git!
+# --- Citlivé súbory – NIKDY do Git! ---
 .env
 .env.local
 .env.production
@@ -10,25 +10,71 @@
 wp-config.php
 wp-config-production.php
 
-# Backup a deploy artefakty
-*.sql
-*.sql.gz
-*.tar.gz
-nmm_deploy_bundle.tar.gz
-novymatrixmedia_export.sql.gz
+# --- WordPress core (aktualizuje sa cez FTP, nie Git) ---
+wp-admin/
+wp-includes/
+wp-activate.php
+wp-blog-header.php
+wp-comments-post.php
+wp-cron.php
+wp-links-opml.php
+wp-load.php
+wp-login.php
+wp-mail.php
+wp-settings.php
+wp-signup.php
+wp-trackback.php
+xmlrpc.php
+/index.php
+/readme.html
+/license.txt
 
-# macOS
-.DS_Store
-__MACOSX/
+# --- Tretie-stranné pluginy a témy (nie vlastné) ---
+wp-content/plugins/
+wp-content/themes/
+# Výnimky pre vlastné pluginy/témy (odkomentuj ak existujú):
+# !wp-content/plugins/nmm-vlastny-plugin/
+# !wp-content/themes/nmm-tema/
 
-# WordPress generované súbory
+# --- WordPress generované súbory ---
 wp-content/cache/
 wp-content/upgrade/
 wp-content/upgrade-temp-backup/
 wp-content/updraft/
 wp-content/wflogs/
 wp-content/uploads/
+wp-content/languages/
+wp-content/mu-plugins/
+wp-content/settings/
+wp-content/advanced-cache.php
+wp-content/index.php
+wp-content/.DS_Store
 
-# Logy
+# --- Next.js / Node ---
+nmm-pwa/.next/
+nmm-pwa/node_modules/
+node_modules/
+package-lock.json
+nmm-pwa/package-lock.json
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# --- Backup a deploy artefakty ---
+*.sql
+*.sql.gz
+*.tar.gz
+nmm_deploy_bundle.tar.gz
+novymatrixmedia_export.sql.gz
+
+# --- macOS ---
+.DS_Store
+__MACOSX/
+
+# --- Logy ---
 *.log
 debug.log

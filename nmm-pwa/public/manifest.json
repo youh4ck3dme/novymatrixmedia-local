@@ -1,0 +1,21 @@
+{
+    "name": "Nový Matrix Media",
+    "short_name": "NMM",
+    "description": "Informačno-publicistický portál v novom rozmere.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#00ff41",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

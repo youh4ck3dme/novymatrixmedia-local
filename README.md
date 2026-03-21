@@ -6,7 +6,7 @@ Informačno-publicistický portál **novymatrixmedia.sk** — WordPress + Next.j
 
 ## 📂 Štruktúra projektu
 
-```
+```text
 novymatrixmedia-local/
 ├── nmm-pwa/                  # Next.js 16 PWA (React 19, Tailwind 4)
 │   ├── src/app/              # App Router stránky
@@ -29,11 +29,13 @@ novymatrixmedia-local/
 ## 🖥️ Lokálny Vývoj
 
 ### Požiadavky
+
 - Node.js 22+ / npm 10+
 - PHP 8.2+ + MySQL (Local by WP Engine / XAMPP)
 - Git Bash (pre deploy skripty)
 
 ### Spustenie Next.js PWA
+
 ```bash
 cd nmm-pwa
 npm install          # prvé spustenie
@@ -42,6 +44,7 @@ npm run build        # produkčný build
 ```
 
 ### WordPress lokálne
+
 - URL: `http://localhost:8080`
 - DB: `novymatrixmedia` @ `127.0.0.1:3306`
 - Admin: viď lokálne `.env` / správcovský prístup
@@ -51,52 +54,96 @@ npm run build        # produkčný build
 ## 🚀 Deploy na Produkciu (WebSupport)
 
 ### Hosting infraštruktúra
+
 | Komponent | Hodnota |
-|---|---|
+| --- | --- |
 | Hosting | WebSupport – server **r6** |
 | Doména | `novymatrixmedia.sk` |
 | PHP | 8.2-fpm |
 | Databázový server | `db.r6.websupport.sk:3306` |
-| SSH Host | `shell.r6.websupport.sk:25802` |
+| SSH Host | `shell.r6.websupport.sk:29753` |
 | API | `https://rest.websupport.sk/v2` |
 
 ### Pred prvým deployom – jednorazový setup
 
 **1. Vyplň prístupové údaje** (dostaneš ich od administrátora):
+
 ```bash
 # Otvor .env.production a dokonči SMTP_PASS po vytvorení emailovej schránky
 # Over SSH_REMOTE_PATH: po SSH prihlásení spusti `pwd`
 ```
 
 **2. Nastav SSH kľúč** (odporúčané – nevyžaduje heslo pri každom deployi):
+
+> ⚠️ **WebSupport rotuje SSH/FTP heslo každú hodinu.** Preto je kľúčová autentifikácia nevyhnutná pre automatizovaný deploy.
+
+Vygenerovaný verejný kľúč (už existuje v `~/.ssh/websupport_r6.pub`):
+
+```text
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKTJ14/M+HeYHWmNzFZAv+Rew3VXNldZIsiJ+FfrM5J8 nmm-websupport-r6
+```
+
+#### Možnosť A – Automaticky cez Python (odporúčané)
+
+Získaj čerstvé heslo z WebSupport panela (sekcia **SSH / Shell**), potom spusti:
+
+```python
+python ws_setup_ssh.py
+```
+
+> Ak `paramiko` nie je nainštalovaný: `pip install paramiko`
+
+#### Možnosť B – Ručne cez webový shell
+
+1. Otvor `https://shell.r6.websupport.sk:24753` (prihlás sa cez WebSupport panel)
+2. Vlož do terminálu:
+
+```bash
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKTJ14/M+HeYHWmNzFZAv+Rew3VXNldZIsiJ+FfrM5J8 nmm-websupport-r6" >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+sort -u ~/.ssh/authorized_keys -o ~/.ssh/authorized_keys
+pwd
+```
+
+1. Výstup `pwd` skopíruj do `.env.production` → `SSH_REMOTE_PATH`
+
+#### Možnosť C – Cez Git Bash skript
+
 ```bash
 # z Git Bash v koreňovom adresári projektu:
 bash setup-ssh-key.sh
 ```
 
-**3. Over cestu na serveri:**
+**3. Over cestu na serveri (po nahratí kľúča):**
+
 ```bash
-ssh websupport-r6   # po setup-ssh-key.sh
+ssh websupport-r6        # použije ~/.ssh/websupport_r6 (bez hesla)
 # alebo:
-ssh uid6237660@shell.r6.websupport.sk -p25802
-pwd                 # → skopíruj cestu do SSH_REMOTE_PATH v .env.production
+ssh -i ~/.ssh/websupport_r6 uid6237660@shell.r6.websupport.sk -p29753
+pwd                      # → skopíruj cestu do SSH_REMOTE_PATH v .env.production
 ```
 
+> Predpokladaná hodnota býva `/web/uid6237660/sub/www`, ale rozhodujúci je reálny výstup `pwd`.
+
 ### Deploy (každé vydanie)
+
 ```bash
 # z Git Bash v koreňovom adresári projektu:
 bash deploy-websupport.sh
 ```
 
 Deploy automaticky:
+
 1. Nahrá súbory cez `rsync` (preskočí `.git`, `node_modules`, `.env*`)
 2. Nasadí `wp-config-production.php` ako `wp-config.php`
 3. Importuje databázu zo SQL dumpu
-4. Vykoná `wp search-replace` URL (localhost → https://novymatrixmedia.sk)
+4. Vykoná `wp search-replace` URL (localhost → <https://novymatrixmedia.sk>)
 5. Flushne cache a rewrite pravidlá
-6. Buildne a spustí Next.js PWA cez PM2
+6. Buildne Next.js aplikáciu na serveri
 
 ### SSH tunel (pre vzdialený prístup k DB)
+
 ```bash
 # Otvorí lokálny port 3307 → MySQL na produkčnom serveri
 bash ssh-tunnel.sh
@@ -109,7 +156,7 @@ bash ssh-tunnel.sh
 
 ## 🌐 WebSupport REST API (DNS správa)
 
-Dokumentácia: https://rest.websupport.sk/v2/docs
+Dokumentácia: <https://rest.websupport.sk/v2/docs>
 
 ```bash
 # Príklad – zoznam DNS záznamov pre novymatrixmedia.sk
@@ -124,11 +171,13 @@ API prihlasovacie údaje sú uložené v `.env.production` (gitignored).
 ## 📧 Email (WebSupport)
 
 Po vytvorení emailovej schránky `redakcia@novymatrixmedia.sk` vo WebSupport paneli:
+
 1. Vlož heslo do `.env.production` → `SMTP_PASS`
 2. Vlož heslo do `wp-config-production.php` → `WPMS_SMTP_PASS`
 3. Spusti deploy: `bash deploy-websupport.sh`
 
 SMTP nastavenia (WebSupport):
+
 - Host: `mail.websupport.sk`, Port: `587`, Šifrovanie: `TLS`
 
 ---
@@ -140,6 +189,7 @@ SMTP nastavenia (WebSupport):
 - **Permalinks**: `/post-name/`
 
 ### Aktívne Pluginy
+
 1. Rank Math SEO
 2. Cache Enabler
 3. ShortPixel Image Optimizer

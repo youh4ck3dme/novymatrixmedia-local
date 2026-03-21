@@ -1,26 +1,26 @@
 #!/bin/bash
 # ============================================================
-# Nový Matrix Media – Deploy na WebSupport (shared hosting)
+# Nový Matrix Media – Deploy na WebSupport
 # Použitie: bash deploy-websupport.sh
 # ============================================================
 
-set -e
+set -euo pipefail
 
-# Načítaj premenné z .env.production
 if [ -f ".env.production" ]; then
-    export $(grep -v '^#' .env.production | xargs)
+    set -a
+    . ./.env.production
+    set +a
 else
-    echo "❌ Súbor .env.production neexistuje!"
+    echo "Súbor .env.production neexistuje."
     exit 1
 fi
 
-echo "🚀 Spúšťam deploy na ${WP_HOME}..."
-echo "   Server: ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
-echo "   Cesta:  ${SSH_REMOTE_PATH}"
-echo ""
+echo "Spúšťam deploy na ${WP_HOME}"
+echo "Server: ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
+echo "Cesta:  ${SSH_REMOTE_PATH}"
+echo
 
-# --- Krok 1: Nahranie WordPress súborov cez rsync cez SSH ---
-echo "📂 [1/6] Nahrávam WordPress súbory (rsync)..."
+echo "[1/5] Nahrávam súbory cez rsync..."
 rsync -avz --progress \
     --exclude='.git' \
     --exclude='.env*' \
@@ -30,93 +30,59 @@ rsync -avz --progress \
     --exclude='*.gz' \
     --exclude='*.tar' \
     --exclude='wp-config.php' \
-    -e "ssh -p ${SSH_PORT}" \
+    -e "ssh -p ${SSH_PORT} -i $HOME/.ssh/websupport_r6 -o IdentitiesOnly=yes" \
     . \
-    ${SSH_USER}@${SSH_HOST}:${SSH_REMOTE_PATH}/
+    "${SSH_USER}@${SSH_HOST}:${SSH_REMOTE_PATH}/"
 
-echo "✅ Súbory nahrané."
-
-# --- Krok 2: Nahranie wp-config.php (produkčná verzia) ---
-echo "⚙️  [2/6] Nahrávam wp-config-production.php ako wp-config.php..."
-scp -P ${SSH_PORT} \
+echo "[2/5] Nahrávam wp-config-production.php..."
+scp -P "${SSH_PORT}" -i "$HOME/.ssh/websupport_r6" \
     wp-config-production.php \
-    ${SSH_USER}@${SSH_HOST}:${SSH_REMOTE_PATH}/wp-config.php
+    "${SSH_USER}@${SSH_HOST}:${SSH_REMOTE_PATH}/wp-config.php"
 
-echo "✅ wp-config.php nasadený."
-
-# --- Krok 3: Import databázy cez SSH + WP-CLI ---
-echo "📥 [3/6] Importujem databazu..."
-# Rozbaľ SQL dump lokálne ak je komprimovaný
-if [ -f "novymatrixmedia_export.sql.gz" ]; then
-    gunzip -k -f novymatrixmedia_export.sql.gz
+if [ -f "novymatrixmedia_export.sql.gz" ] && [ ! -f "novymatrixmedia_export.sql" ]; then
+    gunzip -k novymatrixmedia_export.sql.gz
 fi
 
-# Nahranie SQL súboru
-scp -P ${SSH_PORT} \
-    novymatrixmedia_export.sql \
-    ${SSH_USER}@${SSH_HOST}:${SSH_REMOTE_PATH}/novymatrixmedia_export.sql
+if [ -f "novymatrixmedia_export.sql" ]; then
+    echo "[3/5] Nahrávam a importujem databázu..."
+    scp -P "${SSH_PORT}" -i "$HOME/.ssh/websupport_r6" \
+        novymatrixmedia_export.sql \
+        "${SSH_USER}@${SSH_HOST}:${SSH_REMOTE_PATH}/novymatrixmedia_export.sql"
 
-# Import cez WP-CLI (alebo mysql priamo)
-ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} << REMOTE
-    cd ${SSH_REMOTE_PATH}
-    # Použi WP-CLI ak existuje, inak mysql klient
-    if command -v wp &> /dev/null; then
-        wp db import novymatrixmedia_export.sql --allow-root 2>/dev/null || \
-        wp db import novymatrixmedia_export.sql
-    else
-        mysql -h ${DB_HOST} -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < novymatrixmedia_export.sql
-    fi
-    rm -f novymatrixmedia_export.sql
-    echo "✅ DB importovaná."
+    ssh -p "${SSH_PORT}" -i "$HOME/.ssh/websupport_r6" "${SSH_USER}@${SSH_HOST}" << REMOTE
+cd "${SSH_REMOTE_PATH}"
+if command -v wp >/dev/null 2>&1; then
+    wp db import novymatrixmedia_export.sql
+else
+    mysql -h "${DB_HOST}" -u "${DB_USER}" -p'${DB_PASS}' "${DB_NAME}" < novymatrixmedia_export.sql
+fi
+rm -f novymatrixmedia_export.sql
+REMOTE
+else
+    echo "[3/5] SQL dump neexistuje, DB import preskakujem."
+fi
+
+echo "[4/5] Search-replace URL a cache flush..."
+ssh -p "${SSH_PORT}" -i "$HOME/.ssh/websupport_r6" "${SSH_USER}@${SSH_HOST}" << REMOTE
+cd "${SSH_REMOTE_PATH}"
+if command -v wp >/dev/null 2>&1; then
+    wp search-replace '${OLD_URL}' '${WP_HOME}' --all-tables --skip-columns=guid || true
+    wp search-replace 'http://novymatrixmedia.sk' 'https://novymatrixmedia.sk' --all-tables --skip-columns=guid || true
+    wp rewrite flush || true
+    wp cache flush || true
+    wp transient delete --all || true
+fi
 REMOTE
 
-# --- Krok 4: WP-CLI search-replace URL ---
-echo "🔗 [4/6] Search-replace URL v databáze..."
-ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} << REMOTE
-    cd ${SSH_REMOTE_PATH}
-    if command -v wp &> /dev/null; then
-        wp search-replace '${OLD_URL}' '${WP_HOME}' --all-tables --skip-columns=guid
-        wp search-replace 'http://novymatrixmedia.sk' 'https://novymatrixmedia.sk' --all-tables --skip-columns=guid
-        echo "✅ URL search-replace hotový."
-    else
-        echo "⚠️  WP-CLI nie je dostupné. Spusti manuálne search-replace."
-    fi
+echo "[5/5] Build Next.js aplikácie..."
+ssh -p "${SSH_PORT}" -i "$HOME/.ssh/websupport_r6" "${SSH_USER}@${SSH_HOST}" << REMOTE
+cd "${SSH_REMOTE_PATH}/nmm-pwa"
+npm install --legacy-peer-deps || npm install
+npm run build
+echo "Next.js build dokončený."
+echo "Runtime proces pre Next.js treba spustiť podľa možností WebSupport hostingu."
 REMOTE
 
-# --- Krok 5: Flush cache, permalinky ---
-echo "🧹 [5/6] Flush cache a rewrite pravidlá..."
-ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} << REMOTE
-    cd ${SSH_REMOTE_PATH}
-    if command -v wp &> /dev/null; then
-        wp rewrite flush
-        wp cache flush 2>/dev/null || true
-        wp transient delete --all 2>/dev/null || true
-        echo "✅ Cache vymazaná."
-    fi
-REMOTE
-
-# --- Krok 6: Next.js PWA build & štart ---
-echo "⚛️  [6/6] Build a deploy Next.js PWA..."
-ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} << REMOTE
-    cd ${SSH_REMOTE_PATH}/nmm-pwa
-    npm install --production --legacy-peer-deps 2>/dev/null || npm install --production
-    npm run build
-    # Ak je dostupný PM2
-    if command -v pm2 &> /dev/null; then
-        pm2 delete nmm-pwa 2>/dev/null || true
-        pm2 start npm --name "nmm-pwa" -- start
-        pm2 save
-        echo "✅ PWA beží pod PM2."
-    else
-        echo "⚠️  PM2 nie je dostupné. Spusti: npm start v ${SSH_REMOTE_PATH}/nmm-pwa"
-    fi
-REMOTE
-
-echo ""
-echo "✅ Deploy dokončený!"
-echo "   🌐 ${WP_HOME}"
-echo ""
-echo "Ďalšie kroky:"
-echo "  1. Over SSL certifikát (Let's Encrypt / WebSupport panel)"
-echo "  2. Aktivuj Wordfence a nastav 2FA"
-echo "  3. Vlož ShortPixel API kľúč"
+echo
+echo "Deploy dokončený."
+echo "${WP_HOME}"
