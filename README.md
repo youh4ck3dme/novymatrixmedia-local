@@ -61,7 +61,7 @@ npm run build        # produkčný build
 | Doména | `novymatrixmedia.sk` |
 | PHP | 8.2-fpm |
 | Databázový server | `db.r6.websupport.sk:3306` |
-| SSH Host | `shell.r6.websupport.sk:29753` |
+| SSH Host | `shell.r6.websupport.sk` + aktuálny shell port |
 | API | `https://rest.websupport.sk/v2` |
 
 ### Pred prvým deployom – jednorazový setup
@@ -87,7 +87,9 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKTJ14/M+HeYHWmNzFZAv+Rew3VXNldZIsiJ+FfrM5J8
 
 Získaj čerstvé heslo z WebSupport panela (sekcia **SSH / Shell**), potom spusti:
 
-```python
+```bash
+set SSH_PORT=AKTUALNY_PORT
+set SSH_PASS=AKTUALNE_HESLO
 python ws_setup_ssh.py
 ```
 
@@ -129,7 +131,10 @@ pwd                      # → skopíruj cestu do SSH_REMOTE_PATH v .env.product
 ### Deploy (každé vydanie)
 
 ```bash
-# z Git Bash v koreňovom adresári projektu:
+# Windows PowerShell v koreňovom adresári projektu:
+pwsh -File .\deploy-websupport.ps1
+
+# Git Bash alternatíva:
 bash deploy-websupport.sh
 ```
 
@@ -140,7 +145,16 @@ Deploy automaticky:
 3. Importuje databázu zo SQL dumpu
 4. Vykoná `wp search-replace` URL (localhost → <https://novymatrixmedia.sk>)
 5. Flushne cache a rewrite pravidlá
-6. Buildne Next.js aplikáciu na serveri
+6. Remote Next.js build je štandardne vypnutý, pretože na shared hostingu často padá na limite pamäte
+
+Ak chceš explicitne skúsiť remote build:
+
+```bash
+pwsh -File .\deploy-websupport.ps1 -RunBuild
+
+# alebo v Git Bash:
+RUN_REMOTE_BUILD=1 bash deploy-websupport.sh
+```
 
 ### SSH tunel (pre vzdialený prístup k DB)
 

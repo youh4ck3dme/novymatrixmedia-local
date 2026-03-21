@@ -9,16 +9,17 @@ Preferred flow:
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 
 
 SSH_HOST = os.getenv("SSH_HOST", "shell.r6.websupport.sk")
 SSH_PORT = int(os.getenv("SSH_PORT", "29753"))
 SSH_USER = os.getenv("SSH_USER", "uid6237660")
-SSH_PASS = os.getenv("SSH_PASS", "6ba1b88908")
+SSH_PASS = os.getenv("SSH_PASS", "")
 
-PUBKEY_PATH = Path.home() / ".ssh" / "websupport_r6.pub"
-PRIVKEY_PATH = Path.home() / ".ssh" / "websupport_r6"
+PRIVKEY_PATH = Path(os.getenv("SSH_KEY_PATH", str(Path.home() / ".ssh" / "websupport_r6"))).expanduser()
+PUBKEY_PATH = Path(os.getenv("SSH_PUBKEY_PATH", str(PRIVKEY_PATH) + ".pub")).expanduser()
 
 
 def fail(message: str, code: int = 1) -> None:
@@ -40,8 +41,35 @@ def read_pubkey() -> str:
     return PUBKEY_PATH.read_text(encoding="utf-8").strip()
 
 
+def run_shell_commands(client, commands: list[str], prompt_timeout: float = 10.0) -> str:
+    shell = client.invoke_shell()
+    shell.settimeout(prompt_timeout)
+    output_chunks: list[str] = []
+
+    time.sleep(0.5)
+    while shell.recv_ready():
+        output_chunks.append(shell.recv(4096).decode("utf-8", errors="replace"))
+
+    for command in commands:
+        shell.send(command + "\n")
+        time.sleep(0.5)
+        deadline = time.time() + prompt_timeout
+        while time.time() < deadline:
+            if shell.recv_ready():
+                output_chunks.append(shell.recv(4096).decode("utf-8", errors="replace"))
+                time.sleep(0.2)
+            else:
+                time.sleep(0.1)
+
+    shell.close()
+    return "".join(output_chunks)
+
+
 def upload_key_via_ssh(pubkey_text: str) -> str:
     paramiko = require_paramiko()
+
+    if not SSH_PASS:
+        fail("SSH_PASS is empty. Export a fresh WebSupport shell password and try again.", 13)
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -70,24 +98,16 @@ def upload_key_via_ssh(pubkey_text: str) -> str:
         f'printf "%s\\n" "{pubkey_text}" >> ~/.ssh/authorized_keys',
         "sort -u ~/.ssh/authorized_keys -o ~/.ssh/authorized_keys",
         "chmod 600 ~/.ssh/authorized_keys",
+        "pwd",
     ]
 
-    for command in commands:
-        _, stdout, stderr = client.exec_command(command)
-        stdout.read()
-        err = stderr.read().decode("utf-8", errors="replace").strip()
-        if err:
-            print(f"WARN: {err}")
-
-    _, stdout, stderr = client.exec_command("pwd")
-    remote_path = stdout.read().decode("utf-8", errors="replace").strip()
-    err = stderr.read().decode("utf-8", errors="replace").strip()
+    shell_output = run_shell_commands(client, commands)
     client.close()
 
-    if err:
-        fail(f"Could not read remote path: {err}", 4)
+    lines = [line.strip() for line in shell_output.splitlines() if line.strip()]
+    remote_path = next((line for line in reversed(lines) if line.startswith("/")), "")
     if not remote_path:
-        fail("Remote path was empty after SSH login.", 5)
+        fail(f"Remote path was empty after SSH login. Shell output was:\n{shell_output}", 5)
 
     print("Key uploaded successfully via password-authenticated SSH.")
     print(f"Remote path: {remote_path}")
@@ -113,16 +133,16 @@ def verify_key_auth() -> None:
             pkey=pkey,
             timeout=20,
         )
-        _, stdout, stderr = client.exec_command("pwd")
-        remote_path = stdout.read().decode("utf-8", errors="replace").strip()
-        err = stderr.read().decode("utf-8", errors="replace").strip()
+        shell_output = run_shell_commands(client, ["pwd"])
     except Exception as exc:
         fail(f"Key-based authentication failed: {exc}", 6)
     finally:
         client.close()
 
-    if err:
-        fail(f"Remote command failed after key login: {err}", 7)
+    lines = [line.strip() for line in shell_output.splitlines() if line.strip()]
+    remote_path = next((line for line in reversed(lines) if line.startswith("/")), "")
+    if not remote_path:
+        fail(f"Remote command failed after key login. Shell output was:\n{shell_output}", 7)
 
     print("Key-based auth works.")
     print(f"Verified remote path: {remote_path}")
