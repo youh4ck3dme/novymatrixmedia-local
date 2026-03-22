@@ -245,6 +245,50 @@ bash deploy-websupport.sh
 
 ---
 
+## ▲ Vercel Deploy (Next.js PWA)
+
+Projekt `nmm-pwa` je na Verceli vedený ako existujúci projekt s nastavením:
+
+- `Root Directory = nmm-pwa`
+- framework preset: `Next.js`
+
+To znamená, že **manuálny deploy cez Vercel CLI sa spúšťa z koreňového adresára repozitára**, nie z podadresára `nmm-pwa`.
+
+### Správny produkčný deploy
+
+```powershell
+Push-Location "C:\Users\42195\Desktop\work-2projects\novymatrixmedia-local\novymatrixmedia-local"
+vercel --prod
+```
+
+### Prečo nie z `nmm-pwa`
+
+Ak spustíš `vercel --prod` priamo v `nmm-pwa`, Vercel sa pokúsi aplikovať `Root Directory = nmm-pwa` ešte raz a vznikne chybná cesta typu:
+
+```text
+...\novymatrixmedia-local\novymatrixmedia-local\nmm-pwa\nmm-pwa
+```
+
+### Lokálne stiahnutie Vercel env premenných bez prepisu `.env.local`
+
+```powershell
+Push-Location "C:\Users\42195\Desktop\work-2projects\novymatrixmedia-local\novymatrixmedia-local\nmm-pwa"
+vercel env pull .env.vercel
+```
+
+Použi to iba na kontrolu alebo porovnanie cloud env premenných. Produkčný deploy to nevyžaduje.
+
+### Premenné prostredia používané pre headless režim
+
+- `NEXT_PUBLIC_WP_URL`
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_GRAPHQL_URL`
+- `NEXT_PUBLIC_SITE_URL`
+
+Tieto premenné sú nastavené vo Vercel projekte a lokálne ich môžeš zrkadliť cez `.env.local` alebo dočasne cez `.env.vercel`.
+
+---
+
 ## 📦 Ďalšie kroky po deployi
 
 1. Over SSL certifikát v WebSupport paneli (Let's Encrypt)
