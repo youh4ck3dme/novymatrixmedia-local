@@ -7,6 +7,30 @@ export interface WordPressCategoryRaw {
   slug: string;
   name: string;
   link: string;
+  description?: string;
+  taxonomy?: string;
+}
+
+export interface WordPressEditorialMetaRaw {
+  nmm_subtitle?: string;
+  nmm_author_name?: string;
+  nmm_source_name?: string;
+  nmm_source_url?: string;
+  nmm_featured_image_alt?: string;
+  nmm_featured_image_caption?: string;
+  nmm_gallery?: string;
+  nmm_video_embed?: string;
+  nmm_article_type?: string;
+  nmm_highlight_badge?: string;
+  nmm_estimated_reading_time?: string;
+  nmm_fact_box?: string;
+  nmm_related_posts?: string;
+  nmm_quote_block?: string;
+  nmm_seo_title?: string;
+  nmm_seo_description?: string;
+  nmm_og_title?: string;
+  nmm_og_description?: string;
+  nmm_og_image?: string;
 }
 
 export interface WordPressMediaRaw {
@@ -22,10 +46,12 @@ export interface WordPressPostRaw {
   modified: string;
   title: WordPressRenderedField;
   excerpt: WordPressRenderedField;
+  content?: WordPressRenderedField;
   yoast_head_json?: {
     title?: string;
     description?: string;
   };
+  meta?: WordPressEditorialMetaRaw;
   _embedded?: {
     "wp:featuredmedia"?: WordPressMediaRaw[];
     "wp:term"?: WordPressCategoryRaw[][];
@@ -37,6 +63,8 @@ export interface SiteNavigationItem {
   href: string;
   slug: string;
   active?: boolean;
+  isExternal?: boolean;
+  target?: string | null;
 }
 
 export interface SitePost {
@@ -44,17 +72,52 @@ export interface SitePost {
   slug: string;
   href: string;
   title: string;
+  subtitle?: string;
   excerpt: string;
+  content?: string;
   publishedAt: string;
+  modifiedAt?: string;
+  authorName?: string;
+  sourceName?: string;
+  sourceUrl?: string;
   imageUrl: string;
   imageAlt: string;
+  imageCaption?: string;
   categoryLabel: string;
   categorySlug: string;
+  articleType?: string;
+  highlightBadge?: string;
+  estimatedReadingTime?: string;
+  factBox?: string[];
+  quoteBlock?: string;
+  tagLabels?: string[];
+  relatedPostIds?: number[];
+  videoEmbed?: string;
+  gallery?: string[];
+  seoTitle?: string;
+  seoDescription?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+}
+
+export interface SiteCategory {
+  id: number;
+  slug: string;
+  name: string;
+  href: string;
+  description: string;
 }
 
 export interface HomePageData {
   featuredPost: SitePost;
   secondaryPosts: SitePost[];
   sidebarPosts: SitePost[];
+  navigationItems: SiteNavigationItem[];
+}
+
+export interface CategoryPageData {
+  category: SiteCategory;
+  posts: SitePost[];
   navigationItems: SiteNavigationItem[];
 }

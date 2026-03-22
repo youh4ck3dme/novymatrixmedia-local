@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#00ff41",
+  themeColor: "#58d9ea",
 };
 
 export default function RootLayout({
@@ -30,7 +30,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-[#050505] selection:bg-[#00ff41] selection:text-black">
+      <body className="antialiased bg-[#031a22] selection:bg-[#58d9ea] selection:text-[#021118]">
         <MatrixBackground />
         {children}
       </body>
