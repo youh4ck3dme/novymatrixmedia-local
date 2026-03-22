@@ -184,6 +184,12 @@ function normalizeEditorialMeta(meta?: WordPressEditorialMetaRaw) {
     ogTitle: meta?.nmm_og_title ? stripHtml(meta.nmm_og_title) : undefined,
     ogDescription: meta?.nmm_og_description ? stripHtml(meta.nmm_og_description) : undefined,
     ogImage: meta?.nmm_og_image?.trim() || undefined,
+    ingestSource: meta?.nmm_ingest_source ? stripHtml(meta.nmm_ingest_source) : undefined,
+    telegramMessageId: meta?.nmm_telegram_message_id ? stripHtml(meta.nmm_telegram_message_id) : undefined,
+    telegramChatId: meta?.nmm_telegram_chat_id ? stripHtml(meta.nmm_telegram_chat_id) : undefined,
+    telegramChatTitle: meta?.nmm_telegram_chat_title ? stripHtml(meta.nmm_telegram_chat_title) : undefined,
+    telegramAuthor: meta?.nmm_telegram_author ? stripHtml(meta.nmm_telegram_author) : undefined,
+    telegramPermalink: meta?.nmm_telegram_permalink?.trim() || undefined,
   };
 }
 
@@ -224,6 +230,12 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     ogTitle: editorialMeta.ogTitle,
     ogDescription: editorialMeta.ogDescription,
     ogImage: editorialMeta.ogImage,
+    ingestSource: editorialMeta.ingestSource,
+    telegramMessageId: editorialMeta.telegramMessageId,
+    telegramChatId: editorialMeta.telegramChatId,
+    telegramChatTitle: editorialMeta.telegramChatTitle,
+    telegramAuthor: editorialMeta.telegramAuthor,
+    telegramPermalink: editorialMeta.telegramPermalink,
   };
 }
 

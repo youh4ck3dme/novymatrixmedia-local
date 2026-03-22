@@ -128,6 +128,18 @@ function getVideoAsset(value?: string): { kind: "iframe" | "video"; src: string 
   return null;
 }
 
+function getIngestSourceLabel(source?: string): string | null {
+  if (!source) {
+    return null;
+  }
+
+  if (source === "telegram") {
+    return "Telegram ingest";
+  }
+
+  return source;
+}
+
 export async function generateMetadata({ params }: SlugPageProps): Promise<Metadata> {
   const { slug } = await params;
 
@@ -158,12 +170,20 @@ export default async function SlugPage({ params }: SlugPageProps) {
           <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-200/82">
             {categoryData.category.description || `Výber článkov z kategórie ${categoryData.category.name}.`}
           </p>
+          {categoryData.posts.some((post) => post.ingestSource === "telegram") ? (
+            <div className="mt-6 inline-flex items-center rounded-full border border-[rgba(111,231,255,0.18)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.22em] text-(--accent)">
+              Obsahuje Telegram ingest články
+            </div>
+          ) : null}
         </section>
 
         <section className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {categoryData.posts.map((post) => (
             <article key={post.id} className="rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,39,48,0.68)] p-4 backdrop-blur-sm">
-              <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-(--accent)">{post.categoryLabel}</div>
+              <div className="mb-3 flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-(--accent)">
+                <span>{post.categoryLabel}</span>
+                {post.ingestSource === "telegram" ? <span className="rounded-full border border-[rgba(111,231,255,0.22)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
+              </div>
               <Link href={post.href} className="block font-serif text-2xl leading-tight text-white transition-colors hover:text-(--accent)">{post.title}</Link>
               <p className="mt-3 text-sm leading-relaxed text-slate-200/78">{post.excerpt}</p>
               <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-slate-300/60">{post.publishedAt}</p>
@@ -188,6 +208,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
   const shareLinks = getArticleShareLinks(post.title, post.href);
   const galleryItems = parseGalleryItems(post.gallery);
   const videoAsset = getVideoAsset(post.videoEmbed);
+  const ingestSourceLabel = getIngestSourceLabel(post.ingestSource);
 
   return (
     <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
@@ -324,6 +345,48 @@ export default async function SlugPage({ params }: SlugPageProps) {
                       </span>
                     ))}
                   </div>
+                </section>
+              ) : null}
+
+              {ingestSourceLabel || post.telegramChatTitle || post.telegramPermalink ? (
+                <section className="mx-auto mt-12 max-w-3xl rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
+                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Redakčný pôvod</div>
+                  <dl className="space-y-3 text-sm leading-relaxed text-slate-100/78">
+                    {ingestSourceLabel ? (
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Zdroj ingestu</dt>
+                        <dd>{ingestSourceLabel}</dd>
+                      </div>
+                    ) : null}
+                    {post.telegramChatTitle ? (
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Telegram kanál</dt>
+                        <dd>{post.telegramChatTitle}</dd>
+                      </div>
+                    ) : null}
+                    {post.telegramAuthor ? (
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Autor ingestu</dt>
+                        <dd>{post.telegramAuthor}</dd>
+                      </div>
+                    ) : null}
+                    {post.telegramMessageId ? (
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Message ID</dt>
+                        <dd>{post.telegramMessageId}</dd>
+                      </div>
+                    ) : null}
+                    {post.telegramPermalink ? (
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Originál</dt>
+                        <dd>
+                          <a href={post.telegramPermalink} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+                            Otvoriť Telegram príspevok
+                          </a>
+                        </dd>
+                      </div>
+                    ) : null}
+                  </dl>
                 </section>
               ) : null}
 

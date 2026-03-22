@@ -35,6 +35,10 @@ wp-content/themes/
 # Výnimky pre vlastné pluginy/témy (odkomentuj ak existujú):
 # !wp-content/plugins/nmm-vlastny-plugin/
 # !wp-content/themes/nmm-tema/
+!wp-content/plugins/
+wp-content/plugins/*
+!wp-content/plugins/nmm-telegram-bridge/
+!wp-content/plugins/nmm-telegram-bridge/**
 !wp-content/themes/
 wp-content/themes/*
 !wp-content/themes/bluetone/

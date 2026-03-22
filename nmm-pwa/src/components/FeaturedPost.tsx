@@ -7,6 +7,8 @@ interface FeaturedPostProps {
 }
 
 export default function FeaturedPost({ post }: FeaturedPostProps) {
+  const isTelegramIngest = post.ingestSource === "telegram";
+
   return (
     <article className="group overflow-hidden rounded-4xl border border-[rgba(111,231,255,0.2)] bg-[rgba(5,36,44,0.72)] shadow-[0_0_40px_rgba(80,226,255,0.08)] backdrop-blur-md">
       <div className="relative overflow-hidden border-b border-[rgba(111,231,255,0.18)]">
@@ -22,6 +24,7 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
           <span className="rounded-full bg-[rgba(31,169,214,0.92)] px-3 py-1 text-white">{post.categoryLabel}</span>
           <span>Novy Matrix Media</span>
           <span className="text-(--accent)">Featured</span>
+          {isTelegramIngest ? <span className="rounded-full border border-[rgba(111,231,255,0.28)] px-3 py-1 text-(--accent)">Telegram ingest</span> : null}
         </div>
         <Link href={post.href} className="block max-w-4xl font-serif text-3xl leading-[1.1] text-white transition-colors group-hover:text-(--accent) sm:text-5xl">
           {post.title}

@@ -40,7 +40,10 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
           <div className="flex flex-col gap-6 font-mono text-sm">
             {remaining.map((post) => (
               <div key={post.id} className="group relative border-l border-[rgba(111,231,255,0.18)] pl-4 transition-colors hover:border-(--accent)">
-                <span className="mb-1 block text-xs text-(--accent)/90">{post.categoryLabel.toUpperCase()}</span>
+                <span className="mb-1 block text-xs text-(--accent)/90">
+                  {post.categoryLabel.toUpperCase()}
+                  {post.ingestSource === "telegram" ? " / TELEGRAM" : ""}
+                </span>
                 <Link href={post.href} className="leading-relaxed text-slate-100/80 group-hover:text-white">
                   {post.title}
                 </Link>
@@ -50,7 +53,9 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
             {featured ? (
               <div className="group relative border-l border-(--accent) pl-4">
                 <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border border-[rgba(224,252,255,0.7)] bg-(--accent) shadow-[0_0_14px_rgba(88,217,234,0.55)]" />
-                <span className="mb-1 block text-xs font-bold text-(--accent)">FEATURED :: KOMENTÁR</span>
+                <span className="mb-1 block text-xs font-bold text-(--accent)">
+                  FEATURED :: KOMENTÁR{featured.ingestSource === "telegram" ? " :: TELEGRAM" : ""}
+                </span>
                 <Link href={featured.href} className="font-semibold leading-relaxed text-white">
                   {featured.title}
                 </Link>

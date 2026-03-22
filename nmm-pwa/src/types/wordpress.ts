@@ -31,6 +31,12 @@ export interface WordPressEditorialMetaRaw {
   nmm_og_title?: string;
   nmm_og_description?: string;
   nmm_og_image?: string;
+  nmm_telegram_message_id?: string;
+  nmm_telegram_chat_id?: string;
+  nmm_telegram_chat_title?: string;
+  nmm_telegram_author?: string;
+  nmm_telegram_permalink?: string;
+  nmm_ingest_source?: string;
 }
 
 export interface WordPressMediaRaw {
@@ -99,6 +105,12 @@ export interface SitePost {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  ingestSource?: string;
+  telegramMessageId?: string;
+  telegramChatId?: string;
+  telegramChatTitle?: string;
+  telegramAuthor?: string;
+  telegramPermalink?: string;
 }
 
 export interface SiteCategory {
