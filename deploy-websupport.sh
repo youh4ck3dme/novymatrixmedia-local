@@ -55,6 +55,9 @@ rsync -avz --progress \
     --exclude='setup_vps.sh' \
     --exclude='ssh-tunnel.sh' \
     --exclude='ws_setup_ssh.py' \
+    --exclude='nmm_*.py' \
+    --exclude='nmm-pass-reset.php' \
+    --exclude='__pycache__' \
     -e "${SSH_RSYNC_CMD}" \
     . \
     "${SSH_USER}@${SSH_HOST}:${SSH_REMOTE_PATH}/"

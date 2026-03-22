@@ -106,7 +106,7 @@ New-Item -ItemType Directory -Path $stagePath -Force | Out-Null
 
 $robocopyDirExcludes = @(
     '.git', '.vscode', 'docs', 'node_modules',
-    'nmm-pwa\.next', 'nmm-pwa\node_modules'
+    'nmm-pwa\.next', 'nmm-pwa\node_modules', '__pycache__'
 )
 
 $robocopyFileExcludes = @(
@@ -114,7 +114,8 @@ $robocopyFileExcludes = @(
     'README.md', '*.code-workspace', '*.sql', '*.sql.gz', '*.gz', '*.tar',
     'wp-config.php', 'wp-config-production.php',
     'deploy-websupport.sh', 'deploy-websupport.ps1',
-    'setup-ssh-key.sh', 'setup_vps.sh', 'ssh-tunnel.sh', 'ws_setup_ssh.py'
+    'setup-ssh-key.sh', 'setup_vps.sh', 'ssh-tunnel.sh', 'ws_setup_ssh.py',
+    'nmm_*.py', 'nmm-pass-reset.php'
 )
 
 try {

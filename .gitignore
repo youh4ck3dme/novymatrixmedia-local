@@ -56,6 +56,12 @@ wp-content/wflogs/
 wp-content/uploads/
 wp-content/languages/
 wp-content/mu-plugins/
+!wp-content/mu-plugins/
+wp-content/mu-plugins/*
+!wp-content/mu-plugins/nmm-revalidate.php
+!wp-content/mu-plugins/nmm-bluetone-unlocker.php
+!wp-content/mu-plugins/nmm-firewall.php
+!wp-content/mu-plugins/nmm-editorial-fields.php
 wp-content/settings/
 wp-content/advanced-cache.php
 wp-content/index.php
@@ -81,6 +87,9 @@ venv/
 *.tar.gz
 nmm_deploy_bundle.tar.gz
 novymatrixmedia_export.sql.gz
+nmm_*.py
+nmm-pass-reset.php
+__pycache__/
 
 # --- macOS ---
 .DS_Store
