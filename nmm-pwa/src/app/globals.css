@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
-  --foreground: #00ff41;
+  --background: #031a22;
+  --foreground: #ddfbff;
+  --accent: #58d9ea;
+  --accent-strong: #1fa9d6;
+  --panel: rgba(8, 54, 66, 0.72);
+  --panel-border: rgba(111, 231, 255, 0.28);
 }
 
 @theme {
@@ -11,7 +15,9 @@
 }
 
 body {
-  background-color: var(--background);
+  background:
+    radial-gradient(circle at 50% 22%, rgba(30, 176, 188, 0.32), transparent 26%),
+    linear-gradient(180deg, #052734 0%, #031a22 46%, #021118 100%);
   color: var(--foreground);
   overflow-x: hidden;
 }

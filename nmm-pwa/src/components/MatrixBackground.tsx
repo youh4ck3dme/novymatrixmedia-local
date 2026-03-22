@@ -20,20 +20,20 @@ const MatrixBackground: React.FC = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             const columns = Math.floor(canvas.width / fontSize);
-            drops = Array(columns).fill(1);
+            drops = Array.from({ length: columns }, () => 1);
         };
 
         const draw = () => {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillStyle = "rgba(2, 14, 20, 0.08)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.font = `bold ${fontSize}px monospace`;
 
             for (let i = 0; i < drops.length; i++) {
                 const text = characters.charAt(Math.floor(Math.random() * characters.length));
                 const rand = Math.random();
-                if (rand > 0.98) ctx.fillStyle = "#fff";
-                else if (rand > 0.9) ctx.fillStyle = "#00ff41";
-                else ctx.fillStyle = "#003b00";
+                if (rand > 0.985) ctx.fillStyle = "#e6fcff";
+                else if (rand > 0.92) ctx.fillStyle = "#63e7ff";
+                else ctx.fillStyle = "#0c6071";
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
                 if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                     drops[i] = 0;
@@ -61,7 +61,7 @@ const MatrixBackground: React.FC = () => {
     return (
         <canvas
             ref={canvasRef}
-            className="fixed top-0 left-0 w-full h-full -z-10 opacity-[0.07] pointer-events-none"
+            className="fixed top-0 left-0 w-full h-full -z-10 opacity-[0.18] pointer-events-none"
         />
     );
 };

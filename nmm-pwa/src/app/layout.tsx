@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import MatrixBackground from "@/components/MatrixBackground";
 
@@ -6,6 +6,13 @@ export const metadata: Metadata = {
   title: "Nový Matrix Media | PWA",
   description: "Informačno-publicistický portál v novom rozmere.",
   manifest: "/manifest.json",
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#00ff41",
 };
 
 export default function RootLayout({
@@ -16,8 +23,6 @@ export default function RootLayout({
   return (
     <html lang="sk">
       <head>
-        <meta name="theme-color" content="#00ff41" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
