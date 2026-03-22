@@ -85,3 +85,4 @@ __MACOSX/
 # --- Logy ---
 *.log
 debug.log
+.vercel
