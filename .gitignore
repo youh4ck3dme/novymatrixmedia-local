@@ -35,6 +35,13 @@ wp-content/themes/
 # Výnimky pre vlastné pluginy/témy (odkomentuj ak existujú):
 # !wp-content/plugins/nmm-vlastny-plugin/
 # !wp-content/themes/nmm-tema/
+!wp-content/themes/
+wp-content/themes/*
+!wp-content/themes/bluetone/
+wp-content/themes/bluetone/*
+!wp-content/themes/bluetone/inc/
+wp-content/themes/bluetone/inc/*
+!wp-content/themes/bluetone/inc/editorial-fields.php
 
 # --- WordPress generované súbory ---
 wp-content/cache/
