@@ -23,9 +23,9 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
           <div className="mb-6 flex items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.07)] pb-4">
             <div className="flex items-center gap-3">
               <div className="h-2.5 w-2.5 animate-pulse rounded-sm bg-(--accent)" />
-              <h3 className="font-serif text-lg uppercase tracking-[0.28em] text-(--accent)">
+              <h2 className="font-serif text-lg uppercase tracking-[0.28em] text-(--accent)">
                 Odoberať
-              </h3>
+              </h2>
             </div>
             <Link href="https://t.me/novy_matrix_lm" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--foreground)/70 transition-colors hover:text-white">
               Telegram
