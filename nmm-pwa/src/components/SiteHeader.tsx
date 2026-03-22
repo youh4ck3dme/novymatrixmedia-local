@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import FrontendVariantSwitcher from "@/components/FrontendVariantSwitcher";
 import type { SiteNavigationItem } from "@/types/wordpress";
 
 interface SiteHeaderProps {
@@ -181,6 +182,7 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
               Vyberáme
             </span>
             <span className="text-(--foreground)/70">{currentDate}</span>
+            <FrontendVariantSwitcher />
           </div>
           <nav className="hidden flex-wrap items-center gap-5 font-sans text-[11px] uppercase tracking-[0.26em] text-(--foreground)/70 md:flex">
             {navigationItems.map((item) => (

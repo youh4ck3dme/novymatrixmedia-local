@@ -22,6 +22,14 @@ body {
   overflow-x: hidden;
 }
 
+html[data-frontend-variant="default"] body {
+  background: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+}
+
+html[data-frontend-variant="default"] .matrix-only {
+  display: none !important;
+}
+
 .article-body {
   color: rgba(232, 241, 244, 0.92);
   font-family: var(--font-sans);

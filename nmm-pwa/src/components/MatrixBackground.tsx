@@ -2,14 +2,34 @@
 
 import React, { useEffect, useRef } from "react";
 
+import { FRONTEND_VARIANT_CHANGE_EVENT, readBrowserFrontendVariant, type FrontendVariant } from "@/lib/frontend-variant";
+
 const MatrixBackground: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const variantRef = useRef<FrontendVariant>("default");
 
     useEffect(() => {
+        const syncVariant = () => {
+            variantRef.current = readBrowserFrontendVariant();
+        };
+
+        const handleVariantChange = (event: Event) => {
+            const customEvent = event as CustomEvent<FrontendVariant>;
+            variantRef.current = customEvent.detail === "matrix" ? "matrix" : "default";
+        };
+
+        syncVariant();
+        window.addEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
+
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas) {
+            return () => window.removeEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
+        }
+
         const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+        if (!ctx) {
+            return () => window.removeEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
+        }
 
         const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ｦｧｨｩｪｫｬｭｮｯｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";
         const fontSize = 16;
@@ -24,6 +44,11 @@ const MatrixBackground: React.FC = () => {
         };
 
         const draw = () => {
+            if (variantRef.current !== "matrix") {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+
             ctx.fillStyle = "rgba(2, 14, 20, 0.08)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.font = `bold ${fontSize}px monospace`;
@@ -55,13 +80,14 @@ const MatrixBackground: React.FC = () => {
         return () => {
             clearInterval(intervalId);
             window.removeEventListener("resize", handleResize);
+            window.removeEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
         };
     }, []);
 
     return (
         <canvas
             ref={canvasRef}
-            className="fixed top-0 left-0 w-full h-full -z-10 opacity-[0.12] pointer-events-none"
+            className="matrix-only fixed top-0 left-0 h-full w-full -z-10 opacity-[0.12] pointer-events-none"
         />
     );
 };
