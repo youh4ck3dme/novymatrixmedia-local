@@ -62,6 +62,7 @@ wp-content/mu-plugins/*
 !wp-content/mu-plugins/nmm-bluetone-unlocker.php
 !wp-content/mu-plugins/nmm-firewall.php
 !wp-content/mu-plugins/nmm-editorial-fields.php
+!wp-content/mu-plugins/nmm-headless-routing.php
 wp-content/settings/
 wp-content/advanced-cache.php
 wp-content/index.php
