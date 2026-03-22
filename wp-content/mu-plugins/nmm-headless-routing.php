@@ -134,7 +134,7 @@ function nmm_headless_redirect_public_requests() {
 		return;
 	}
 
-	$target = $frontend . ( '/' === $path ? '' : untrailingslashit( $path ) );
+	$target = $frontend . ( '/' === $path ? '' : $path );
 	if ( isset( $_SERVER['QUERY_STRING'] ) && '' !== $_SERVER['QUERY_STRING'] ) {
 		$target .= '?' . (string) $_SERVER['QUERY_STRING'];
 	}
