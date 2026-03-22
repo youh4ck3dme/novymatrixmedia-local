@@ -87,6 +87,14 @@ function nmm_headless_redirect_public_requests() {
 		return;
 	}
 
+	if ( isset( $_GET['doing_wp_cron'] ) ) {
+		return;
+	}
+
+	if ( isset( $_GET['preview'] ) && current_user_can( 'edit_posts' ) ) {
+		return;
+	}
+
 	$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : 'GET';
 	if ( ! in_array( $method, array( 'GET', 'HEAD' ), true ) ) {
 		return;
