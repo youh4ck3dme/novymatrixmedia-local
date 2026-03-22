@@ -86,6 +86,10 @@ novymatrixmedia_export.sql.gz
 .DS_Store
 __MACOSX/
 
+# --- IDE a workspace ---
+.vscode/
+*.code-workspace
+
 # --- Logy ---
 *.log
 debug.log

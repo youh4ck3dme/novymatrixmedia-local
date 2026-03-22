@@ -1,9 +1,21 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Merriweather } from "next/font/google";
 import "./globals.css";
 import MatrixBackground from "@/components/MatrixBackground";
 
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-inter",
+});
+
+const merriweather = Merriweather({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700", "900"],
+  variable: "--font-merriweather",
+});
+
 export const metadata: Metadata = {
-  title: "Nový Matrix Media | PWA",
+  title: "NOVY MATRIX MEDIA | PWA",
   description: "Informačno-publicistický portál v novom rozmere.",
   manifest: "/manifest.json",
   icons: {
@@ -21,15 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="sk">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="sk" className={`${inter.variable} ${merriweather.variable}`}>
       <body className="antialiased bg-[#031a22] selection:bg-[#58d9ea] selection:text-[#021118]">
         <MatrixBackground />
         {children}

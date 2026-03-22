@@ -31,9 +31,9 @@ const MatrixBackground: React.FC = () => {
             for (let i = 0; i < drops.length; i++) {
                 const text = characters.charAt(Math.floor(Math.random() * characters.length));
                 const rand = Math.random();
-                if (rand > 0.985) ctx.fillStyle = "#e6fcff";
-                else if (rand > 0.92) ctx.fillStyle = "#63e7ff";
-                else ctx.fillStyle = "#0c6071";
+                if (rand > 0.985) ctx.fillStyle = "#d0e6ea";
+                else if (rand > 0.92) ctx.fillStyle = "#4abfcf";
+                else ctx.fillStyle = "#0a4f5e";
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
                 if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                     drops[i] = 0;
@@ -61,7 +61,7 @@ const MatrixBackground: React.FC = () => {
     return (
         <canvas
             ref={canvasRef}
-            className="fixed top-0 left-0 w-full h-full -z-10 opacity-[0.18] pointer-events-none"
+            className="fixed top-0 left-0 w-full h-full -z-10 opacity-[0.12] pointer-events-none"
         />
     );
 };

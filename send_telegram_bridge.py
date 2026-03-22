@@ -4,6 +4,43 @@ import sys
 import urllib.error
 import urllib.request
 from html import escape
+from typing import Any, TypeAlias, cast
+
+
+JsonObject: TypeAlias = dict[str, Any]
+
+
+def as_string(value: Any, default: str = "") -> str:
+    if isinstance(value, str):
+        return value
+    return default
+
+
+def as_string_list(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    result: list[str] = []
+    for item in cast(list[Any], value):
+        if isinstance(item, str):
+            result.append(item)
+    return result
+
+
+def as_object(value: Any) -> JsonObject:
+    if isinstance(value, dict):
+        return cast(JsonObject, value)
+    return {}
+
+
+def as_object_list(value: Any) -> list[JsonObject]:
+    if not isinstance(value, list):
+        return []
+
+    result: list[JsonObject] = []
+    for item in cast(list[Any], value):
+        if isinstance(item, dict):
+            result.append(cast(JsonObject, item))
+    return result
 
 
 def build_html_from_text(text: str) -> str:
@@ -12,53 +49,165 @@ def build_html_from_text(text: str) -> str:
     return "\n".join(f"<p>{escape(line)}</p>" for line in paragraphs)
 
 
-def normalize_payload(payload: dict) -> dict:
+def flatten_telegram_text(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+
+    if isinstance(value, list):
+        fragments: list[str] = []
+        for item in cast(list[Any], value):
+            if isinstance(item, str):
+                fragments.append(item)
+                continue
+
+            if isinstance(item, dict):
+                text = as_string(item.get("text"))
+                if text:
+                    fragments.append(text)
+
+        return "".join(fragments)
+
+    return ""
+
+
+def get_export_message_text(message: JsonObject) -> str:
+    return flatten_telegram_text(message.get("text")) or flatten_telegram_text(
+        message.get("caption")
+    )
+
+
+def get_telegram_export_message(
+    payload: JsonObject, selected_message_id: str | None
+) -> JsonObject | None:
+    messages = as_object_list(payload.get("messages"))
+    if not messages:
+        return None
+
+    if selected_message_id:
+        for message in messages:
+            if str(message.get("id", "")).strip() == selected_message_id:
+                return message
+
+        raise ValueError(
+            f"Telegram export does not contain message id {selected_message_id}."
+        )
+
+    for message in reversed(messages):
+        message_type = as_string(message.get("type"), "message")
+        if message_type != "message":
+            continue
+
+        if get_export_message_text(message).strip():
+            return message
+
+    raise ValueError("Telegram export does not contain any text message to import.")
+
+
+def normalize_payload(
+    payload: JsonObject, selected_message_id: str | None = None
+) -> JsonObject:
     if "title" in payload and "content" in payload:
         return payload
 
-    message = payload.get("channel_post") or payload.get("message") or payload
-    text = message.get("text") or message.get("caption") or ""
+    export_message = get_telegram_export_message(payload, selected_message_id)
+    message = (
+        export_message
+        or as_object(payload.get("channel_post"))
+        or as_object(payload.get("message"))
+        or payload
+    )
+    text = get_export_message_text(message)
     lines = [line.strip() for line in text.splitlines() if line.strip()]
 
-    title = payload.get("title") or (lines[0] if lines else "Telegram import")
+    title = as_string(payload.get("title")) or (
+        lines[0] if lines else "Telegram import"
+    )
     body_lines = lines[1:] if len(lines) > 1 else lines
-    content = payload.get("content") or build_html_from_text("\n".join(body_lines)) or "<p>Imported from Telegram.</p>"
+    content = (
+        as_string(payload.get("content"))
+        or build_html_from_text("\n".join(body_lines))
+        or "<p>Imported from Telegram.</p>"
+    )
 
-    category = payload.get("category") or payload.get("category_slug")
-    categories = []
-    if isinstance(category, str) and category.strip():
-        categories.append({"slug": category.strip(), "name": category.strip().replace("-", " ").title()})
+    category = as_string(payload.get("category")) or as_string(
+        payload.get("category_slug")
+    )
+    categories: list[JsonObject] = []
+    if category.strip():
+        categories.append(
+            {
+                "slug": category.strip(),
+                "name": category.strip().replace("-", " ").title(),
+            }
+        )
 
-    tags = payload.get("tags") if isinstance(payload.get("tags"), list) else []
+    tags = as_string_list(payload.get("tags"))
 
-    normalized = {
+    chat = as_object(message.get("chat"))
+    sender = as_object(message.get("from"))
+    export_chat_title = as_string(payload.get("name")) or as_string(
+        payload.get("telegram_chat_title")
+    )
+    export_chat_id = payload.get("id")
+    export_author = as_string(message.get("from"))
+    published_at = as_string(payload.get("published_at")) or as_string(
+        message.get("date")
+    )
+
+    normalized: JsonObject = {
         "title": title,
-        "excerpt": payload.get("excerpt") or (body_lines[0] if body_lines else title),
+        "excerpt": as_string(payload.get("excerpt"))
+        or (body_lines[0] if body_lines else title),
         "content": content,
-        "status": payload.get("status", "draft"),
-        "categories": payload.get("categories") or categories,
+        "status": as_string(payload.get("status"), "draft"),
+        "published_at": published_at,
+        "categories": (
+            payload.get("categories")
+            if isinstance(payload.get("categories"), list)
+            else categories
+        ),
         "tags": tags,
-        "subtitle": payload.get("subtitle"),
-        "author_name": payload.get("author_name") or "Telegram bridge",
-        "source_name": payload.get("source_name") or (message.get("chat", {}) or {}).get("title") or "Telegram",
-        "source_url": payload.get("source_url"),
-        "highlight_badge": payload.get("highlight_badge") or "Telegram",
+        "subtitle": as_string(payload.get("subtitle")),
+        "author_name": as_string(payload.get("author_name")) or "Telegram bridge",
+        "source_name": as_string(payload.get("source_name"))
+        or as_string(chat.get("title"))
+        or export_chat_title
+        or "Telegram",
+        "source_url": as_string(payload.get("source_url")),
+        "highlight_badge": as_string(payload.get("highlight_badge")) or "Telegram",
+        "editorial_readiness": as_string(payload.get("editorial_readiness")),
         "telegram": {
-            "message_id": str(message.get("message_id", "")) if message.get("message_id") is not None else "",
-            "chat_id": str((message.get("chat", {}) or {}).get("id", "")) if (message.get("chat", {}) or {}).get("id") is not None else "",
-            "chat_title": (message.get("chat", {}) or {}).get("title") or payload.get("telegram_chat_title") or "",
-            "author": payload.get("telegram_author") or (message.get("from", {}) or {}).get("username") or "",
-            "permalink": payload.get("telegram_permalink") or "",
+            "message_id": (
+                str(message_id)
+                if (message_id := message.get("message_id") or message.get("id"))
+                is not None
+                else ""
+            ),
+            "chat_id": (
+                str(chat_id)
+                if (chat_id := chat.get("id") or export_chat_id) is not None
+                else ""
+            ),
+            "chat_title": as_string(chat.get("title")) or export_chat_title,
+            "author": as_string(payload.get("telegram_author"))
+            or as_string(sender.get("username"))
+            or export_author,
+            "permalink": as_string(payload.get("telegram_permalink"))
+            or as_string(message.get("link")),
         },
     }
 
     if payload.get("featured_image_url"):
         normalized["featured_image_url"] = payload["featured_image_url"]
 
-    return {key: value for key, value in normalized.items() if value not in (None, "", [], {})}
+    return {
+        key: value
+        for key, value in normalized.items()
+        if value not in (None, "", [], {})
+    }
 
 
-def send_payload(site_url: str, token: str, payload: dict) -> dict:
+def send_payload(site_url: str, token: str, payload: JsonObject) -> JsonObject:
     endpoint = site_url.rstrip("/") + "/wp-json/nmm-telegram-bridge/v1/ingest"
     body = json.dumps(payload).encode("utf-8")
 
@@ -73,21 +222,42 @@ def send_payload(site_url: str, token: str, payload: dict) -> dict:
     )
 
     with urllib.request.urlopen(request) as response:
-        return json.loads(response.read().decode("utf-8"))
+        return cast(JsonObject, json.loads(response.read().decode("utf-8")))
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Normalize Telegram payload and send it to the NMM WordPress bridge.")
-    parser.add_argument("input", help="Path to a JSON file with either normalized or Telegram-like payload.")
-    parser.add_argument("--site-url", default="http://localhost:8080", help="WordPress site URL.")
-    parser.add_argument("--token", default="local-telegram-bridge-token", help="Bridge token.")
-    parser.add_argument("--dry-run", action="store_true", help="Only print normalized payload without sending.")
+    parser = argparse.ArgumentParser(
+        description="Normalize Telegram payload and send it to the NMM WordPress bridge."
+    )
+    parser.add_argument(
+        "input",
+        help="Path to a JSON file with either normalized or Telegram-like payload.",
+    )
+    parser.add_argument(
+        "--site-url", default="http://localhost:8080", help="WordPress site URL."
+    )
+    parser.add_argument(
+        "--token", default="local-telegram-bridge-token", help="Bridge token."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Only print normalized payload without sending.",
+    )
+    parser.add_argument(
+        "--message-id",
+        help="Specific Telegram export message id to import. Defaults to the latest text message in export JSON.",
+    )
     args = parser.parse_args()
 
     with open(args.input, "r", encoding="utf-8") as file_handle:
-        payload = json.load(file_handle)
+        payload = as_object(json.load(file_handle))
 
-    normalized = normalize_payload(payload)
+    try:
+        normalized = normalize_payload(payload, args.message_id)
+    except ValueError as error:
+        sys.stderr.write(f"{error}\n")
+        return 1
 
     if args.dry_run:
         json.dump(normalized, sys.stdout, ensure_ascii=False, indent=2)

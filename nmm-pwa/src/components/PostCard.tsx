@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
 import type { SitePost } from "@/types/wordpress";
 
 interface PostCardProps {
@@ -8,22 +9,30 @@ interface PostCardProps {
 
 export default function PostCard({ post }: PostCardProps) {
   const isTelegramIngest = post.ingestSource === "telegram";
+  const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
+  const editorialReadinessTone = getEditorialReadinessTone(post.editorialReadiness);
+  const editorialReadinessClassName = editorialReadinessTone === "warning"
+    ? "rounded-full border border-[rgba(251,146,60,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-orange-100/82"
+    : editorialReadinessTone === "progress"
+      ? "rounded-full border border-[rgba(59,130,246,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-sky-100/82"
+      : "rounded-full border border-[rgba(16,185,129,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-emerald-100/82";
 
   return (
-    <article className="group rounded-[1.75rem] border border-[rgba(111,231,255,0.16)] bg-[rgba(7,39,48,0.68)] p-4 backdrop-blur-sm">
+    <article className="group rounded-xl border border-[rgba(111,231,255,0.07)] bg-[rgba(5,32,40,0.58)] p-4 backdrop-blur-sm">
       <img
         src={post.imageUrl}
         alt={post.imageAlt}
-        className="mb-4 h-48 w-full rounded-[1.25rem] border border-[rgba(111,231,255,0.12)] object-cover transition-all duration-500 group-hover:scale-[1.01]"
+        className="mb-4 h-48 w-full rounded-xl border border-[rgba(111,231,255,0.05)] object-cover transition-all duration-500 group-hover:scale-[1.01]"
       />
-      <div className="mb-3 flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-(--accent)">
+      <div className="mb-3 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
         <span>{post.categoryLabel}</span>
-        {isTelegramIngest ? <span className="rounded-full border border-[rgba(111,231,255,0.22)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
+        {isTelegramIngest ? <span className="rounded-full border border-[rgba(111,231,255,0.12)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
+        {editorialReadinessLabel ? <span className={editorialReadinessClassName}>{editorialReadinessLabel}</span> : null}
       </div>
       <Link href={post.href} className="mb-2 block font-serif text-2xl leading-tight text-white transition-colors group-hover:text-(--accent)">
         {post.title}
       </Link>
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-slate-300/60">{post.publishedAt}</p>
+      <p className="font-sans text-xs uppercase tracking-[0.2em] text-slate-300/68">{post.publishedAt}</p>
     </article>
   );
 }

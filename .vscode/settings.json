@@ -150,5 +150,7 @@
         "**/wp-content/updraft": true,
         "**/nmm-pwa/.next": true,
         "**/nmm-pwa/node_modules": true
-    }
+    },
+    "editor.codeActions.triggerOnFocusChange": true,
+    "css.lint.unknownAtRules": "ignore"
 }

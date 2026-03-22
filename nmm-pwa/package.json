@@ -6,7 +6,9 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check-env": "node scripts/check-env.mjs",
+    "check-env:live": "node scripts/check-env.mjs --live"
   },
   "dependencies": {
     "framer-motion": "^12.34.3",

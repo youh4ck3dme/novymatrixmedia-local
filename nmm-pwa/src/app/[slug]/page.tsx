@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
 
 import SiteHeader from "@/components/SiteHeader";
+import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
 import { getCategoryPageData, getNavigationItems, getPostBySlug, getPostsByIds } from "@/lib/wp-queries";
 import { buildCategoryMetadata, buildPostMetadata } from "@/lib/seo";
 
@@ -53,19 +55,19 @@ function isAbsoluteMediaUrl(value: string): boolean {
 
 function parseGalleryItems(entries?: string[]) {
   return (entries ?? []).reduce<GalleryItem[]>((items, entry, index) => {
-      const [rawUrl, rawCaption, rawAlt] = entry.split("|").map((part) => part.trim());
-      if (!rawUrl || (!isAbsoluteMediaUrl(rawUrl) && !isRelativeMediaUrl(rawUrl))) {
-        return items;
-      }
-
-      items.push({
-        url: rawUrl,
-        caption: rawCaption || undefined,
-        alt: rawAlt || rawCaption || `Gallery image ${index + 1}`,
-      });
-
+    const [rawUrl, rawCaption, rawAlt] = entry.split("|").map((part) => part.trim());
+    if (!rawUrl || (!isAbsoluteMediaUrl(rawUrl) && !isRelativeMediaUrl(rawUrl))) {
       return items;
-    }, []);
+    }
+
+    items.push({
+      url: rawUrl,
+      caption: rawCaption || undefined,
+      alt: rawAlt || rawCaption || `Gallery image ${index + 1}`,
+    });
+
+    return items;
+  }, []);
 }
 
 function extractIframeSrc(value: string): string | null {
@@ -140,6 +142,20 @@ function getIngestSourceLabel(source?: string): string | null {
   return source;
 }
 
+function getReadinessBadgeClassName(readiness?: string): string {
+  const tone = getEditorialReadinessTone(readiness);
+
+  if (tone === "warning") {
+    return "rounded-full border border-[rgba(251,146,60,0.34)] px-2 py-1 text-[10px] tracking-[0.18em] text-orange-100/82";
+  }
+
+  if (tone === "progress") {
+    return "rounded-full border border-[rgba(59,130,246,0.34)] px-2 py-1 text-[10px] tracking-[0.18em] text-sky-100/82";
+  }
+
+  return "rounded-full border border-[rgba(16,185,129,0.34)] px-2 py-1 text-[10px] tracking-[0.18em] text-emerald-100/82";
+}
+
 export async function generateMetadata({ params }: SlugPageProps): Promise<Metadata> {
   const { slug } = await params;
 
@@ -164,29 +180,35 @@ export default async function SlugPage({ params }: SlugPageProps) {
     return (
       <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
         <SiteHeader navigationItems={categoryData.navigationItems} />
-        <section className="rounded-4xl border border-[rgba(111,231,255,0.2)] bg-[rgba(5,36,44,0.72)] p-6 shadow-[0_0_40px_rgba(80,226,255,0.08)] backdrop-blur-md sm:p-8">
-          <div className="mb-3 font-mono text-xs uppercase tracking-[0.32em] text-(--accent)">{categoryData.category.name}</div>
+        <section className="rounded-lg border border-[rgba(111,231,255,0.2)] bg-[rgba(5,36,44,0.72)] p-6 shadow-[0_0_40px_rgba(80,226,255,0.08)] backdrop-blur-md sm:p-8">
+          <div className="mb-3 font-sans text-xs uppercase tracking-[0.32em] text-(--accent)">{categoryData.category.name}</div>
           <h1 className="font-serif text-4xl text-white sm:text-5xl">{categoryData.category.name}</h1>
           <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-200/82">
             {categoryData.category.description || `Výber článkov z kategórie ${categoryData.category.name}.`}
           </p>
           {categoryData.posts.some((post) => post.ingestSource === "telegram") ? (
-            <div className="mt-6 inline-flex items-center rounded-full border border-[rgba(111,231,255,0.18)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.22em] text-(--accent)">
+            <div className="mt-6 inline-flex items-center rounded-lg border border-[rgba(111,231,255,0.18)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
               Obsahuje Telegram ingest články
+            </div>
+          ) : null}
+          {categoryData.posts.some((item) => item.editorialReadiness) ? (
+            <div className="mt-3 inline-flex items-center rounded-lg border border-[rgba(251,146,60,0.22)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.22em] text-orange-100/82">
+              Obsahuje články v redakčnom workflow
             </div>
           ) : null}
         </section>
 
         <section className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {categoryData.posts.map((post) => (
-            <article key={post.id} className="rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,39,48,0.68)] p-4 backdrop-blur-sm">
-              <div className="mb-3 flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-(--accent)">
+            <article key={post.id} className="rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,39,48,0.68)] p-4 backdrop-blur-sm">
+              <div className="mb-3 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
                 <span>{post.categoryLabel}</span>
-                {post.ingestSource === "telegram" ? <span className="rounded-full border border-[rgba(111,231,255,0.22)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
+                {post.ingestSource === "telegram" ? <span className="rounded-lg border border-[rgba(111,231,255,0.22)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
+                {getEditorialReadinessLabel(post.editorialReadiness) ? <span className={getReadinessBadgeClassName(post.editorialReadiness)}>{getEditorialReadinessLabel(post.editorialReadiness)}</span> : null}
               </div>
               <Link href={post.href} className="block font-serif text-2xl leading-tight text-white transition-colors hover:text-(--accent)">{post.title}</Link>
               <p className="mt-3 text-sm leading-relaxed text-slate-200/78">{post.excerpt}</p>
-              <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-slate-300/60">{post.publishedAt}</p>
+              <p className="mt-4 font-sans text-xs uppercase tracking-[0.2em] text-slate-300/60">{post.publishedAt}</p>
             </article>
           ))}
         </section>
@@ -209,13 +231,14 @@ export default async function SlugPage({ params }: SlugPageProps) {
   const galleryItems = parseGalleryItems(post.gallery);
   const videoAsset = getVideoAsset(post.videoEmbed);
   const ingestSourceLabel = getIngestSourceLabel(post.ingestSource);
+  const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
 
   return (
     <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
       <SiteHeader navigationItems={navigationItems} />
-      <article className="rounded-4xl border border-[rgba(111,231,255,0.18)] bg-[linear-gradient(180deg,rgba(6,31,39,0.88),rgba(5,24,31,0.82))] shadow-[0_0_40px_rgba(80,226,255,0.06)] backdrop-blur-md">
+      <article className="rounded-lg border border-[rgba(111,231,255,0.18)] bg-[linear-gradient(180deg,rgba(6,31,39,0.88),rgba(5,24,31,0.82))] shadow-[0_0_40px_rgba(80,226,255,0.06)] backdrop-blur-md">
         <div className="border-b border-[rgba(111,231,255,0.12)] px-6 py-5 sm:px-10">
-          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-3 font-mono text-[11px] uppercase tracking-[0.24em] text-slate-300/62">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-3 font-sans text-[11px] uppercase tracking-[0.24em] text-slate-300/62">
             <Link href="/" className="transition-colors hover:text-white">Domov</Link>
             <span className="text-(--accent)/70">/</span>
             <Link href={`/${post.categorySlug}`} className="transition-colors hover:text-white">{post.categoryLabel}</Link>
@@ -228,18 +251,19 @@ export default async function SlugPage({ params }: SlugPageProps) {
           <div className="max-w-4xl">
             <div className="mb-5 flex flex-wrap items-center gap-3">
               {post.highlightBadge ? (
-                <span className="rounded-full border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.18)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">
+                <span className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.18)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">
                   {post.highlightBadge}
                 </span>
               ) : null}
-              <span className="font-mono text-xs uppercase tracking-[0.34em] text-(--accent)">{post.categoryLabel}</span>
-              {post.articleType ? <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-300/56">{post.articleType}</span> : null}
+              <span className="font-sans text-xs uppercase tracking-[0.34em] text-(--accent)">{post.categoryLabel}</span>
+              {post.articleType ? <span className="font-sans text-[11px] uppercase tracking-[0.24em] text-slate-300/56">{post.articleType}</span> : null}
+              {editorialReadinessLabel ? <span className={getReadinessBadgeClassName(post.editorialReadiness)}>{editorialReadinessLabel}</span> : null}
             </div>
             <h1 className="max-w-5xl font-serif text-4xl leading-[0.95] text-white sm:text-6xl xl:text-7xl">{post.title}</h1>
             {post.subtitle ? <p className="mt-6 max-w-4xl text-xl leading-relaxed text-slate-100/82 sm:text-2xl">{post.subtitle}</p> : null}
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-100/76 sm:text-xl">{post.excerpt}</p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4 border-y border-[rgba(111,231,255,0.12)] py-4 font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/62">
+            <div className="mt-8 flex flex-wrap items-center gap-4 border-y border-[rgba(111,231,255,0.12)] py-4 font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/62">
               <span>Publikované {post.publishedAt}</span>
               <span className="h-1 w-1 rounded-full bg-(--accent)/70" />
               <span>{post.authorName || "Novy Matrix Media"}</span>
@@ -249,14 +273,19 @@ export default async function SlugPage({ params }: SlugPageProps) {
           </div>
 
           {post.imageUrl ? (
-            <figure className="mt-10 overflow-hidden rounded-[1.75rem] border border-[rgba(111,231,255,0.14)] bg-[rgba(8,35,42,0.72)]">
-              <img
-                src={post.imageUrl}
-                alt={post.imageAlt}
-                  className="h-72 w-full object-cover sm:h-112 xl:h-144"
-              />
+            <figure className="mt-10 overflow-hidden rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(8,35,42,0.72)]">
+              <div className="relative h-72 w-full sm:h-112 xl:h-144">
+                <Image
+                  src={post.imageUrl}
+                  alt={post.imageAlt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 1200px"
+                  priority
+                />
+              </div>
               {post.imageCaption || post.sourceName ? (
-                <figcaption className="border-t border-[rgba(111,231,255,0.1)] px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] text-slate-300/58">
+                <figcaption className="border-t border-[rgba(111,231,255,0.1)] px-5 py-4 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/58">
                   {post.imageCaption || "Cover image"}
                   {post.sourceName ? (
                     <>
@@ -272,8 +301,8 @@ export default async function SlugPage({ params }: SlugPageProps) {
           <div className="mt-12 grid grid-cols-1 gap-12 xl:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="min-w-0">
               {post.factBox && post.factBox.length > 0 ? (
-                <section className="mx-auto mb-10 max-w-3xl rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.72)] p-6">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Co je dolezite vediet</div>
+                <section className="mx-auto mb-10 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.72)] p-6">
+                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Co je dolezite vediet</div>
                   <ul className="space-y-3 text-base leading-relaxed text-slate-100/84">
                     {post.factBox.map((item) => (
                       <li key={item} className="flex gap-3">
@@ -288,9 +317,9 @@ export default async function SlugPage({ params }: SlugPageProps) {
               <div className="article-body mx-auto max-w-3xl" dangerouslySetInnerHTML={renderHtml(post.content || `<p>${post.excerpt}</p>`)} />
 
               {videoAsset ? (
-                <section className="mx-auto mt-12 max-w-4xl rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.62)] p-4 sm:p-6">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Video</div>
-                  <div className="overflow-hidden rounded-3xl border border-[rgba(111,231,255,0.14)] bg-[rgba(3,18,24,0.92)]">
+                <section className="mx-auto mt-12 max-w-4xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.62)] p-4 sm:p-6">
+                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Video</div>
+                  <div className="overflow-hidden rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(3,18,24,0.92)]">
                     {videoAsset.kind === "iframe" ? (
                       <iframe
                         src={videoAsset.src}
@@ -312,12 +341,14 @@ export default async function SlugPage({ params }: SlugPageProps) {
               ) : null}
 
               {galleryItems.length > 0 ? (
-                <section className="mx-auto mt-12 max-w-5xl rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.4)] p-5 sm:p-6">
-                  <div className="mb-5 border-b border-[rgba(111,231,255,0.12)] pb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Galeria</div>
+                <section className="mx-auto mt-12 max-w-5xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.4)] p-5 sm:p-6">
+                  <div className="mb-5 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Galeria</div>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {galleryItems.map((item) => (
-                      <figure key={`${item.url}-${item.alt}`} className="overflow-hidden rounded-3xl border border-[rgba(111,231,255,0.14)] bg-[rgba(6,24,31,0.76)]">
-                        <img src={item.url} alt={item.alt} className="h-80 w-full object-cover" loading="lazy" />
+                      <figure key={`${item.url}-${item.alt}`} className="overflow-hidden rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(6,24,31,0.76)]">
+                        <div className="relative h-80 w-full">
+                          <Image src={item.url} alt={item.alt} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" unoptimized />
+                        </div>
                         {item.caption ? (
                           <figcaption className="border-t border-[rgba(111,231,255,0.1)] px-4 py-3 text-sm leading-relaxed text-slate-200/72">
                             {item.caption}
@@ -330,17 +361,17 @@ export default async function SlugPage({ params }: SlugPageProps) {
               ) : null}
 
               {post.quoteBlock ? (
-                <section className="mx-auto mt-12 max-w-3xl rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.52)] p-8">
+                <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.52)] p-8">
                   <div className="font-serif text-3xl leading-tight text-white sm:text-4xl">&ldquo;{post.quoteBlock}&rdquo;</div>
                 </section>
               ) : null}
 
               {(post.tagLabels?.length ?? 0) > 0 ? (
                 <section className="mx-auto mt-12 max-w-3xl border-t border-[rgba(111,231,255,0.12)] pt-6">
-                  <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Tagy</div>
+                  <div className="mb-4 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Tagy</div>
                   <div className="flex flex-wrap gap-3">
                     {post.tagLabels?.map((tag) => (
-                      <span key={tag} className="rounded-full border border-[rgba(111,231,255,0.18)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-slate-100/74">
+                      <span key={tag} className="rounded-lg border border-[rgba(111,231,255,0.18)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-100/74">
                         {tag}
                       </span>
                     ))}
@@ -348,37 +379,43 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 </section>
               ) : null}
 
-              {ingestSourceLabel || post.telegramChatTitle || post.telegramPermalink ? (
-                <section className="mx-auto mt-12 max-w-3xl rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Redakčný pôvod</div>
+              {ingestSourceLabel || editorialReadinessLabel || post.telegramChatTitle || post.telegramPermalink ? (
+                <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
+                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Redakčný pôvod</div>
                   <dl className="space-y-3 text-sm leading-relaxed text-slate-100/78">
                     {ingestSourceLabel ? (
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Zdroj ingestu</dt>
+                        <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Zdroj ingestu</dt>
                         <dd>{ingestSourceLabel}</dd>
+                      </div>
+                    ) : null}
+                    {editorialReadinessLabel ? (
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                        <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Redakčná pripravenosť</dt>
+                        <dd>{editorialReadinessLabel}</dd>
                       </div>
                     ) : null}
                     {post.telegramChatTitle ? (
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Telegram kanál</dt>
+                        <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Telegram kanál</dt>
                         <dd>{post.telegramChatTitle}</dd>
                       </div>
                     ) : null}
                     {post.telegramAuthor ? (
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Autor ingestu</dt>
+                        <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Autor ingestu</dt>
                         <dd>{post.telegramAuthor}</dd>
                       </div>
                     ) : null}
                     {post.telegramMessageId ? (
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Message ID</dt>
+                        <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Message ID</dt>
                         <dd>{post.telegramMessageId}</dd>
                       </div>
                     ) : null}
                     {post.telegramPermalink ? (
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                        <dt className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Originál</dt>
+                        <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Originál</dt>
                         <dd>
                           <a href={post.telegramPermalink} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
                             Otvoriť Telegram príspevok
@@ -390,43 +427,43 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 </section>
               ) : null}
 
-              <section className="mx-auto mt-12 max-w-3xl rounded-3xl border border-[rgba(111,231,255,0.16)] bg-[linear-gradient(135deg,rgba(8,39,47,0.84),rgba(11,58,70,0.62))] p-8">
-                <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Dalsi obsah</div>
+              <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[linear-gradient(135deg,rgba(8,39,47,0.84),rgba(11,58,70,0.62))] p-8">
+                <div className="mb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Dalsi obsah</div>
                 <h2 className="font-serif text-3xl text-white sm:text-4xl">Sleduj dalsie komentare, analyzy a rychle spravy.</h2>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-100/78">Pokračuj na homepage alebo si otvor ďalšie súvisiace texty z tejto sekcie.</p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/" className="rounded-full border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-mono text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na homepage</Link>
-                  <a href="https://t.me/novy_matrix_lm" target="_blank" rel="noreferrer noopener" className="rounded-full border border-[rgba(111,231,255,0.16)] px-5 py-3 font-mono text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanal</a>
+                  <Link href="/" className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na homepage</Link>
+                  <a href="https://t.me/novy_matrix_lm" target="_blank" rel="noreferrer noopener" className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanal</a>
                 </div>
               </section>
             </div>
 
             <aside className="xl:block">
               <div className="sticky top-8 space-y-6">
-                <section className="rounded-3xl border border-[rgba(111,231,255,0.14)] bg-[rgba(7,34,42,0.72)] p-5">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Zdieľať</div>
-                  <div className="space-y-3 font-mono text-xs uppercase tracking-[0.2em] text-slate-200/80">
-                    <a href={shareLinks.telegram} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between rounded-full border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                <section className="rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(7,34,42,0.72)] p-5">
+                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Zdieľať</div>
+                  <div className="space-y-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-200/80">
+                    <a href={shareLinks.telegram} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
                       <span>Telegram</span>
                       <span className="text-(--accent)">01</span>
                     </a>
-                    <a href={shareLinks.x} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between rounded-full border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                    <a href={shareLinks.x} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
                       <span>X / Twitter</span>
                       <span className="text-(--accent)">02</span>
                     </a>
-                    <a href={shareLinks.email} className="flex items-center justify-between rounded-full border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                    <a href={shareLinks.email} className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
                       <span>Email</span>
                       <span className="text-(--accent)">03</span>
                     </a>
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-[rgba(111,231,255,0.14)] bg-[rgba(7,34,42,0.72)] p-5">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-mono text-[11px] uppercase tracking-[0.28em] text-(--accent)">Súvisiace</div>
+                <section className="rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(7,34,42,0.72)] p-5">
+                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Súvisiace</div>
                   <div className="space-y-5">
                     {relatedPosts.length > 0 ? relatedPosts.map((relatedPost) => (
                       <div key={relatedPost.id} className="border-b border-[rgba(111,231,255,0.08)] pb-4 last:border-b-0 last:pb-0">
-                        <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-slate-300/58">{relatedPost.categoryLabel}</div>
+                        <div className="mb-2 font-sans text-[10px] uppercase tracking-[0.24em] text-slate-300/58">{relatedPost.categoryLabel}</div>
                         <Link href={relatedPost.href} className="font-serif text-xl leading-tight text-white transition-colors hover:text-(--accent)">{relatedPost.title}</Link>
                       </div>
                     )) : (

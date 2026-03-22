@@ -31,6 +31,7 @@ export interface WordPressEditorialMetaRaw {
   nmm_og_title?: string;
   nmm_og_description?: string;
   nmm_og_image?: string;
+  nmm_editorial_readiness?: string;
   nmm_telegram_message_id?: string;
   nmm_telegram_chat_id?: string;
   nmm_telegram_chat_title?: string;
@@ -105,6 +106,7 @@ export interface SitePost {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  editorialReadiness?: string;
   ingestSource?: string;
   telegramMessageId?: string;
   telegramChatId?: string;

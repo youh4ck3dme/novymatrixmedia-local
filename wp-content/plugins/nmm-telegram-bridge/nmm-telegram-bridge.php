@@ -129,6 +129,7 @@ add_action('add_meta_boxes', 'nmm_telegram_bridge_add_side_meta_box');
 
 function nmm_telegram_bridge_render_side_meta_box($post) {
     $source = get_post_meta($post->ID, 'nmm_ingest_source', true);
+    $readiness = get_post_meta($post->ID, 'nmm_editorial_readiness', true);
     $chat_title = get_post_meta($post->ID, 'nmm_telegram_chat_title', true);
     $author = get_post_meta($post->ID, 'nmm_telegram_author', true);
     $message_id = get_post_meta($post->ID, 'nmm_telegram_message_id', true);
@@ -145,6 +146,7 @@ function nmm_telegram_bridge_render_side_meta_box($post) {
 
     $rows = array(
         __('Ingest source', 'nmm-telegram-bridge') => $source,
+        __('Editorial readiness', 'nmm-telegram-bridge') => $readiness,
         __('Telegram channel', 'nmm-telegram-bridge') => $chat_title,
         __('Telegram author', 'nmm-telegram-bridge') => $author,
         __('Message ID', 'nmm-telegram-bridge') => $message_id,
@@ -384,6 +386,7 @@ function nmm_telegram_bridge_store_editorial_meta($post_id, array $payload) {
     $meta_map = array(
         'subtitle' => 'nmm_subtitle',
         'author_name' => 'nmm_author_name',
+        'editorial_readiness' => 'nmm_editorial_readiness',
         'source_name' => 'nmm_source_name',
         'source_url' => 'nmm_source_url',
         'featured_image_alt' => 'nmm_featured_image_alt',
@@ -412,6 +415,11 @@ function nmm_telegram_bridge_store_editorial_meta($post_id, array $payload) {
         }
 
         update_post_meta($post_id, $meta_key, $value);
+    }
+
+    $readiness = nmm_telegram_bridge_get_editorial_readiness($payload, get_post_status($post_id));
+    if ($readiness !== '') {
+        update_post_meta($post_id, 'nmm_editorial_readiness', $readiness);
     }
 
     if (!empty($payload['gallery']) && is_array($payload['gallery'])) {
@@ -488,4 +496,20 @@ function nmm_telegram_bridge_attach_remote_image($post_id, $image_url) {
     }
 
     return media_sideload_image($image_url, $post_id, null, 'id');
+}
+
+function nmm_telegram_bridge_get_editorial_readiness(array $payload, $post_status) {
+    if (!empty($payload['editorial_readiness']) && is_string($payload['editorial_readiness'])) {
+        $requested_readiness = sanitize_key($payload['editorial_readiness']);
+        if (in_array($requested_readiness, array('draft-ingest', 'needs-review', 'editing', 'ready'), true)) {
+            return $requested_readiness;
+        }
+    }
+
+    $status = is_string($post_status) ? sanitize_key($post_status) : 'draft';
+    if ($status === 'draft') {
+        return 'draft-ingest';
+    }
+
+    return 'needs-review';
 }

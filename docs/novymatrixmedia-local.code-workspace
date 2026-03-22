@@ -4,7 +4,9 @@
 			"path": ".."
 		}
 	],
-	"settings": {},
+	"settings": {
+		"editor.codeActions.triggerOnFocusChange": true
+	},
 	"extensions": {
 		"recommendations": [
 			"rangav.vscode-thunder-client"

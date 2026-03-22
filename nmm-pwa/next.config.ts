@@ -17,6 +17,14 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   outputFileTracingRoot: workspaceRoot,
   turbopack: {},
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "novymatrixmedia.sk" },
+      { protocol: "https", hostname: "info.novymatrixmedia.sk" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "http", hostname: "localhost" },
+    ],
+  },
 };
 
 export default withPWA(nextConfig);

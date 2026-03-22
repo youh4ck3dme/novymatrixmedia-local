@@ -18,6 +18,19 @@ function bluetone_get_editorial_field_definitions() {
 			'type' => 'text',
 			'placeholder' => __( 'Novy Matrix Media', 'bluetone' ),
 		),
+		'nmm_editorial_readiness' => array(
+			'section' => 'workflow',
+			'label' => __( 'Editorial Readiness', 'bluetone' ),
+			'type' => 'select',
+			'help' => __( 'Public workflow badge for imported or semi-finished articles shown in the Next.js frontend.', 'bluetone' ),
+			'options' => array(
+				'' => __( 'Not set', 'bluetone' ),
+				'draft-ingest' => __( 'Draft ingest', 'bluetone' ),
+				'needs-review' => __( 'Needs review', 'bluetone' ),
+				'editing' => __( 'In editing', 'bluetone' ),
+				'ready' => __( 'Ready to publish', 'bluetone' ),
+			),
+		),
 		'nmm_source_name' => array(
 			'section' => 'media',
 			'label' => __( 'Source Name', 'bluetone' ),
@@ -146,6 +159,12 @@ function bluetone_get_editorial_field_definitions() {
 
 function bluetone_get_editorial_sections() {
 	return array(
+		'workflow' => array(
+			'label' => __( 'Workflow', 'bluetone' ),
+			'description' => __( 'Internal editorial state for imported texts that still need review, edits or publication prep.', 'bluetone' ),
+			'tint' => '#fff7ed',
+			'border' => '#ea580c',
+		),
 		'story' => array(
 			'label' => __( 'Story Layer', 'bluetone' ),
 			'description' => __( 'Editorial framing for headline, badge, read time and article structure.', 'bluetone' ),

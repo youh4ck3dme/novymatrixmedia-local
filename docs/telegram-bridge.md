@@ -8,6 +8,7 @@ Vlastny WordPress plugin `nmm-telegram-bridge` prijima autentifikovany POST payl
 - standardne uklada clanok ako `draft`
 - nastavi kategorie a tagy
 - zapisuje editorial meta polia pouzivane v Next.js article template
+- pri ingest clankoch nastavi aj `editorial_readiness` pre workflow badge na fronte
 - vie volitelne stiahnut featured image z URL
 - vrati `postId`, `editLink` a `permalink`
 
@@ -48,6 +49,7 @@ Autorizacia:
   "excerpt": "Kratky perex",
   "content": "<p>HTML obsah clanku...</p>",
   "status": "draft",
+  "editorial_readiness": "needs-review",
   "published_at": "2026-03-22T07:30:00Z",
   "categories": [
     { "slug": "zahranicie", "name": "Zahranicie" }
@@ -104,6 +106,18 @@ Dry run nad Telegram-like JSON payloadom:
 python send_telegram_bridge.py sample-telegram.json --dry-run
 ```
 
+Dry run nad realnym Telegram Desktop exportom:
+
+```bash
+python send_telegram_bridge.py result.json --dry-run
+```
+
+Import konkretnej spravy z exportu podla message id:
+
+```bash
+python send_telegram_bridge.py result.json --message-id 481 --site-url http://localhost:8080 --token local-telegram-bridge-token
+```
+
 Priame odoslanie do lokalneho WordPressu:
 
 ```bash
@@ -115,3 +129,4 @@ python send_telegram_bridge.py sample-telegram.json --site-url http://localhost:
 - Token je zamerne cez `wp-config.php`, nie v plugin subore.
 - Featured image sa sťahuje do WordPress media library iba ak je poslana `featured_image_url`.
 - Plugin je zamerne postaveny ako bezpecny ingest do draftu; publikovanie sa da povolit cez `status` alebo `NMM_TELEGRAM_BRIDGE_DEFAULT_STATUS`.
+- Pri Telegram exporte script automaticky vyberie poslednu textovu spravu, ak explicitne nezadas `--message-id`.
