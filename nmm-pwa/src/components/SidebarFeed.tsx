@@ -8,7 +8,10 @@ interface SidebarFeedProps {
 }
 
 export default function SidebarFeed({ posts }: SidebarFeedProps) {
-  const featured = posts[1] ?? posts[0];
+  const featured = posts.find((post) => {
+    const marker = `${post.highlightBadge ?? ""} ${post.articleType ?? ""}`.toLowerCase();
+    return marker.includes("featured") || marker.includes("headline") || marker.includes("top");
+  }) ?? posts[0];
   const remaining = posts.filter((post) => post.id !== featured?.id);
 
   return (
@@ -43,6 +46,7 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
               <div key={post.id} className="group relative border-l border-[rgba(111,231,255,0.09)] pl-4 transition-colors hover:border-(--accent)">
                 <span className="mb-1 block text-xs text-(--accent)/90">
                   {post.categoryLabel.toUpperCase()}
+                  {post.articleType ? ` / ${post.articleType.toUpperCase()}` : ""}
                   {post.ingestSource === "telegram" ? " / TELEGRAM" : ""}
                   {getEditorialReadinessLabel(post.editorialReadiness) ? ` / ${getEditorialReadinessLabel(post.editorialReadiness)?.toUpperCase()}` : ""}
                 </span>
@@ -56,7 +60,7 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
               <div className="group relative border-l border-(--accent) pl-4">
                 <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border border-[rgba(224,252,255,0.6)] bg-(--accent) shadow-[0_0_14px_rgba(74,191,207,0.35)]" />
                 <span className="mb-1 block text-xs font-bold text-(--accent)">
-                  FEATURED :: KOMENTÁR{featured.ingestSource === "telegram" ? " :: TELEGRAM" : ""}{getEditorialReadinessLabel(featured.editorialReadiness) ? ` :: ${getEditorialReadinessLabel(featured.editorialReadiness)?.toUpperCase()}` : ""}
+                  {featured.highlightBadge?.toUpperCase() || "FEATURED"}{featured.articleType ? ` :: ${featured.articleType.toUpperCase()}` : ""}{featured.ingestSource === "telegram" ? " :: TELEGRAM" : ""}{getEditorialReadinessLabel(featured.editorialReadiness) ? ` :: ${getEditorialReadinessLabel(featured.editorialReadiness)?.toUpperCase()}` : ""}
                 </span>
                 <Link href={featured.href} className="font-semibold leading-relaxed text-white">
                   {featured.title}

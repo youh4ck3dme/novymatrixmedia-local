@@ -9,6 +9,7 @@ interface FeaturedPostProps {
 
 export default function FeaturedPost({ post }: FeaturedPostProps) {
   const isTelegramIngest = post.ingestSource === "telegram";
+  const featuredLabel = post.highlightBadge || "Featured";
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
   const editorialReadinessTone = getEditorialReadinessTone(post.editorialReadiness);
   const editorialReadinessClassName = editorialReadinessTone === "warning"
@@ -30,14 +31,21 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
       <div className="space-y-5 p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3 font-sans text-xs uppercase tracking-[0.22em] text-(--foreground)/74">
           <span className="rounded-full bg-[rgba(26,149,190,0.72)] px-3 py-1 text-white">{post.categoryLabel}</span>
-          <span>Novy Matrix Media</span>
-          <span className="text-(--accent)">Featured</span>
+          <span>{post.sourceName || "Novy Matrix Media"}</span>
+          <span className="text-(--accent)">{featuredLabel}</span>
+          {post.articleType ? <span>{post.articleType}</span> : null}
+          {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}
           {isTelegramIngest ? <span className="rounded-full border border-[rgba(111,231,255,0.14)] px-3 py-1 text-(--accent)">Telegram ingest</span> : null}
           {editorialReadinessLabel ? <span className={editorialReadinessClassName}>{editorialReadinessLabel}</span> : null}
         </div>
         <Link href={post.href} className="block max-w-4xl font-serif text-3xl leading-[1.1] text-white transition-colors group-hover:text-(--accent) sm:text-5xl">
           {post.title}
         </Link>
+        {post.subtitle ? (
+          <p className="max-w-3xl text-lg leading-relaxed text-slate-100/80">
+            {post.subtitle}
+          </p>
+        ) : null}
         <p className="max-w-3xl text-lg leading-relaxed text-slate-100/88">
           {post.excerpt}
         </p>

@@ -26,13 +26,18 @@ export default function PostCard({ post }: PostCardProps) {
       />
       <div className="mb-3 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
         <span>{post.categoryLabel}</span>
+        {post.highlightBadge ? <span className="rounded-full border border-[rgba(111,231,255,0.12)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">{post.highlightBadge}</span> : null}
+        {post.articleType ? <span className="text-slate-100/70">{post.articleType}</span> : null}
         {isTelegramIngest ? <span className="rounded-full border border-[rgba(111,231,255,0.12)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
         {editorialReadinessLabel ? <span className={editorialReadinessClassName}>{editorialReadinessLabel}</span> : null}
       </div>
       <Link href={post.href} className="mb-2 block font-serif text-2xl leading-tight text-white transition-colors group-hover:text-(--accent)">
         {post.title}
       </Link>
-      <p className="font-sans text-xs uppercase tracking-[0.2em] text-slate-300/68">{post.publishedAt}</p>
+      {post.subtitle ? <p className="mb-2 text-sm leading-relaxed text-slate-200/72">{post.subtitle}</p> : null}
+      <p className="font-sans text-xs uppercase tracking-[0.2em] text-slate-300/68">
+        {post.publishedAt}{post.estimatedReadingTime ? ` · ${post.estimatedReadingTime}` : ""}
+      </p>
     </article>
   );
 }

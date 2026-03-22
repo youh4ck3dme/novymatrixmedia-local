@@ -1,98 +1,37 @@
-import { getWordPressConfig, shouldUseWordPressFallback } from "@/lib/wp-client";
+import { getWordPressConfig } from "@/lib/wp-client";
 import { wpGraphQLFetch } from "@/lib/wp-graphql";
 import { wpRestFetch } from "@/lib/wp-rest";
-import type { CategoryPageData, HomePageData, SiteCategory, SiteNavigationItem, SitePost, WordPressCategoryRaw, WordPressEditorialMetaRaw, WordPressPostRaw } from "@/types/wordpress";
+import type {
+  CategoryPageData,
+  HomePageData,
+  SiteCategory,
+  SiteNavigationItem,
+  SitePost,
+  WordPressCategoryRaw,
+  WordPressEditorialMetaRaw,
+  WordPressPostRaw,
+} from "@/types/wordpress";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=1200&auto=format&fit=crop";
-const KNOWN_CATEGORY_SLUGS = new Set(["politika", "zahranicie", "komentare", "diskusia", "domov"]);
 const PUBLIC_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://novymatrixmedia.sk").replace(/\/$/, "");
 
-const FALLBACK_HOME_PAGE_DATA: HomePageData = {
-  featuredPost: {
-    id: 1,
-    slug: "novy-matrix-media-featured",
-    href: "/",
-    title: "Kritické udalosti bez šumu. Novy Matrix Media sleduje domov, geopolitiku aj energetickú bezpečnosť v jednom prúde.",
-    excerpt: "Výber najdôležitejších tém, komentárov a rýchlych správ v modernej matrix vizualite. Menej balastu, viac podstatných informácií a okamžitý prehľad o tom, čo hýbe Slovenskom aj zahraničím.",
-    publishedAt: "22. MAR 2026",
-    imageUrl: FALLBACK_IMAGE,
-    imageAlt: "Novy Matrix Media featured story",
-    categoryLabel: "Diskusia",
-    categorySlug: "diskusia",
-  },
-  secondaryPosts: [
-    {
-      id: 2,
-      slug: "dasko-toporce",
-      href: "/",
-      title: "Daško: V Toporci pomáhajú ľuďom zvládať dlhy, výsledkom sú desiatky stabilizovaných domácností.",
-      excerpt: "Z domova",
-      publishedAt: "20. MAR 2026",
-      imageUrl: "https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=600&auto=format&fit=crop",
-      imageAlt: "Z domova",
-      categoryLabel: "Z Domova",
-      categorySlug: "domov",
-    },
-    {
-      id: 3,
-      slug: "iran-energia",
-      href: "/",
-      title: "Vojna USA a Izraela proti Iránu by znamenala tlak na ceny energií, dopravu aj stabilitu regiónu.",
-      excerpt: "Zahraničie",
-      publishedAt: "2. MAR 2026",
-      imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=600&auto=format&fit=crop",
-      imageAlt: "Zahraničie",
-      categoryLabel: "Zahraničie",
-      categorySlug: "zahranicie",
-    },
-  ],
-  sidebarPosts: [
-    {
-      id: 4,
-      slug: "lokalne-iniciativy",
-      href: "/",
-      title: "Regióny, sociálne témy a lokálne iniciatívy, ktoré menia reálny život ľudí.",
-      excerpt: "Diskusia :: Z Domova",
-      publishedAt: "22. MAR 2026",
-      imageUrl: FALLBACK_IMAGE,
-      imageAlt: "Lokálne iniciatívy",
-      categoryLabel: "Diskusia :: Z Domova",
-      categorySlug: "diskusia",
-    },
-    {
-      id: 5,
-      slug: "hormuzsky-prieliv",
-      href: "/",
-      title: "Uzavretie Hormuzského prielivu by priamo ohrozilo energetickú bezpečnosť SR.",
-      excerpt: "Featured :: Komentár",
-      publishedAt: "22. MAR 2026",
-      imageUrl: FALLBACK_IMAGE,
-      imageAlt: "Hormuzsky prieliv",
-      categoryLabel: "Featured :: Komentár",
-      categorySlug: "komentare",
-    },
-    {
-      id: 6,
-      slug: "geopoliticky-vyber",
-      href: "/",
-      title: "Rýchly prehľad vybraných vyjadrení, reakcií a sporov, ktoré formujú verejný priestor.",
-      excerpt: "Geopolitika :: Výber",
-      publishedAt: "22. MAR 2026",
-      imageUrl: FALLBACK_IMAGE,
-      imageAlt: "Geopolitika",
-      categoryLabel: "Geopolitika :: Výber",
-      categorySlug: "zahranicie",
-    },
-  ],
-  navigationItems: [
-    { label: "Domov", href: "/", slug: "domov", active: true },
-    { label: "Politika", href: "/politika", slug: "politika" },
-    { label: "Zahraničie", href: "/zahranicie", slug: "zahranicie" },
-    { label: "Komentáre", href: "/komentare", slug: "komentare" },
-  ],
-};
+const CATEGORY_SLUGS_FOR_SITEMAP = ["politika", "zahranicie", "komentare", "diskusia", "domov", "zaujimave", "video"];
 
-const MENU_CATEGORY_SLUGS = ["politika", "zahranicie", "komentare", "diskusia"];
+interface PrimaryMenuBlueprintItem {
+  slug: string;
+  label: string;
+  categorySlug: string | null;
+  aliases: string[];
+}
+
+const PRIMARY_MENU_BLUEPRINT = [
+  { slug: "home", label: "Domov", categorySlug: null, aliases: ["domov", "home"] },
+  { slug: "domov", label: "Z domova", categorySlug: "domov", aliases: ["z domova", "z-domova", "domov"] },
+  { slug: "zahranicie", label: "Zahraničie", categorySlug: "zahranicie", aliases: ["zahranicie", "zahraničie"] },
+  { slug: "komentare", label: "Komentáre", categorySlug: "komentare", aliases: ["komentare", "komentáre"] },
+  { slug: "zaujimave", label: "Zaujímavé", categorySlug: "zaujimave", aliases: ["zaujimave", "zaujímavé"] },
+  { slug: "video", label: "Video", categorySlug: "video", aliases: ["video"] },
+] satisfies PrimaryMenuBlueprintItem[];
 
 interface WordPressMenuItemNode {
   id: string;
@@ -121,6 +60,14 @@ function stripHtml(value: string): string {
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
+    .trim();
+}
+
+function toMatchKey(value: string): string {
+  return stripHtml(value)
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
     .trim();
 }
 
@@ -269,7 +216,6 @@ function getKnownInternalHosts(): Set<string> {
 function normalizeInternalPath(value: string): string {
   const sanitizedValue = value.split("#")[0] ?? value;
   const path = sanitizedValue.replace(/\/$/, "") || "/";
-
   return path.startsWith("/") ? path : `/${path.replace(/^\/+/, "")}`;
 }
 
@@ -280,14 +226,22 @@ function getSlugFromHref(href: string, fallbackSlug?: string | null): string {
 
   const path = normalizeInternalPath(href);
   if (path === "/") {
-    return "domov";
+    return "home";
   }
 
   const [firstSegment] = path.replace(/^\/+/, "").split("/");
-  return firstSegment || "domov";
+  return firstSegment || "home";
 }
 
-function normalizeNavigationItems(items: SiteNavigationItem[], activeSlug = "domov"): SiteNavigationItem[] {
+function getHrefSlug(href: string): string {
+  const path = normalizeInternalPath(href);
+  if (path === "/") {
+    return "home";
+  }
+  return path.replace(/^\/+/, "").split("/")[0] || "home";
+}
+
+function normalizeNavigationItems(items: SiteNavigationItem[], activeSlug = "home"): SiteNavigationItem[] {
   return items.map((item) => ({
     ...item,
     active: item.slug === activeSlug,
@@ -343,24 +297,121 @@ function normalizeMenuItem(node: WordPressMenuItemNode): SiteNavigationItem | nu
   };
 }
 
-function buildNavigation(categories: WordPressCategoryRaw[]): SiteNavigationItem[] {
+function buildNavigationFromCategories(categories: WordPressCategoryRaw[]): SiteNavigationItem[] {
   const categoryMap = new Map(categories.map((category) => [category.slug, category]));
 
-  return [
-    { label: "Domov", href: "/", slug: "domov", active: true },
-    ...MENU_CATEGORY_SLUGS.flatMap((slug) => {
-      const category = categoryMap.get(slug);
-      if (!category) {
-        return [];
+  return PRIMARY_MENU_BLUEPRINT.flatMap((entry) => {
+    if (entry.slug === "home") {
+      return [{ label: entry.label, href: "/", slug: "home" }];
+    }
+
+    if (!entry.categorySlug) {
+      return [];
+    }
+
+    const category = categoryMap.get(entry.categorySlug);
+    if (!category) {
+      return [];
+    }
+
+    return [{ label: entry.label, href: `/${category.slug}`, slug: entry.slug }];
+  });
+}
+
+function buildPrimaryNavigation(menuItems: SiteNavigationItem[], categories: WordPressCategoryRaw[]): SiteNavigationItem[] {
+  const categoryMap = new Map(categories.map((category) => [category.slug, category]));
+  const usedKeys = new Set<string>();
+  const usedItem = (item: SiteNavigationItem) => `${item.slug}|${item.href}|${item.label}`;
+
+  return PRIMARY_MENU_BLUEPRINT.flatMap((entry) => {
+    const matchingMenuItem = menuItems.find((item) => {
+      const key = usedItem(item);
+      if (usedKeys.has(key) || item.isExternal) {
+        return false;
       }
 
+      const itemSlug = toMatchKey(item.slug);
+      const itemLabel = toMatchKey(item.label);
+      const itemHrefSlug = toMatchKey(getHrefSlug(item.href));
+      const aliases = entry.aliases.map(toMatchKey);
+
+      const slugMatches = itemSlug === toMatchKey(entry.slug) || aliases.includes(itemSlug);
+      const labelMatches = aliases.includes(itemLabel);
+      const hrefMatches = aliases.includes(itemHrefSlug);
+
+      if (entry.slug !== "home" && item.href === "/") {
+        return false;
+      }
+
+      return slugMatches || labelMatches || hrefMatches;
+    });
+
+    if (matchingMenuItem) {
+      usedKeys.add(usedItem(matchingMenuItem));
+
+      const canonicalHref = entry.slug === "home"
+        ? "/"
+        : entry.categorySlug && categoryMap.has(entry.categorySlug)
+          ? `/${entry.categorySlug}`
+          : matchingMenuItem.href;
+
       return [{
-        label: category.name,
-        href: `/${category.slug}`,
-        slug: category.slug,
+        ...matchingMenuItem,
+        href: canonicalHref,
+        label: entry.label,
+        slug: entry.slug,
       }];
-    }),
-  ];
+    }
+
+    if (entry.slug === "home") {
+      return [{ label: entry.label, href: "/", slug: "home" }];
+    }
+
+    if (!entry.categorySlug) {
+      return [];
+    }
+
+    const category = categoryMap.get(entry.categorySlug);
+    if (!category) {
+      return [];
+    }
+
+    return [{
+      label: entry.label,
+      href: `/${category.slug}`,
+      slug: entry.slug,
+    }];
+  });
+}
+
+function isFeaturedMarker(value?: string): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const normalized = toMatchKey(value).replace(/[-_]+/g, " ");
+  return /\b(featured|headline|top|hlavny|hlavna|hlavne)\b/.test(normalized);
+}
+
+function splitHomeFeed(posts: SitePost[]): Pick<HomePageData, "featuredPost" | "secondaryPosts" | "sidebarPosts"> {
+  if (posts.length === 0) {
+    return {
+      featuredPost: null,
+      secondaryPosts: [],
+      sidebarPosts: [],
+    };
+  }
+
+  const featuredIndex = posts.findIndex((post) => isFeaturedMarker(post.highlightBadge) || isFeaturedMarker(post.articleType));
+  const resolvedIndex = featuredIndex >= 0 ? featuredIndex : 0;
+  const featuredPost = posts[resolvedIndex];
+  const remaining = posts.filter((_, index) => index !== resolvedIndex);
+
+  return {
+    featuredPost,
+    secondaryPosts: remaining.slice(0, 2),
+    sidebarPosts: remaining.slice(2, 5),
+  };
 }
 
 async function getLatestPosts(limit: number): Promise<SitePost[]> {
@@ -387,12 +438,6 @@ async function getCategories(): Promise<WordPressCategoryRaw[]> {
     revalidate: 300,
     tags: ["wp-categories"],
   });
-}
-
-async function getNavigationCategories(): Promise<SiteNavigationItem[]> {
-  const categories = await getCategories();
-
-  return buildNavigation(categories);
 }
 
 async function getPrimaryMenuNavigation(): Promise<SiteNavigationItem[]> {
@@ -433,76 +478,24 @@ async function getPrimaryMenuNavigation(): Promise<SiteNavigationItem[]> {
     .filter((item): item is SiteNavigationItem => Boolean(item));
 }
 
-export async function getNavigationItems(activeSlug = "domov"): Promise<SiteNavigationItem[]> {
-  const config = getWordPressConfig();
-
-  if (shouldUseWordPressFallback(config)) {
-    return normalizeNavigationItems(FALLBACK_HOME_PAGE_DATA.navigationItems, activeSlug);
-  }
-
+export async function getNavigationItems(activeSlug = "home"): Promise<SiteNavigationItem[]> {
   try {
-    const menuItems = await getPrimaryMenuNavigation();
-    const navigationItems = menuItems.length > 0 ? menuItems : await getNavigationCategories();
-    return normalizeNavigationItems(navigationItems, activeSlug);
+    const [menuItems, categories] = await Promise.all([
+      getPrimaryMenuNavigation().catch(() => []),
+      getCategories().catch(() => []),
+    ]);
+
+    const orderedItems = menuItems.length > 0
+      ? buildPrimaryNavigation(menuItems, categories)
+      : buildNavigationFromCategories(categories);
+
+    return normalizeNavigationItems(orderedItems, activeSlug);
   } catch {
-    try {
-      return normalizeNavigationItems(await getNavigationCategories(), activeSlug);
-    } catch {
-      return normalizeNavigationItems(FALLBACK_HOME_PAGE_DATA.navigationItems, activeSlug);
-    }
+    return [];
   }
-}
-
-function getFallbackPostBySlug(slug: string): SitePost | null {
-  const fallbackPosts = [
-    FALLBACK_HOME_PAGE_DATA.featuredPost,
-    ...FALLBACK_HOME_PAGE_DATA.secondaryPosts,
-    ...FALLBACK_HOME_PAGE_DATA.sidebarPosts,
-  ];
-
-  return fallbackPosts.find((post) => post.slug === slug) ?? null;
-}
-
-function getFallbackCategoryBySlug(slug: string): SiteCategory | null {
-  if (!KNOWN_CATEGORY_SLUGS.has(slug)) {
-    return null;
-  }
-
-  return {
-    id: 0,
-    slug,
-    name: slug === "domov" ? "Domov" : slug.charAt(0).toUpperCase() + slug.slice(1),
-    href: `/${slug}`,
-    description: "Výber článkov a komentárov z kategórie Novy Matrix Media.",
-  };
-}
-
-function getFallbackCategoryPageData(slug: string): CategoryPageData | null {
-  const category = getFallbackCategoryBySlug(slug);
-  if (!category) {
-    return null;
-  }
-
-  const posts = [
-    FALLBACK_HOME_PAGE_DATA.featuredPost,
-    ...FALLBACK_HOME_PAGE_DATA.secondaryPosts,
-    ...FALLBACK_HOME_PAGE_DATA.sidebarPosts,
-  ].filter((post) => slug === "domov" || post.categorySlug === slug);
-
-  return {
-    category,
-    posts: posts.length > 0 ? posts : [FALLBACK_HOME_PAGE_DATA.featuredPost],
-    navigationItems: normalizeNavigationItems(FALLBACK_HOME_PAGE_DATA.navigationItems, slug),
-  };
 }
 
 export async function getPostBySlug(slug: string): Promise<SitePost | null> {
-  const config = getWordPressConfig();
-
-  if (shouldUseWordPressFallback(config)) {
-    return getFallbackPostBySlug(slug);
-  }
-
   try {
     const posts = await wpRestFetch<WordPressPostRaw[]>("posts", {
       query: {
@@ -516,27 +509,13 @@ export async function getPostBySlug(slug: string): Promise<SitePost | null> {
 
     return posts[0] ? normalizePost(posts[0]) : null;
   } catch {
-    return getFallbackPostBySlug(slug);
+    return null;
   }
 }
 
 export async function getPostsByIds(ids: number[]): Promise<SitePost[]> {
   if (ids.length === 0) {
     return [];
-  }
-
-  const config = getWordPressConfig();
-
-  if (shouldUseWordPressFallback(config)) {
-    const fallbackPosts = [
-      FALLBACK_HOME_PAGE_DATA.featuredPost,
-      ...FALLBACK_HOME_PAGE_DATA.secondaryPosts,
-      ...FALLBACK_HOME_PAGE_DATA.sidebarPosts,
-    ];
-
-    return ids
-      .map((id) => fallbackPosts.find((post) => post.id === id))
-      .filter((post): post is SitePost => Boolean(post));
   }
 
   try {
@@ -558,14 +537,8 @@ export async function getPostsByIds(ids: number[]): Promise<SitePost[]> {
 }
 
 export async function getCategoryPageData(slug: string): Promise<CategoryPageData | null> {
-  const config = getWordPressConfig();
-
-  if (shouldUseWordPressFallback(config)) {
-    return getFallbackCategoryPageData(slug);
-  }
-
   try {
-    const [categories, posts, navigationItems] = await Promise.all([
+    const [categories, navigationItems] = await Promise.all([
       wpRestFetch<WordPressCategoryRaw[]>("categories", {
         query: {
           slug,
@@ -574,43 +547,23 @@ export async function getCategoryPageData(slug: string): Promise<CategoryPageDat
         revalidate: 300,
         tags: ["wp-categories", `wp-category-${slug}`],
       }),
-      wpRestFetch<WordPressPostRaw[]>("posts", {
-        query: {
-          _embed: 1,
-          per_page: 12,
-          categories: slug,
-        },
-        revalidate: 300,
-        tags: ["wp-posts", `wp-category-posts-${slug}`],
-      }).catch(async () => {
-        const categoryMatch = await wpRestFetch<WordPressCategoryRaw[]>("categories", {
-          query: { slug, hide_empty: false },
-          revalidate: 300,
-          tags: ["wp-categories", `wp-category-${slug}`],
-        });
-        const categoryId = categoryMatch[0]?.id;
-
-        if (!categoryId) {
-          return [];
-        }
-
-        return wpRestFetch<WordPressPostRaw[]>("posts", {
-          query: {
-            _embed: 1,
-            per_page: 12,
-            categories: categoryId,
-          },
-          revalidate: 300,
-          tags: ["wp-posts", `wp-category-posts-${slug}`],
-        });
-      }),
       getNavigationItems(slug),
     ]);
 
     const category = categories[0];
     if (!category) {
-      return getFallbackCategoryPageData(slug);
+      return null;
     }
+
+    const posts = await wpRestFetch<WordPressPostRaw[]>("posts", {
+      query: {
+        _embed: 1,
+        per_page: 12,
+        categories: category.id,
+      },
+      revalidate: 300,
+      tags: ["wp-posts", `wp-category-posts-${slug}`],
+    });
 
     return {
       category: normalizeCategory(category),
@@ -618,24 +571,11 @@ export async function getCategoryPageData(slug: string): Promise<CategoryPageDat
       navigationItems,
     };
   } catch {
-    return getFallbackCategoryPageData(slug);
+    return null;
   }
 }
 
 export async function getAllPublicSlugs(): Promise<string[]> {
-  const config = getWordPressConfig();
-
-  if (shouldUseWordPressFallback(config)) {
-    return Array.from(
-      new Set([
-        ...FALLBACK_HOME_PAGE_DATA.navigationItems.map((item) => item.slug).filter((slug) => slug !== "domov"),
-        FALLBACK_HOME_PAGE_DATA.featuredPost.slug,
-        ...FALLBACK_HOME_PAGE_DATA.secondaryPosts.map((post) => post.slug),
-        ...FALLBACK_HOME_PAGE_DATA.sidebarPosts.map((post) => post.slug),
-      ]),
-    );
-  }
-
   try {
     const [posts, categories] = await Promise.all([
       wpRestFetch<WordPressPostRaw[]>("posts", {
@@ -648,7 +588,7 @@ export async function getAllPublicSlugs(): Promise<string[]> {
 
     return Array.from(new Set([
       ...posts.map((post) => post.slug),
-      ...categories.filter((category) => MENU_CATEGORY_SLUGS.includes(category.slug)).map((category) => category.slug),
+      ...categories.filter((category) => CATEGORY_SLUGS_FOR_SITEMAP.includes(category.slug)).map((category) => category.slug),
     ]));
   } catch {
     return [];
@@ -656,29 +596,26 @@ export async function getAllPublicSlugs(): Promise<string[]> {
 }
 
 export async function getHomePageData(): Promise<HomePageData> {
-  const config = getWordPressConfig();
-
-  if (shouldUseWordPressFallback(config)) {
-    return FALLBACK_HOME_PAGE_DATA;
-  }
-
   try {
     const [posts, navigationItems] = await Promise.all([
-      getLatestPosts(6),
-      getNavigationItems("domov"),
+      getLatestPosts(12),
+      getNavigationItems("home"),
     ]);
 
-    if (posts.length < 3) {
-      return FALLBACK_HOME_PAGE_DATA;
-    }
+    const { featuredPost, secondaryPosts, sidebarPosts } = splitHomeFeed(posts);
 
     return {
-      featuredPost: posts[0],
-      secondaryPosts: posts.slice(1, 3),
-      sidebarPosts: posts.slice(3, 6),
-      navigationItems: navigationItems.length > 1 ? navigationItems : FALLBACK_HOME_PAGE_DATA.navigationItems,
+      featuredPost,
+      secondaryPosts,
+      sidebarPosts,
+      navigationItems,
     };
   } catch {
-    return FALLBACK_HOME_PAGE_DATA;
+    return {
+      featuredPost: null,
+      secondaryPosts: [],
+      sidebarPosts: [],
+      navigationItems: [],
+    };
   }
 }

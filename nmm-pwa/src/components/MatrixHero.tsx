@@ -13,9 +13,15 @@ interface MatrixHeroProps {
 }
 
 export default function MatrixHero({ data }: MatrixHeroProps) {
+  const feedPosts = [
+    ...(data.featuredPost ? [data.featuredPost] : []),
+    ...data.secondaryPosts,
+    ...data.sidebarPosts,
+  ];
+
   const ingestPosts = Array.from(
     new Map(
-      [data.featuredPost, ...data.secondaryPosts, ...data.sidebarPosts]
+      feedPosts
         .filter((post) => post.ingestSource === "telegram")
         .map((post) => [post.id, post]),
     ).values(),
@@ -29,7 +35,14 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
         <main className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-12">
 
           <div className="flex flex-col gap-8 lg:col-span-8">
-            <FeaturedPost post={data.featuredPost} />
+            {data.featuredPost ? <FeaturedPost post={data.featuredPost} /> : (
+              <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(4,30,38,0.60)] p-6 shadow-[0_0_24px_rgba(80,226,255,0.02)] backdrop-blur-md sm:p-8">
+                <div className="font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Žiadny featured článok</div>
+                <h2 className="mt-4 font-serif text-3xl leading-tight text-white sm:text-4xl">
+                  WordPress nevrátil žiadne publikované články pre homepage.
+                </h2>
+              </section>
+            )}
 
             <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {data.secondaryPosts.map((post) => (
@@ -38,7 +51,7 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
             </section>
           </div>
 
-          <SidebarFeed posts={data.sidebarPosts} />
+          <SidebarFeed posts={feedPosts} />
 
         </main>
 
@@ -82,7 +95,7 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
         ) : null}
       </div>
 
-      <div className="pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(10,24,30,0)_52%,rgba(2,8,12,0.2)_52%),linear-gradient(90deg,rgba(74,191,207,0.03),rgba(9,100,120,0.015),rgba(160,220,232,0.035))] bg-size-[100%_2px,3px_100%] opacity-16" />
+      <div className="matrix-only pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(10,24,30,0)_52%,rgba(2,8,12,0.2)_52%),linear-gradient(90deg,rgba(74,191,207,0.03),rgba(9,100,120,0.015),rgba(160,220,232,0.035))] bg-size-[100%_2px,3px_100%] opacity-16" />
     </div>
   );
 }

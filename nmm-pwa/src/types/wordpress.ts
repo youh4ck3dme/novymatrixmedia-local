@@ -124,7 +124,7 @@ export interface SiteCategory {
 }
 
 export interface HomePageData {
-  featuredPost: SitePost;
+  featuredPost: SitePost | null;
   secondaryPosts: SitePost[];
   sidebarPosts: SitePost[];
   navigationItems: SiteNavigationItem[];
