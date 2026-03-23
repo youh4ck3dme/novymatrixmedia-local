@@ -1,18 +1,20 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Merriweather } from "next/font/google";
 import "./globals.css";
-import MatrixBackground from "@/components/MatrixBackground";
-import { FRONTEND_VARIANT_COOKIE_KEY, FRONTEND_VARIANT_STORAGE_KEY } from "@/lib/frontend-variant";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
   variable: "--font-inter",
+  display: "optional",
+  preload: false,
 });
 
 const merriweather = Merriweather({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "700", "900"],
+  weight: ["700"],
   variable: "--font-merriweather",
+  display: "optional",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -42,28 +44,10 @@ export default function RootLayout({
   return (
     <html lang="sk" className={`${inter.variable} ${merriweather.variable}`}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(() => {
-              try {
-                const storageKey = "${FRONTEND_VARIANT_STORAGE_KEY}";
-                const cookieKey = "${FRONTEND_VARIANT_COOKIE_KEY}";
-                const fromStorage = window.localStorage.getItem(storageKey);
-                const cookiePair = document.cookie
-                  .split("; ")
-                  .find((part) => part.startsWith(cookieKey + "="));
-                const fromCookie = cookiePair ? cookiePair.split("=")[1] : null;
-                const resolved = (fromStorage || fromCookie) === "matrix" ? "matrix" : "default";
-                document.documentElement.dataset.frontendVariant = resolved;
-              } catch {
-                document.documentElement.dataset.frontendVariant = "default";
-              }
-            })();`,
-          }}
-        />
+        <link rel="preconnect" href="https://info.novymatrixmedia.sk" crossOrigin="" />
+        <link rel="dns-prefetch" href="//info.novymatrixmedia.sk" />
       </head>
       <body className="antialiased bg-[#031a22] selection:bg-[#58d9ea] selection:text-[#021118]">
-        <MatrixBackground />
         {children}
       </body>
     </html>

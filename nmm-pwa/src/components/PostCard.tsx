@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
@@ -18,12 +19,17 @@ export default function PostCard({ post }: PostCardProps) {
       : "rounded-full border border-[rgba(16,185,129,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-emerald-100/82";
 
   return (
-    <article className="group rounded-xl border border-[rgba(111,231,255,0.07)] bg-[rgba(5,32,40,0.58)] p-4 backdrop-blur-sm">
-      <img
-        src={post.imageUrl}
-        alt={post.imageAlt}
-        className="mb-4 h-48 w-full rounded-xl border border-[rgba(111,231,255,0.05)] object-cover transition-all duration-500 group-hover:scale-[1.01]"
-      />
+    <article className="group rounded-xl border border-[rgba(111,231,255,0.07)] bg-[rgba(5,32,40,0.58)] p-4 md:backdrop-blur-sm">
+      <div className="relative mb-4 h-48 w-full overflow-hidden rounded-xl border border-[rgba(111,231,255,0.05)]">
+        <Image
+          src={post.imageUrl}
+          alt={post.imageAlt}
+          fill
+          quality={62}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover transition-all duration-500 group-hover:scale-[1.01]"
+        />
+      </div>
       <div className="mb-3 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
         <span>{post.categoryLabel}</span>
         {post.highlightBadge ? <span className="rounded-full border border-[rgba(111,231,255,0.12)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">{post.highlightBadge}</span> : null}

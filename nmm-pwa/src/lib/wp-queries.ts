@@ -145,6 +145,12 @@ function normalizePost(post: WordPressPostRaw): SitePost {
   const featuredMedia = post._embedded?.["wp:featuredmedia"]?.[0];
   const category = post._embedded?.["wp:term"]?.flat().find((term) => term.taxonomy === "category" && typeof term.slug === "string");
   const editorialMeta = normalizeEditorialMeta(post.meta);
+  const mediaDetails = featuredMedia?.media_details;
+  const responsiveMediaSource = mediaDetails?.sizes?.medium_large
+    ?? mediaDetails?.sizes?.large
+    ?? mediaDetails?.sizes?.full
+    ?? mediaDetails?.sizes?.medium
+    ?? null;
 
   return {
     id: post.id,
@@ -159,8 +165,10 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     authorName: editorialMeta.authorName,
     sourceName: editorialMeta.sourceName,
     sourceUrl: editorialMeta.sourceUrl,
-    imageUrl: featuredMedia?.source_url ?? FALLBACK_IMAGE,
+    imageUrl: responsiveMediaSource?.source_url ?? featuredMedia?.source_url ?? FALLBACK_IMAGE,
     imageAlt: editorialMeta.imageAlt || featuredMedia?.alt_text || stripHtml(post.title.rendered),
+    imageWidth: responsiveMediaSource?.width ?? mediaDetails?.width,
+    imageHeight: responsiveMediaSource?.height ?? mediaDetails?.height,
     imageCaption: editorialMeta.imageCaption,
     categoryLabel: category?.name ?? "Novy Matrix Media",
     categorySlug: category?.slug ?? "novy-matrix-media",

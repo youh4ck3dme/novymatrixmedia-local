@@ -43,6 +43,11 @@ export interface WordPressEditorialMetaRaw {
 export interface WordPressMediaRaw {
   source_url: string;
   alt_text: string;
+  media_details?: {
+    width?: number;
+    height?: number;
+    sizes?: Record<string, { source_url: string; width?: number; height?: number }>;
+  };
 }
 
 export interface WordPressPostRaw {
@@ -89,6 +94,8 @@ export interface SitePost {
   sourceUrl?: string;
   imageUrl: string;
   imageAlt: string;
+  imageWidth?: number;
+  imageHeight?: number;
   imageCaption?: string;
   categoryLabel: string;
   categorySlug: string;

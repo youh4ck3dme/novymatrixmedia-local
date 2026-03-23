@@ -13,28 +13,22 @@ const MatrixBackground: React.FC = () => {
             variantRef.current = readBrowserFrontendVariant();
         };
 
-        const handleVariantChange = (event: Event) => {
-            const customEvent = event as CustomEvent<FrontendVariant>;
-            variantRef.current = customEvent.detail === "matrix" ? "matrix" : "default";
-        };
-
         syncVariant();
-        window.addEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
 
         const canvas = canvasRef.current;
         if (!canvas) {
-            return () => window.removeEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
+            return;
         }
 
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-            return () => window.removeEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
+            return;
         }
 
         const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ｦｧｨｩｪｫｬｭｮｯｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";
         const fontSize = 16;
         let drops: number[] = [];
-        let intervalId: ReturnType<typeof setInterval>;
+        let intervalId: ReturnType<typeof setInterval> | null = null;
 
         const init = () => {
             canvas.width = window.innerWidth;
@@ -44,10 +38,7 @@ const MatrixBackground: React.FC = () => {
         };
 
         const draw = () => {
-            if (variantRef.current !== "matrix") {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                return;
-            }
+            if (variantRef.current !== "matrix") return;
 
             ctx.fillStyle = "rgba(2, 14, 20, 0.08)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -67,20 +58,50 @@ const MatrixBackground: React.FC = () => {
             }
         };
 
-        const handleResize = () => {
-            clearInterval(intervalId);
-            init();
+        const stopAnimation = () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        };
+
+        const startAnimation = () => {
+            if (intervalId || variantRef.current !== "matrix") {
+                return;
+            }
             intervalId = setInterval(draw, 33);
         };
 
+        const syncAnimationState = () => {
+            if (variantRef.current === "matrix") {
+                startAnimation();
+            } else {
+                stopAnimation();
+            }
+        };
+
+        const handleResize = () => {
+            init();
+            syncAnimationState();
+        };
+
+        const handleVariantChangeForAnimation = (event: Event) => {
+            const customEvent = event as CustomEvent<FrontendVariant>;
+            variantRef.current = customEvent.detail === "matrix" ? "matrix" : "default";
+            syncAnimationState();
+        };
+
+        window.addEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChangeForAnimation as EventListener);
+
         init();
-        intervalId = setInterval(draw, 33);
+        syncAnimationState();
         window.addEventListener("resize", handleResize);
 
         return () => {
-            clearInterval(intervalId);
+            stopAnimation();
             window.removeEventListener("resize", handleResize);
-            window.removeEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChange as EventListener);
+            window.removeEventListener(FRONTEND_VARIANT_CHANGE_EVENT, handleVariantChangeForAnimation as EventListener);
         };
     }, []);
 

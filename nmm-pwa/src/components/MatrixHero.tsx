@@ -36,7 +36,7 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
 
           <div className="flex flex-col gap-8 lg:col-span-8">
             {data.featuredPost ? <FeaturedPost post={data.featuredPost} /> : (
-              <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(4,30,38,0.60)] p-6 shadow-[0_0_24px_rgba(80,226,255,0.02)] backdrop-blur-md sm:p-8">
+              <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(4,30,38,0.60)] p-6 md:shadow-[0_0_24px_rgba(80,226,255,0.02)] md:backdrop-blur-md sm:p-8">
                 <div className="font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Žiadny featured článok</div>
                 <h2 className="mt-4 font-serif text-3xl leading-tight text-white sm:text-4xl">
                   WordPress nevrátil žiadne publikované články pre homepage.
@@ -56,7 +56,7 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
         </main>
 
         {ingestPosts.length > 0 ? (
-          <section className="mt-2 rounded-xl border border-[rgba(111,231,255,0.07)] bg-[rgba(5,28,36,0.58)] p-6 shadow-[0_0_20px_rgba(80,226,255,0.01)] backdrop-blur-md">
+          <section className="mt-2 rounded-xl border border-[rgba(111,231,255,0.07)] bg-[rgba(5,28,36,0.58)] p-6 md:shadow-[0_0_20px_rgba(80,226,255,0.01)] md:backdrop-blur-md">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.05)] pb-4">
               <div>
                 <div className="font-sans text-[11px] uppercase tracking-[0.3em] text-(--accent)">Telegram ingest</div>
@@ -95,7 +95,7 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
         ) : null}
       </div>
 
-      <div className="matrix-only pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(10,24,30,0)_52%,rgba(2,8,12,0.2)_52%),linear-gradient(90deg,rgba(74,191,207,0.03),rgba(9,100,120,0.015),rgba(160,220,232,0.035))] bg-size-[100%_2px,3px_100%] opacity-16" />
+      <div className="matrix-only pointer-events-none fixed inset-0 z-50 hidden md:block bg-[linear-gradient(rgba(10,24,30,0)_52%,rgba(2,8,12,0.2)_52%),linear-gradient(90deg,rgba(74,191,207,0.03),rgba(9,100,120,0.015),rgba(160,220,232,0.035))] bg-size-[100%_2px,3px_100%] opacity-16" />
     </div>
   );
 }

@@ -17,7 +17,7 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
   return (
     <aside className="lg:col-span-4">
       <div className="sticky top-6">
-        <div className="relative overflow-hidden rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(5,30,38,0.62)] p-6 shadow-[0_0_24px_rgba(80,226,255,0.02)] backdrop-blur-md">
+        <div className="relative overflow-hidden rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(5,30,38,0.62)] p-6 md:shadow-[0_0_24px_rgba(80,226,255,0.02)] md:backdrop-blur-md">
           <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-(--accent)" />
 
           <div className="mb-6 flex items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.07)] pb-4">
@@ -58,7 +58,7 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
 
             {featured ? (
               <div className="group relative border-l border-(--accent) pl-4">
-                <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border border-[rgba(224,252,255,0.6)] bg-(--accent) shadow-[0_0_14px_rgba(74,191,207,0.35)]" />
+                <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border border-[rgba(224,252,255,0.6)] bg-(--accent) md:shadow-[0_0_14px_rgba(74,191,207,0.35)]" />
                 <span className="mb-1 block text-xs font-bold text-(--accent)">
                   {featured.highlightBadge?.toUpperCase() || "FEATURED"}{featured.articleType ? ` :: ${featured.articleType.toUpperCase()}` : ""}{featured.ingestSource === "telegram" ? " :: TELEGRAM" : ""}{getEditorialReadinessLabel(featured.editorialReadiness) ? ` :: ${getEditorialReadinessLabel(featured.editorialReadiness)?.toUpperCase()}` : ""}
                 </span>
