@@ -2,97 +2,146 @@ import Link from "next/link";
 
 import FeaturedPost from "@/components/FeaturedPost";
 import PostCard from "@/components/PostCard";
-import SidebarFeed from "@/components/SidebarFeed";
 import SiteHeader from "@/components/SiteHeader";
 
-import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
-import type { HomePageData } from "@/types/wordpress";
+import type { HomePageData, SitePost } from "@/types/wordpress";
 
 interface MatrixHeroProps {
   data: HomePageData;
 }
 
-export default function MatrixHero({ data }: MatrixHeroProps) {
-  const feedPosts = [
-    ...(data.featuredPost ? [data.featuredPost] : []),
-    ...data.secondaryPosts,
-    ...data.sidebarPosts,
-  ];
+interface PostListColumnProps {
+  title: string;
+  posts: SitePost[];
+  href: string;
+}
 
-  const ingestPosts = Array.from(
-    new Map(
-      feedPosts
-        .filter((post) => post.ingestSource === "telegram")
-        .map((post) => [post.id, post]),
-    ).values(),
+function PostListColumn({ title, posts, href }: PostListColumnProps) {
+  return (
+    <article className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(5,30,38,0.62)] p-5 md:backdrop-blur-md">
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.08)] pb-3">
+        <h3 className="font-serif text-xl text-white">{title}</h3>
+        <Link href={href} className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+          Viac
+        </Link>
+      </div>
+
+      {posts.length > 0 ? (
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <article key={post.id} className="rounded-lg border border-[rgba(111,231,255,0.08)] bg-[rgba(6,34,42,0.4)] p-3">
+              <Link href={post.href} className="block font-serif text-lg leading-tight text-white transition-colors hover:text-(--accent)">
+                {post.title}
+              </Link>
+              <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/70">
+                {post.publishedAt}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-300/74">Zatiaľ bez obsahu.</p>
+      )}
+    </article>
   );
+}
 
+export default function MatrixHero({ data }: MatrixHeroProps) {
   return (
     <div className="relative z-10 min-h-screen text-slate-100">
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <SiteHeader navigationItems={data.navigationItems} />
 
-        <main className="grid grid-cols-1 gap-8 py-8 lg:grid-cols-12">
-
-          <div className="flex flex-col gap-8 lg:col-span-8">
-            {data.featuredPost ? <FeaturedPost post={data.featuredPost} /> : (
-              <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(4,30,38,0.60)] p-6 md:shadow-[0_0_24px_rgba(80,226,255,0.02)] md:backdrop-blur-md sm:p-8">
+        <main className="space-y-10 py-8">
+          <section>
+            {data.featuredPost ? (
+              <FeaturedPost post={data.featuredPost} />
+            ) : (
+              <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(4,30,38,0.60)] p-6 md:backdrop-blur-md sm:p-8">
                 <div className="font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Žiadny featured článok</div>
                 <h2 className="mt-4 font-serif text-3xl leading-tight text-white sm:text-4xl">
                   WordPress nevrátil žiadne publikované články pre domovskú stránku.
                 </h2>
               </section>
             )}
+          </section>
 
-            <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {data.secondaryPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </section>
-          </div>
-
-          <SidebarFeed posts={feedPosts} />
-
-        </main>
-
-        {ingestPosts.length > 0 ? (
-          <section className="mt-2 rounded-xl border border-[rgba(111,231,255,0.07)] bg-[rgba(5,28,36,0.58)] p-6 md:shadow-[0_0_20px_rgba(80,226,255,0.01)] md:backdrop-blur-md">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.05)] pb-4">
-              <div>
-                <div className="font-sans text-[11px] uppercase tracking-[0.3em] text-(--accent)">Telegram ingest</div>
-                <h2 className="mt-2 font-serif text-3xl text-white">Rýchlo importované texty čakajú na redakčné dotiahnutie.</h2>
+          <section>
+            <div className="mb-5 flex items-end justify-between gap-4 border-b border-[rgba(111,231,255,0.08)] pb-3">
+              <h2 className="font-serif text-3xl text-white">Najnovšie články</h2>
+              <Link href="/domov" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+                Prejsť na články
+              </Link>
+            </div>
+            {data.latestPosts.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {data.latestPosts.slice(0, 6).map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
               </div>
-              <Link href="https://t.me/novy_matrix_lm" className="rounded-xl border border-[rgba(111,231,255,0.08)] px-4 py-3 font-sans text-xs uppercase tracking-[0.22em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">
-                Otvoriť kanál
+            ) : (
+              <p className="text-sm text-slate-300/74">Najnovšie články zatiaľ nie sú dostupné.</p>
+            )}
+          </section>
+
+          <section>
+            <div className="mb-5 border-b border-[rgba(111,231,255,0.08)] pb-3">
+              <h2 className="font-serif text-3xl text-white">Sekcie</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <PostListColumn title="Domov" posts={data.domovPosts.slice(0, 3)} href="/domov" />
+              <PostListColumn title="Zahraničie" posts={data.zahraniciePosts.slice(0, 3)} href="/zahranicie" />
+              <PostListColumn title="Najčítanejšie" posts={data.mostReadPosts.slice(0, 5)} href="/domov" />
+            </div>
+          </section>
+
+          <section>
+            <div className="mb-5 flex items-end justify-between gap-4 border-b border-[rgba(111,231,255,0.08)] pb-3">
+              <h2 className="font-serif text-3xl text-white">Video</h2>
+              <Link href="/video" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+                Všetky videá
+              </Link>
+            </div>
+            {data.videoPosts.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {data.videoPosts.slice(0, 4).map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-300/74">Video sekcia zatiaľ nemá články s vyplneným video linkom.</p>
+            )}
+          </section>
+
+          <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(5,30,38,0.62)] p-6 md:backdrop-blur-md">
+            <div className="mb-5 flex items-end justify-between gap-4 border-b border-[rgba(111,231,255,0.08)] pb-3">
+              <h2 className="font-serif text-3xl text-white">Reakcie</h2>
+              <Link href="/reakcie" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+                Všetky reakcie
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {ingestPosts.map((post) => (
-                <article key={post.id} className="rounded-xl border border-[rgba(111,231,255,0.06)] bg-[rgba(5,32,40,0.52)] p-4">
-                  <div className="mb-3 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
-                    <span>{post.categoryLabel}</span>
-                    <span className="rounded-full border border-[rgba(111,231,255,0.12)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span>
-                    {getEditorialReadinessLabel(post.editorialReadiness) ? (
-                      <span className={getEditorialReadinessTone(post.editorialReadiness) === "warning"
-                        ? "rounded-full border border-[rgba(251,146,60,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-orange-100/82"
-                        : getEditorialReadinessTone(post.editorialReadiness) === "progress"
-                          ? "rounded-full border border-[rgba(59,130,246,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-sky-100/82"
-                          : "rounded-full border border-[rgba(16,185,129,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-emerald-100/82"}
-                      >
-                        {getEditorialReadinessLabel(post.editorialReadiness)}
-                      </span>
+            {data.recentComments.length > 0 ? (
+              <div className="space-y-4">
+                {data.recentComments.map((comment) => (
+                  <article key={comment.id} className="rounded-lg border border-[rgba(111,231,255,0.08)] bg-[rgba(6,34,42,0.4)] p-4">
+                    <div className="mb-2 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300/70">
+                      {comment.authorName} · {comment.dateLabel}
+                    </div>
+                    <p className="text-sm leading-relaxed text-slate-100/86">{comment.excerpt}</p>
+                    {comment.postHref && comment.postTitle ? (
+                      <Link href={comment.postHref} className="mt-3 inline-block font-sans text-[11px] uppercase tracking-[0.2em] text-(--accent) transition-colors hover:text-white">
+                        K článku: {comment.postTitle}
+                      </Link>
                     ) : null}
-                  </div>
-                  <Link href={post.href} className="block font-serif text-2xl leading-tight text-white transition-colors hover:text-(--accent)">
-                    {post.title}
-                  </Link>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-200/72">{post.excerpt}</p>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-300/74">Zatiaľ nie sú schválené komentáre.</p>
+            )}
           </section>
-        ) : null}
+        </main>
       </div>
 
       <div className="matrix-only pointer-events-none fixed inset-0 z-50 hidden md:block bg-[linear-gradient(rgba(10,24,30,0)_52%,rgba(2,8,12,0.2)_52%),linear-gradient(90deg,rgba(74,191,207,0.03),rgba(9,100,120,0.015),rgba(160,220,232,0.035))] bg-size-[100%_2px,3px_100%] opacity-16" />

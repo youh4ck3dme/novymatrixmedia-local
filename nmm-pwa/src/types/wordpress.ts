@@ -171,8 +171,12 @@ export interface SiteCommentsPageData {
 
 export interface HomePageData {
   featuredPost: SitePost | null;
-  secondaryPosts: SitePost[];
-  sidebarPosts: SitePost[];
+  latestPosts: SitePost[];
+  domovPosts: SitePost[];
+  zahraniciePosts: SitePost[];
+  mostReadPosts: SitePost[];
+  videoPosts: SitePost[];
+  recentComments: SiteComment[];
   navigationItems: SiteNavigationItem[];
 }
 

@@ -430,25 +430,51 @@ function isFeaturedMarker(value?: string): boolean {
   return /\b(featured|headline|top|hlavny|hlavna|hlavne)\b/.test(normalized);
 }
 
-function splitHomeFeed(posts: SitePost[]): Pick<HomePageData, "featuredPost" | "secondaryPosts" | "sidebarPosts"> {
+function resolveFeaturedPost(posts: SitePost[]): SitePost | null {
   if (posts.length === 0) {
-    return {
-      featuredPost: null,
-      secondaryPosts: [],
-      sidebarPosts: [],
-    };
+    return null;
   }
 
   const featuredIndex = posts.findIndex((post) => isFeaturedMarker(post.highlightBadge) || isFeaturedMarker(post.articleType));
-  const resolvedIndex = featuredIndex >= 0 ? featuredIndex : 0;
-  const featuredPost = posts[resolvedIndex];
-  const remaining = posts.filter((_, index) => index !== resolvedIndex);
+  return featuredIndex >= 0 ? posts[featuredIndex] : posts[0];
+}
 
-  return {
-    featuredPost,
-    secondaryPosts: remaining.slice(0, 2),
-    sidebarPosts: remaining.slice(2, 5),
-  };
+function getCategoryBySlug(categories: WordPressCategoryRaw[], slug: string): WordPressCategoryRaw | undefined {
+  return categories.find((category) => category.slug === slug);
+}
+
+async function getCategoryPostsBySlug(
+  categories: WordPressCategoryRaw[],
+  slug: string,
+  limit: number,
+  { requireVideo = false }: { requireVideo?: boolean } = {},
+): Promise<SitePost[]> {
+  const category = getCategoryBySlug(categories, slug);
+  if (!category) {
+    return [];
+  }
+
+  const perPage = requireVideo ? Math.max(limit * 3, 12) : limit;
+  const posts = await wpRestFetch<WordPressPostRaw[]>("posts", {
+    query: {
+      _embed: 1,
+      per_page: perPage,
+      orderby: "date",
+      order: "desc",
+      categories: category.id,
+    },
+    revalidate: 300,
+    tags: ["wp-posts", `wp-category-posts-${slug}`],
+  });
+
+  const normalizedPosts = posts.map(normalizePost);
+  if (!requireVideo) {
+    return normalizedPosts.slice(0, limit);
+  }
+
+  return normalizedPosts
+    .filter((post) => typeof post.videoEmbed === "string" && post.videoEmbed.trim() !== "")
+    .slice(0, limit);
 }
 
 interface ApprovedCommentsQuery {
@@ -759,24 +785,50 @@ export async function getAllPublicSlugs(): Promise<string[]> {
 
 export async function getHomePageData(): Promise<HomePageData> {
   try {
-    const [posts, navigationItems] = await Promise.all([
+    const [posts, categories, navigationItems, commentsPage] = await Promise.all([
       getLatestPosts(12),
+      getCategories(),
       getNavigationItems("home"),
+      getApprovedCommentsPage({ page: 1, perPage: 5 }),
     ]);
 
-    const { featuredPost, secondaryPosts, sidebarPosts } = splitHomeFeed(posts);
+    const featuredPost = resolveFeaturedPost(posts);
+    const latestPosts = posts
+      .filter((post) => post.id !== featuredPost?.id)
+      .slice(0, 6);
+
+    const [domovPosts, zahraniciePosts, videoPosts, mostReadCandidates] = await Promise.all([
+      getCategoryPostsBySlug(categories, "domov", 3),
+      getCategoryPostsBySlug(categories, "zahranicie", 3),
+      getCategoryPostsBySlug(categories, "video", 4, { requireVideo: true }),
+      getCategoryPostsBySlug(categories, "najcitanejsie", 5),
+    ]);
+
+    const mostReadPosts = mostReadCandidates.length > 0
+      ? mostReadCandidates
+      : posts
+        .filter((post) => post.id !== featuredPost?.id)
+        .slice(0, 5);
 
     return {
       featuredPost,
-      secondaryPosts,
-      sidebarPosts,
+      latestPosts,
+      domovPosts,
+      zahraniciePosts,
+      mostReadPosts,
+      videoPosts,
+      recentComments: commentsPage.comments.slice(0, 5),
       navigationItems,
     };
   } catch {
     return {
       featuredPost: null,
-      secondaryPosts: [],
-      sidebarPosts: [],
+      latestPosts: [],
+      domovPosts: [],
+      zahraniciePosts: [],
+      mostReadPosts: [],
+      videoPosts: [],
+      recentComments: [],
       navigationItems: [],
     };
   }
