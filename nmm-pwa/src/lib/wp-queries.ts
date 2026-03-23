@@ -5,9 +5,12 @@ import type {
   CategoryPageData,
   HomePageData,
   SiteCategory,
+  SiteComment,
+  SiteCommentsPageData,
   SiteNavigationItem,
   SitePost,
   WordPressCategoryRaw,
+  WordPressCommentRaw,
   WordPressEditorialMetaRaw,
   WordPressPostRaw,
 } from "@/types/wordpress";
@@ -79,6 +82,23 @@ function formatDate(value: string): string {
   }).toUpperCase();
 }
 
+function formatCommentDate(value: string): string {
+  return new Date(value).toLocaleDateString("sk-SK", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function getCommentExcerpt(contentHtml: string, maxLength = 220): string {
+  const plainText = stripHtml(contentHtml);
+  if (plainText.length <= maxLength) {
+    return plainText;
+  }
+
+  return `${plainText.slice(0, maxLength).trim()}...`;
+}
+
 function parseLines(value?: string): string[] {
   if (!value) {
     return [];
@@ -145,6 +165,15 @@ function normalizePost(post: WordPressPostRaw): SitePost {
   const featuredMedia = post._embedded?.["wp:featuredmedia"]?.[0];
   const category = post._embedded?.["wp:term"]?.flat().find((term) => term.taxonomy === "category" && typeof term.slug === "string");
   const editorialMeta = normalizeEditorialMeta(post.meta);
+  const postFeaturedImageUrl = typeof post.nmm_featured_image_url === "string" && post.nmm_featured_image_url.trim() !== ""
+    ? post.nmm_featured_image_url.trim()
+    : undefined;
+  const postFeaturedImageAlt = typeof post.nmm_featured_image_alt_public === "string" && post.nmm_featured_image_alt_public.trim() !== ""
+    ? post.nmm_featured_image_alt_public.trim()
+    : undefined;
+  const postFeaturedImageCaption = typeof post.nmm_featured_image_caption_public === "string" && post.nmm_featured_image_caption_public.trim() !== ""
+    ? post.nmm_featured_image_caption_public.trim()
+    : undefined;
   const mediaDetails = featuredMedia?.media_details;
   const responsiveMediaSource = mediaDetails?.sizes?.medium_large
     ?? mediaDetails?.sizes?.large
@@ -165,12 +194,12 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     authorName: editorialMeta.authorName,
     sourceName: editorialMeta.sourceName,
     sourceUrl: editorialMeta.sourceUrl,
-    imageUrl: responsiveMediaSource?.source_url ?? featuredMedia?.source_url ?? FALLBACK_IMAGE,
-    imageAlt: editorialMeta.imageAlt || featuredMedia?.alt_text || stripHtml(post.title.rendered),
+    imageUrl: responsiveMediaSource?.source_url ?? featuredMedia?.source_url ?? postFeaturedImageUrl ?? editorialMeta.ogImage ?? FALLBACK_IMAGE,
+    imageAlt: editorialMeta.imageAlt || featuredMedia?.alt_text || postFeaturedImageAlt || stripHtml(post.title.rendered),
     imageWidth: responsiveMediaSource?.width ?? mediaDetails?.width,
     imageHeight: responsiveMediaSource?.height ?? mediaDetails?.height,
-    imageCaption: editorialMeta.imageCaption,
-    categoryLabel: category?.name ?? "Novy Matrix Media",
+    imageCaption: editorialMeta.imageCaption || postFeaturedImageCaption,
+    categoryLabel: category?.name ?? "Nový Matrix Media",
     categorySlug: category?.slug ?? "novy-matrix-media",
     articleType: editorialMeta.articleType,
     highlightBadge: editorialMeta.highlightBadge,
@@ -422,6 +451,77 @@ function splitHomeFeed(posts: SitePost[]): Pick<HomePageData, "featuredPost" | "
   };
 }
 
+interface ApprovedCommentsQuery {
+  postId?: number;
+  page: number;
+  perPage: number;
+}
+
+interface ApprovedCommentsRawResponse {
+  comments: WordPressCommentRaw[];
+  total: number;
+  totalPages: number;
+}
+
+async function requestApprovedComments(query: ApprovedCommentsQuery): Promise<ApprovedCommentsRawResponse> {
+  const { restUrl } = getWordPressConfig();
+  const url = new URL(`${restUrl}/comments`);
+
+  url.searchParams.set("status", "approve");
+  url.searchParams.set("orderby", "date");
+  url.searchParams.set("order", "desc");
+  url.searchParams.set("page", String(query.page));
+  url.searchParams.set("per_page", String(query.perPage));
+  url.searchParams.set("_fields", "id,post,parent,date,date_gmt,status,author_name,author_url,content");
+
+  if (query.postId) {
+    url.searchParams.set("post", String(query.postId));
+  }
+
+  const response = await fetch(url.toString(), {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    if (response.status === 400 && query.page > 1) {
+      return requestApprovedComments({
+        ...query,
+        page: 1,
+      });
+    }
+
+    throw new Error(`WordPress REST request failed for comments: ${response.status}`);
+  }
+
+  const comments = await response.json() as WordPressCommentRaw[];
+  const total = Number.parseInt(response.headers.get("x-wp-total") ?? "0", 10) || 0;
+  const totalPages = Number.parseInt(response.headers.get("x-wp-totalpages") ?? "0", 10) || 0;
+
+  return {
+    comments,
+    total,
+    totalPages,
+  };
+}
+
+function normalizeComment(comment: WordPressCommentRaw, postMap: Map<number, SitePost>): SiteComment {
+  const relatedPost = postMap.get(comment.post);
+
+  return {
+    id: comment.id,
+    postId: comment.post,
+    parentId: comment.parent,
+    authorName: stripHtml(comment.author_name || "Anonym"),
+    authorUrl: comment.author_url?.trim() || undefined,
+    contentHtml: comment.content?.rendered ?? "",
+    excerpt: getCommentExcerpt(comment.content?.rendered ?? ""),
+    dateIso: comment.date_gmt || comment.date,
+    dateLabel: formatCommentDate(comment.date_gmt || comment.date),
+    postTitle: relatedPost?.title,
+    postHref: relatedPost?.href,
+  };
+}
+
 async function getLatestPosts(limit: number): Promise<SitePost[]> {
   const posts = await wpRestFetch<WordPressPostRaw[]>("posts", {
     query: {
@@ -573,13 +673,67 @@ export async function getCategoryPageData(slug: string): Promise<CategoryPageDat
       tags: ["wp-posts", `wp-category-posts-${slug}`],
     });
 
+    const normalizedPosts = posts.map(normalizePost);
+    const filteredPosts = slug === "video"
+      ? normalizedPosts.filter((post) => typeof post.videoEmbed === "string" && post.videoEmbed.trim() !== "")
+      : normalizedPosts;
+
     return {
       category: normalizeCategory(category),
-      posts: posts.map(normalizePost),
+      posts: filteredPosts,
       navigationItems,
     };
   } catch {
     return null;
+  }
+}
+
+export async function getApprovedCommentsPage({
+  page = 1,
+  perPage = 20,
+  postId,
+}: {
+  page?: number;
+  perPage?: number;
+  postId?: number;
+} = {}): Promise<SiteCommentsPageData> {
+  const normalizedPage = Number.isInteger(page) && page > 0 ? page : 1;
+  const normalizedPerPage = Number.isInteger(perPage) ? Math.min(Math.max(perPage, 1), 100) : 20;
+
+  try {
+    const response = await requestApprovedComments({
+      page: normalizedPage,
+      perPage: normalizedPerPage,
+      postId,
+    });
+
+    const postIds = Array.from(new Set(response.comments.map((comment) => comment.post).filter((value) => value > 0)));
+    const relatedPosts = postIds.length > 0 ? await getPostsByIds(postIds) : [];
+    const postMap = new Map<number, SitePost>(relatedPosts.map((item) => [item.id, item]));
+    const comments = response.comments.map((comment) => normalizeComment(comment, postMap));
+
+    const totalPages = response.totalPages > 0 ? response.totalPages : (response.total > 0 ? 1 : 0);
+    const currentPage = totalPages > 0 ? Math.min(normalizedPage, totalPages) : normalizedPage;
+
+    return {
+      comments,
+      page: currentPage,
+      perPage: normalizedPerPage,
+      total: response.total,
+      totalPages,
+      hasNextPage: totalPages > 0 && currentPage < totalPages,
+      hasPrevPage: currentPage > 1 && totalPages > 0,
+    };
+  } catch {
+    return {
+      comments: [],
+      page: normalizedPage,
+      perPage: normalizedPerPage,
+      total: 0,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+    };
   }
 }
 

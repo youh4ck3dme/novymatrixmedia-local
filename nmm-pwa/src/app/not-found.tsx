@@ -7,10 +7,10 @@ export default function NotFound() {
         <div className="font-sans text-xs uppercase tracking-[0.35em] text-(--accent)">404 :: Nenájdené</div>
         <h1 className="mt-4 font-serif text-4xl text-white sm:text-5xl">Obsah sa nenašiel</h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-slate-200/82">
-          Požadovaný článok alebo kategória momentálne nie je dostupná. Skontroluj URL alebo sa vráť na homepage.
+          Požadovaný článok alebo kategória momentálne nie je dostupná. Skontroluj URL alebo sa vráť na domovskú stránku.
         </p>
         <Link href="/" className="mt-8 inline-flex rounded-lg border border-[rgba(111,231,255,0.28)] bg-[rgba(31,169,214,0.72)] px-6 py-3 font-sans text-sm uppercase tracking-[0.24em] text-white transition-all hover:bg-[rgba(31,169,214,0.9)]">
-          Späť na homepage
+          Späť na domovskú stránku
         </Link>
       </section>
     </main>

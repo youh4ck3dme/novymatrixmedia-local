@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import type { SiteCategory, SitePost } from "@/types/wordpress";
 
-const DEFAULT_TITLE = "Novy Matrix Media";
+const DEFAULT_TITLE = "Nový Matrix Media";
 const DEFAULT_DESCRIPTION = "Informačno-publicistický portál v novom rozmere.";
 
 export function getPublicSiteUrl(): string {

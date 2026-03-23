@@ -39,7 +39,7 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
       <div className="space-y-5 p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3 font-sans text-xs uppercase tracking-[0.22em] text-(--foreground)/74">
           <span className="rounded-full bg-[rgba(26,149,190,0.72)] px-3 py-1 text-white">{post.categoryLabel}</span>
-          <span>{post.sourceName || "Novy Matrix Media"}</span>
+          <span>{post.sourceName || "Nový Matrix Media"}</span>
           <span className="text-(--accent)">{featuredLabel}</span>
           {post.articleType ? <span>{post.articleType}</span> : null}
           {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}

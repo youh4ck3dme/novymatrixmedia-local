@@ -118,6 +118,55 @@ html[data-frontend-variant="default"] .matrix-only {
   color: rgba(221, 241, 248, 0.55);
 }
 
+.article-body .nmm-comments-guide {
+  margin-top: 2.4rem;
+  border: 1px solid rgba(74, 191, 207, 0.34);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(8, 44, 54, 0.58), rgba(5, 28, 35, 0.5));
+  padding: 1rem 1.1rem;
+}
+
+.article-body .nmm-comments-guide > p {
+  margin: 0.72rem 0;
+  font-size: 1.03rem;
+  line-height: 1.8;
+  color: rgba(236, 247, 250, 0.92);
+}
+
+.article-body .nmm-comments-guide > p strong {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.article-body .nmm-comments-checklist {
+  margin-top: 0.95rem;
+  border: 1px solid rgba(111, 231, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(4, 22, 30, 0.58);
+  padding: 0.85rem 0.95rem;
+}
+
+.article-body .nmm-comments-checklist-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(94, 221, 242, 0.95);
+  font-weight: 700;
+}
+
+.article-body .nmm-comments-checklist ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.article-body .nmm-comments-checklist li {
+  margin-top: 0.46rem;
+  font-size: 0.99rem;
+  color: rgba(232, 241, 244, 0.9);
+}
+
 @media (max-width: 640px) {
   .article-body>p {
     font-size: 1.05rem;
@@ -126,5 +175,10 @@ html[data-frontend-variant="default"] .matrix-only {
 
   .article-body>p:first-of-type {
     font-size: 1.18rem;
+  }
+
+  .article-body .nmm-comments-guide > p {
+    font-size: 0.98rem;
+    line-height: 1.72;
   }
 }

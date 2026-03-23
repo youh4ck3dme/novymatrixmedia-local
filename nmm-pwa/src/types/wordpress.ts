@@ -64,10 +64,25 @@ export interface WordPressPostRaw {
     description?: string;
   };
   meta?: WordPressEditorialMetaRaw;
+  nmm_featured_image_url?: string;
+  nmm_featured_image_alt_public?: string;
+  nmm_featured_image_caption_public?: string;
   _embedded?: {
     "wp:featuredmedia"?: WordPressMediaRaw[];
     "wp:term"?: WordPressCategoryRaw[][];
   };
+}
+
+export interface WordPressCommentRaw {
+  id: number;
+  post: number;
+  parent: number;
+  date: string;
+  date_gmt: string;
+  status?: string;
+  author_name: string;
+  author_url?: string;
+  content: WordPressRenderedField;
 }
 
 export interface SiteNavigationItem {
@@ -128,6 +143,30 @@ export interface SiteCategory {
   name: string;
   href: string;
   description: string;
+}
+
+export interface SiteComment {
+  id: number;
+  postId: number;
+  parentId: number;
+  authorName: string;
+  authorUrl?: string;
+  contentHtml: string;
+  excerpt: string;
+  dateIso: string;
+  dateLabel: string;
+  postTitle?: string;
+  postHref?: string;
+}
+
+export interface SiteCommentsPageData {
+  comments: SiteComment[];
+  page: number;
+  perPage: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
 export interface HomePageData {

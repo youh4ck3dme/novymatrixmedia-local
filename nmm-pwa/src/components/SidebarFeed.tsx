@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel } from "@/lib/editorial-workflow";
@@ -8,11 +9,18 @@ interface SidebarFeedProps {
 }
 
 export default function SidebarFeed({ posts }: SidebarFeedProps) {
-  const featured = posts.find((post) => {
-    const marker = `${post.highlightBadge ?? ""} ${post.articleType ?? ""}`.toLowerCase();
-    return marker.includes("featured") || marker.includes("headline") || marker.includes("top");
-  }) ?? posts[0];
-  const remaining = posts.filter((post) => post.id !== featured?.id);
+  const getSortTimestamp = (value?: string): number => {
+    if (!value) {
+      return 0;
+    }
+
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const latestPosts = [...posts]
+    .sort((a, b) => getSortTimestamp(b.modifiedAt) - getSortTimestamp(a.modifiedAt))
+    .slice(0, 6);
 
   return (
     <aside className="lg:col-span-4">
@@ -24,57 +32,48 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
             <div className="flex items-center gap-3">
               <div className="h-2.5 w-2.5 animate-pulse rounded-sm bg-(--accent)" />
               <h2 className="font-serif text-lg uppercase tracking-[0.28em] text-(--accent)">
-                Odoberať
+                Najnovšie
               </h2>
             </div>
-            <Link href="https://t.me/novy_matrix_lm" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--foreground)/70 transition-colors hover:text-white">
-              Telegram
-            </Link>
           </div>
 
           <div className="mb-6 rounded-xl border border-[rgba(111,231,255,0.06)] bg-[rgba(6,42,52,0.52)] p-5">
             <div className="mb-2 font-sans text-[11px] uppercase tracking-[0.3em] text-(--accent)">
-              Novy Matrix Media
+              Nový Matrix Media
             </div>
             <p className="text-sm leading-relaxed text-slate-100/88">
-              Priamy odber hlavných správ, komentárov a diskusných tém v jednom kanáli.
+              Najnovšie publikované články prehľadne na jednom mieste.
             </p>
           </div>
 
           <div className="flex flex-col gap-6 font-sans text-sm">
-            {remaining.map((post) => (
-              <div key={post.id} className="group relative border-l border-[rgba(111,231,255,0.09)] pl-4 transition-colors hover:border-(--accent)">
-                <span className="mb-1 block text-xs text-(--accent)/90">
-                  {post.categoryLabel.toUpperCase()}
-                  {post.articleType ? ` / ${post.articleType.toUpperCase()}` : ""}
-                  {post.ingestSource === "telegram" ? " / TELEGRAM" : ""}
-                  {getEditorialReadinessLabel(post.editorialReadiness) ? ` / ${getEditorialReadinessLabel(post.editorialReadiness)?.toUpperCase()}` : ""}
-                </span>
-                <Link href={post.href} className="leading-relaxed text-slate-100/84 group-hover:text-white">
-                  {post.title}
-                </Link>
-              </div>
+            {latestPosts.map((post) => (
+              <Link
+                key={post.id}
+                href={post.href}
+                className="group flex items-start gap-3 rounded-lg border border-[rgba(111,231,255,0.06)] bg-[rgba(6,34,42,0.36)] p-3 transition-colors hover:border-(--accent)"
+              >
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-[rgba(111,231,255,0.10)]">
+                  <Image
+                    src={post.imageUrl}
+                    alt={post.imageAlt}
+                    fill
+                    sizes="56px"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-(--accent)/90">
+                    {post.categoryLabel}
+                    {getEditorialReadinessLabel(post.editorialReadiness) ? ` / ${getEditorialReadinessLabel(post.editorialReadiness)}` : ""}
+                  </span>
+                  <p className="text-sm leading-relaxed text-slate-100/86 transition-colors group-hover:text-white">
+                    {post.title}
+                  </p>
+                </div>
+              </Link>
             ))}
-
-            {featured ? (
-              <div className="group relative border-l border-(--accent) pl-4">
-                <div className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border border-[rgba(224,252,255,0.6)] bg-(--accent) md:shadow-[0_0_14px_rgba(74,191,207,0.35)]" />
-                <span className="mb-1 block text-xs font-bold text-(--accent)">
-                  {featured.highlightBadge?.toUpperCase() || "FEATURED"}{featured.articleType ? ` :: ${featured.articleType.toUpperCase()}` : ""}{featured.ingestSource === "telegram" ? " :: TELEGRAM" : ""}{getEditorialReadinessLabel(featured.editorialReadiness) ? ` :: ${getEditorialReadinessLabel(featured.editorialReadiness)?.toUpperCase()}` : ""}
-                </span>
-                <Link href={featured.href} className="font-semibold leading-relaxed text-white">
-                  {featured.title}
-                </Link>
-              </div>
-            ) : null}
           </div>
-
-          <Link
-            href="https://t.me/novy_matrix_lm"
-            className="mt-8 block w-full rounded-full border border-[rgba(111,231,255,0.10)] bg-[rgba(26,149,190,0.58)] py-3 text-center font-sans text-sm uppercase tracking-[0.24em] text-white transition-all hover:bg-[rgba(26,149,190,0.80)]"
-          >
-            Odoberať teraz
-          </Link>
         </div>
       </div>
     </aside>

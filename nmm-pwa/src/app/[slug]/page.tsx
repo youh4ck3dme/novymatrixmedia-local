@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import type { Metadata } from "next";
 
+import ArticleComments from "@/components/ArticleComments";
 import SiteHeader from "@/components/SiteHeader";
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
 import { getCategoryPageData, getNavigationItems, getPostBySlug, getPostsByIds } from "@/lib/wp-queries";
@@ -266,7 +267,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
             <div className="mt-8 flex flex-wrap items-center gap-4 border-y border-[rgba(111,231,255,0.12)] py-4 font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/62">
               <span>Publikované {post.publishedAt}</span>
               <span className="h-1 w-1 rounded-full bg-(--accent)/70" />
-              <span>{post.authorName || "Novy Matrix Media"}</span>
+              <span>{post.authorName || "Nový Matrix Media"}</span>
               {post.estimatedReadingTime ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
               {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}
             </div>
@@ -379,6 +380,8 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 </section>
               ) : null}
 
+              <ArticleComments postId={post.id} />
+
               {ingestSourceLabel || editorialReadinessLabel || post.telegramChatTitle || post.telegramPermalink ? (
                 <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
                   <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Redakčný pôvod</div>
@@ -428,12 +431,12 @@ export default async function SlugPage({ params }: SlugPageProps) {
               ) : null}
 
               <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[linear-gradient(135deg,rgba(8,39,47,0.84),rgba(11,58,70,0.62))] p-8">
-                <div className="mb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Dalsi obsah</div>
-                <h2 className="font-serif text-3xl text-white sm:text-4xl">Sleduj dalsie komentare, analyzy a rychle spravy.</h2>
-                <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-100/78">Pokračuj na homepage alebo si otvor ďalšie súvisiace texty z tejto sekcie.</p>
+                <div className="mb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Ďalší obsah</div>
+                <h2 className="font-serif text-3xl text-white sm:text-4xl">Sleduj ďalšie komentáre, analýzy a rýchle správy.</h2>
+                <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-100/78">Pokračuj na domovskú stránku alebo si otvor ďalšie súvisiace texty z tejto sekcie.</p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/" className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na homepage</Link>
-                  <a href="https://t.me/novy_matrix_lm" target="_blank" rel="noreferrer noopener" className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanal</a>
+                  <Link href="/" className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na domovskú stránku</Link>
+                  <a href="https://t.me/novy_matrix_lm" target="_blank" rel="noreferrer noopener" className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanál</a>
                 </div>
               </section>
             </div>

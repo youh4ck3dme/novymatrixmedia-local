@@ -15,6 +15,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 1,
     },
+    {
+      url: `${siteUrl}/reakcie`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
     ...slugs.map((slug) => ({
       url: `${siteUrl}/${slug}`,
       lastModified: now,
