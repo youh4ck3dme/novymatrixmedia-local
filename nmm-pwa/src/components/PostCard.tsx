@@ -25,7 +25,7 @@ export default function PostCard({ post }: PostCardProps) {
           src={post.imageUrl}
           alt={post.imageAlt}
           fill
-          quality={62}
+          quality={88}
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover transition-all duration-500 group-hover:scale-[1.01]"
         />

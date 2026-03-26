@@ -236,6 +236,11 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     ?? mediaDetails?.sizes?.full
     ?? mediaDetails?.sizes?.medium
     ?? null;
+  const preferredImageUrl = postFeaturedImageUrl
+    ?? featuredMedia?.source_url
+    ?? responsiveMediaSource?.source_url
+    ?? editorialMeta.ogImage
+    ?? FALLBACK_IMAGE;
 
   return {
     id: post.id,
@@ -251,7 +256,7 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     sourceName: editorialMeta.sourceName,
     sourceUrl: editorialMeta.sourceUrl,
     sources: editorialMeta.sources,
-    imageUrl: responsiveMediaSource?.source_url ?? featuredMedia?.source_url ?? postFeaturedImageUrl ?? editorialMeta.ogImage ?? FALLBACK_IMAGE,
+    imageUrl: preferredImageUrl,
     imageAlt: editorialMeta.imageAlt || featuredMedia?.alt_text || postFeaturedImageAlt || stripHtml(post.title.rendered),
     imageWidth: responsiveMediaSource?.width ?? mediaDetails?.width,
     imageHeight: responsiveMediaSource?.height ?? mediaDetails?.height,

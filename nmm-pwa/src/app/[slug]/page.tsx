@@ -27,7 +27,46 @@ export const revalidate = 300;
 const PUBLIC_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://novymatrixmedia.sk").replace(/\/$/, "");
 
 function renderHtml(content?: string) {
-  return { __html: content ?? "" };
+  return { __html: linkifyPlainUrlsInHtml(content ?? "") };
+}
+
+function linkifyPlainUrlsInHtml(html: string): string {
+  if (!html || !html.includes("http")) {
+    return html;
+  }
+
+  const chunks = html.split(/(<[^>]+>)/g);
+  const urlRegex = /https?:\/\/[^\s<>"']+/gi;
+  let inAnchor = false;
+
+  return chunks
+    .map((chunk) => {
+      if (!chunk || chunk.startsWith("<")) {
+        if (/^<a\b/i.test(chunk)) {
+          inAnchor = true;
+        } else if (/^<\/a>/i.test(chunk)) {
+          inAnchor = false;
+        }
+        return chunk;
+      }
+
+      if (inAnchor) {
+        return chunk;
+      }
+
+      return chunk.replace(urlRegex, (rawUrl) => {
+        const trailingMatch = rawUrl.match(/[).,!?;:]+$/);
+        const trailing = trailingMatch ? trailingMatch[0] : "";
+        const cleanUrl = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
+
+        if (!cleanUrl) {
+          return rawUrl;
+        }
+
+        return `<a href="${cleanUrl}" target="_blank" rel="noreferrer noopener">${cleanUrl}</a>${trailing}`;
+      });
+    })
+    .join("");
 }
 
 function getArticleUrl(path: string): string {
@@ -301,6 +340,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                   src={post.imageUrl}
                   alt={post.imageAlt}
                   fill
+                  quality={92}
                   className="object-cover"
                   sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, 1200px"
                   priority
