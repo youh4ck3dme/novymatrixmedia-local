@@ -41,6 +41,14 @@ function nmm_editorial_fields_definitions() {
 			'type'        => 'url',
 			'placeholder' => 'https://source.example/story',
 		),
+		'nmm_sources' => array(
+			'section'     => 'primary',
+			'label'       => 'Zdroje (viac položiek)',
+			'type'        => 'textarea',
+			'rows'        => 4,
+			'help'        => 'Jeden zdroj na riadok: Názov | URL (URL je voliteľná).',
+			'placeholder' => "Infovojna | https://example.com/sprava\nZem a Vek | https://example.com/clanok\nHlavný denník",
+		),
 		'nmm_featured_image_alt' => array(
 			'section'     => 'advanced',
 			'label'       => 'Alt text obrázku',
@@ -332,7 +340,7 @@ function nmm_editorial_fields_render_meta_box( $post ) {
 	$definitions = nmm_editorial_fields_definitions();
 	$sections    = nmm_editorial_fields_sections();
 
-	echo '<p style="margin:0 0 12px;">Vyplň iba video URL (ak je potrebné). Ostatné pomocné polia sa dopĺňajú automaticky pri uložení draftu.</p>';
+	echo '<p style="margin:0 0 12px;">Bežne stačí vyplniť zdroje a video URL (ak je potrebné). Ostatné pomocné polia sa dopĺňajú automaticky pri uložení draftu.</p>';
 
 	foreach ( $definitions as $meta_key => $field ) {
 		if ( ( $field['section'] ?? '' ) !== 'primary' ) {
@@ -703,3 +711,82 @@ function nmm_editorial_fields_detect_article_type( $post_id ) {
 
 	return 'news';
 }
+
+/**
+ * @param string $raw_sources
+ * @return array<int, array{name:string,url:string}>
+ */
+function nmm_editorial_fields_parse_sources( $raw_sources ) {
+	if ( ! is_string( $raw_sources ) || '' === trim( $raw_sources ) ) {
+		return array();
+	}
+
+	$items = array();
+	$lines = preg_split( '/\r\n|\r|\n/', $raw_sources ) ?: array();
+
+	foreach ( $lines as $line ) {
+		$line = trim( (string) $line );
+		if ( '' === $line ) {
+			continue;
+		}
+
+		$parts = array_map( 'trim', explode( '|', $line, 2 ) );
+		$name  = isset( $parts[0] ) ? wp_strip_all_tags( (string) $parts[0] ) : '';
+		$url   = isset( $parts[1] ) ? trim( (string) $parts[1] ) : '';
+
+		if ( '' === $name ) {
+			continue;
+		}
+
+		if ( '' !== $url && ! wp_http_validate_url( $url ) ) {
+			$url = '';
+		}
+
+		$items[] = array(
+			'name' => $name,
+			'url'  => $url,
+		);
+	}
+
+	return $items;
+}
+
+/**
+ * Syncs first source from nmm_sources to legacy single-source fields when they are empty.
+ * This keeps old integrations working while editor can maintain multiple sources.
+ *
+ * @param int      $post_id
+ * @param WP_Post  $post
+ * @param bool     $update
+ */
+function nmm_editorial_fields_sync_legacy_source_meta( $post_id, $post, $update ) {
+	unset( $update );
+
+	if ( ! ( $post instanceof WP_Post ) || 'post' !== $post->post_type ) {
+		return;
+	}
+
+	if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+		return;
+	}
+
+	$sources_raw = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_sources' );
+	$sources     = nmm_editorial_fields_parse_sources( $sources_raw );
+
+	if ( empty( $sources ) ) {
+		return;
+	}
+
+	$first_source = $sources[0];
+	$current_name = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_source_name' );
+	$current_url  = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_source_url' );
+
+	if ( '' === $current_name && ! empty( $first_source['name'] ) ) {
+		update_post_meta( $post_id, 'nmm_source_name', nmm_editorial_fields_sanitize( $first_source['name'] ) );
+	}
+
+	if ( '' === $current_url && ! empty( $first_source['url'] ) ) {
+		update_post_meta( $post_id, 'nmm_source_url', nmm_editorial_fields_sanitize( $first_source['url'] ) );
+	}
+}
+add_action( 'save_post_post', 'nmm_editorial_fields_sync_legacy_source_meta', 25, 3 );

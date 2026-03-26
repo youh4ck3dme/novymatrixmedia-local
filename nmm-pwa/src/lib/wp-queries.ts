@@ -9,6 +9,7 @@ import type {
   SiteCommentsPageData,
   SiteNavigationItem,
   SitePost,
+  SitePostSource,
   WordPressCategoryRaw,
   WordPressCommentRaw,
   WordPressEditorialMetaRaw,
@@ -121,6 +122,56 @@ function parseIdList(value?: string): number[] {
     .filter((item) => Number.isInteger(item) && item > 0);
 }
 
+function isValidSourceUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function parseSourceItems(rawSources?: string, fallbackSourceName?: string, fallbackSourceUrl?: string): SitePostSource[] {
+  const items: SitePostSource[] = [];
+  const dedupe = new Set<string>();
+
+  const pushItem = (nameRaw?: string, urlRaw?: string) => {
+    const name = nameRaw ? stripHtml(nameRaw) : "";
+    const urlCandidate = (urlRaw ?? "").trim();
+    const url = isValidSourceUrl(urlCandidate) ? urlCandidate : undefined;
+
+    if (!name) {
+      return;
+    }
+
+    const key = `${name.toLowerCase()}|${(url ?? "").toLowerCase()}`;
+    if (dedupe.has(key)) {
+      return;
+    }
+
+    dedupe.add(key);
+    items.push({ name, url });
+  };
+
+  if (rawSources) {
+    rawSources
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .forEach((line) => {
+        const [namePart, ...restParts] = line.split("|");
+        const urlPart = restParts.join("|").trim();
+        pushItem(namePart, urlPart || undefined);
+      });
+  }
+
+  if (items.length === 0 && fallbackSourceName) {
+    pushItem(fallbackSourceName, fallbackSourceUrl);
+  }
+
+  return items;
+}
+
 function getTagLabels(post: WordPressPostRaw): string[] {
   const terms = post._embedded?.["wp:term"]?.flat() ?? [];
 
@@ -131,11 +182,16 @@ function getTagLabels(post: WordPressPostRaw): string[] {
 }
 
 function normalizeEditorialMeta(meta?: WordPressEditorialMetaRaw) {
+  const normalizedSourceName = meta?.nmm_source_name ? stripHtml(meta.nmm_source_name) : undefined;
+  const normalizedSourceUrl = meta?.nmm_source_url?.trim() || undefined;
+  const normalizedSources = parseSourceItems(meta?.nmm_sources, normalizedSourceName, normalizedSourceUrl);
+
   return {
     subtitle: meta?.nmm_subtitle ? stripHtml(meta.nmm_subtitle) : undefined,
     authorName: meta?.nmm_author_name ? stripHtml(meta.nmm_author_name) : undefined,
-    sourceName: meta?.nmm_source_name ? stripHtml(meta.nmm_source_name) : undefined,
-    sourceUrl: meta?.nmm_source_url?.trim() || undefined,
+    sourceName: normalizedSources[0]?.name ?? normalizedSourceName,
+    sourceUrl: normalizedSources[0]?.url ?? normalizedSourceUrl,
+    sources: normalizedSources,
     imageAlt: meta?.nmm_featured_image_alt ? stripHtml(meta.nmm_featured_image_alt) : undefined,
     imageCaption: meta?.nmm_featured_image_caption ? stripHtml(meta.nmm_featured_image_caption) : undefined,
     gallery: parseLines(meta?.nmm_gallery),
@@ -194,6 +250,7 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     authorName: editorialMeta.authorName,
     sourceName: editorialMeta.sourceName,
     sourceUrl: editorialMeta.sourceUrl,
+    sources: editorialMeta.sources,
     imageUrl: responsiveMediaSource?.source_url ?? featuredMedia?.source_url ?? postFeaturedImageUrl ?? editorialMeta.ogImage ?? FALLBACK_IMAGE,
     imageAlt: editorialMeta.imageAlt || featuredMedia?.alt_text || postFeaturedImageAlt || stripHtml(post.title.rendered),
     imageWidth: responsiveMediaSource?.width ?? mediaDetails?.width,

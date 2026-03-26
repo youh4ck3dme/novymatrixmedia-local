@@ -233,6 +233,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
   const videoAsset = getVideoAsset(post.videoEmbed);
   const ingestSourceLabel = getIngestSourceLabel(post.ingestSource);
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
+  const sources = post.sources ?? [];
 
   return (
     <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
@@ -271,6 +272,26 @@ export default async function SlugPage({ params }: SlugPageProps) {
               {post.estimatedReadingTime ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
               {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}
             </div>
+
+            {sources.length > 0 ? (
+              <section className="mt-6 rounded-lg border border-[rgba(111,231,255,0.12)] bg-[rgba(7,34,42,0.44)] px-4 py-3">
+                <div className="mb-2 font-sans text-[10px] uppercase tracking-[0.22em] text-slate-300/58">Zdroje</div>
+                <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-slate-100/80">
+                  {sources.map((source, index) => (
+                    <span key={`${source.name}-${source.url ?? index}`}>
+                      {source.url ? (
+                        <a href={source.url} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+                          {source.name}
+                        </a>
+                      ) : (
+                        source.name
+                      )}
+                      {index < sources.length - 1 ? <span className="ml-3 text-slate-300/44">·</span> : null}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </div>
 
           {post.imageUrl ? (

@@ -16,6 +16,7 @@ export interface WordPressEditorialMetaRaw {
   nmm_author_name?: string;
   nmm_source_name?: string;
   nmm_source_url?: string;
+  nmm_sources?: string;
   nmm_featured_image_alt?: string;
   nmm_featured_image_caption?: string;
   nmm_gallery?: string;
@@ -94,6 +95,11 @@ export interface SiteNavigationItem {
   target?: string | null;
 }
 
+export interface SitePostSource {
+  name: string;
+  url?: string;
+}
+
 export interface SitePost {
   id: number;
   slug: string;
@@ -107,6 +113,7 @@ export interface SitePost {
   authorName?: string;
   sourceName?: string;
   sourceUrl?: string;
+  sources?: SitePostSource[];
   imageUrl: string;
   imageAlt: string;
   imageWidth?: number;
