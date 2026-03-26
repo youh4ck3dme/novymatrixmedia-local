@@ -421,6 +421,18 @@ function buildPrimaryNavigation(menuItems: SiteNavigationItem[], categories: Wor
   });
 }
 
+function resolveNavigationItems(
+  menuItems: SiteNavigationItem[],
+  categories: WordPressCategoryRaw[],
+  activeSlug: string,
+): SiteNavigationItem[] {
+  const orderedItems = menuItems.length > 0
+    ? buildPrimaryNavigation(menuItems, categories)
+    : buildNavigationFromCategories(categories);
+
+  return normalizeNavigationItems(orderedItems, activeSlug);
+}
+
 function isFeaturedMarker(value?: string): boolean {
   if (!value) {
     return false;
@@ -618,12 +630,7 @@ export async function getNavigationItems(activeSlug = "home"): Promise<SiteNavig
       getPrimaryMenuNavigation().catch(() => []),
       getCategories().catch(() => []),
     ]);
-
-    const orderedItems = menuItems.length > 0
-      ? buildPrimaryNavigation(menuItems, categories)
-      : buildNavigationFromCategories(categories);
-
-    return normalizeNavigationItems(orderedItems, activeSlug);
+    return resolveNavigationItems(menuItems, categories, activeSlug);
   } catch {
     return [];
   }
@@ -672,19 +679,13 @@ export async function getPostsByIds(ids: number[]): Promise<SitePost[]> {
 
 export async function getCategoryPageData(slug: string): Promise<CategoryPageData | null> {
   try {
-    const [categories, navigationItems] = await Promise.all([
-      wpRestFetch<WordPressCategoryRaw[]>("categories", {
-        query: {
-          slug,
-          hide_empty: false,
-        },
-        revalidate: 300,
-        tags: ["wp-categories", `wp-category-${slug}`],
-      }),
-      getNavigationItems(slug),
+    const [categories, menuItems] = await Promise.all([
+      getCategories(),
+      getPrimaryMenuNavigation().catch(() => []),
     ]);
+    const navigationItems = resolveNavigationItems(menuItems, categories, slug);
 
-    const category = categories[0];
+    const category = categories.find((item) => item.slug === slug);
     if (!category) {
       return null;
     }
@@ -785,12 +786,13 @@ export async function getAllPublicSlugs(): Promise<string[]> {
 
 export async function getHomePageData(): Promise<HomePageData> {
   try {
-    const [posts, categories, navigationItems, commentsPage] = await Promise.all([
+    const [posts, categories, menuItems, commentsPage] = await Promise.all([
       getLatestPosts(12),
       getCategories(),
-      getNavigationItems("home"),
+      getPrimaryMenuNavigation().catch(() => []),
       getApprovedCommentsPage({ page: 1, perPage: 5 }),
     ]);
+    const navigationItems = resolveNavigationItems(menuItems, categories, "home");
 
     const featuredPost = resolveFeaturedPost(posts);
     const latestPosts = posts

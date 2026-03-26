@@ -33,6 +33,14 @@ Používané premenné:
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_GRAPHQL_URL`
 - `NEXT_PUBLIC_SITE_URL`
+- `REVALIDATE_SECRET`
+
+Očakávané smerovanie:
+
+- `NEXT_PUBLIC_WP_URL=https://info.novymatrixmedia.sk`
+- `NEXT_PUBLIC_API_URL=https://info.novymatrixmedia.sk/wp-json/wp/v2`
+- `NEXT_PUBLIC_GRAPHQL_URL=https://info.novymatrixmedia.sk/graphql`
+- `NEXT_PUBLIC_SITE_URL=https://novymatrixmedia.sk`
 
 Ukážka hodnôt je v `.env.example`.
 
@@ -70,3 +78,4 @@ vercel env pull .env.vercel
 ```
 
 To je vhodné na kontrolu cloud konfigurácie. Nie je to povinný krok pre produkčný deploy.
+Do repozitára nepatria žiadne tokeny ani citlivé exporty z Vercelu.

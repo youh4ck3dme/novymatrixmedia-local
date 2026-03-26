@@ -48,8 +48,13 @@ function PostListColumn({ title, posts, href }: PostListColumnProps) {
 
 export default function MatrixHero({ data }: MatrixHeroProps) {
   return (
-    <div className="relative z-10 min-h-screen text-slate-100">
-      <div className="mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+    <div className="home-ambient-wrap relative min-h-screen text-slate-100">
+      <div aria-hidden className="home-matrix-ambient">
+        <div className="home-matrix-rail home-matrix-rail--left" />
+        <div className="home-matrix-rail home-matrix-rail--right" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <SiteHeader navigationItems={data.navigationItems} />
 
         <main className="space-y-10 py-8">
@@ -143,8 +148,6 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
           </section>
         </main>
       </div>
-
-      <div className="matrix-only pointer-events-none fixed inset-0 z-50 hidden md:block bg-[linear-gradient(rgba(10,24,30,0)_52%,rgba(2,8,12,0.2)_52%),linear-gradient(90deg,rgba(74,191,207,0.03),rgba(9,100,120,0.015),rgba(160,220,232,0.035))] bg-size-[100%_2px,3px_100%] opacity-16" />
     </div>
   );
 }

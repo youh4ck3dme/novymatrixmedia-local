@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   title: "NOVY MATRIX MEDIA | PWA",
   description: "Informačno-publicistický portál v novom rozmere.",
   manifest: "/manifest.json",
+  verification: {
+    google: "-wCURK9Y7qxlvcyGjWtw39xEehSvVAwPxnQtCaN2Wt8",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },

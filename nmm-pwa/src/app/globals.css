@@ -30,6 +30,102 @@ html[data-frontend-variant="default"] .matrix-only {
   display: none !important;
 }
 
+.home-ambient-wrap {
+  isolation: isolate;
+}
+
+.home-matrix-ambient {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.home-matrix-rail {
+  position: absolute;
+  top: -8%;
+  bottom: -8%;
+  width: clamp(70px, 8.2vw, 124px);
+  overflow: hidden;
+  opacity: 0.17;
+  filter: blur(0.55px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.9) 12%, rgba(0, 0, 0, 0.9) 88%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.9) 12%, rgba(0, 0, 0, 0.9) 88%, transparent);
+}
+
+.home-matrix-rail--left {
+  left: clamp(4px, 1.2vw, 18px);
+}
+
+.home-matrix-rail--right {
+  right: clamp(4px, 1.2vw, 18px);
+}
+
+.home-matrix-rail::before,
+.home-matrix-rail::after {
+  content:
+    "01X0A1Z0R10M1X01\A"
+    "A001N0MM110X001R\A"
+    "1X001A10R0T10N1M\A"
+    "0R1X001M10A01N10\A"
+    "10M0X11A0R001N0M\A"
+    "X010M1A0R01N10XM\A"
+    "01A0R1X001M10A01\A"
+    "M10X01A0R10N1M0X\A"
+    "0R10M1X0A10N01RM\A"
+    "1X0A01M10R01N0MX\A"
+    "0A10R1X0M01N10AR\A"
+    "10M0X01A1R00N1MX";
+  position: absolute;
+  inset: -52% 0 0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: pre;
+  font-size: 10px;
+  line-height: 1.32;
+  letter-spacing: 0.16em;
+  color: rgba(117, 255, 220, 0.36);
+  text-shadow: 0 0 6px rgba(46, 156, 129, 0.2);
+  animation: home-matrix-fall 48s linear infinite;
+  will-change: transform;
+}
+
+.home-matrix-rail::after {
+  inset: -68% 0 0;
+  color: rgba(98, 226, 196, 0.22);
+  animation-duration: 64s;
+  animation-delay: -20s;
+}
+
+@keyframes home-matrix-fall {
+  from {
+    transform: translateY(0%);
+  }
+
+  to {
+    transform: translateY(38%);
+  }
+}
+
+@media (max-width: 1024px) {
+  .home-matrix-ambient {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .home-matrix-rail::before,
+  .home-matrix-rail::after {
+    animation: none;
+    transform: none;
+  }
+
+  .home-matrix-rail {
+    opacity: 0.1;
+  }
+}
+
 .article-body {
   color: rgba(232, 241, 244, 0.92);
   font-family: var(--font-sans);
@@ -126,14 +222,14 @@ html[data-frontend-variant="default"] .matrix-only {
   padding: 1rem 1.1rem;
 }
 
-.article-body .nmm-comments-guide > p {
+.article-body .nmm-comments-guide>p {
   margin: 0.72rem 0;
   font-size: 1.03rem;
   line-height: 1.8;
   color: rgba(236, 247, 250, 0.92);
 }
 
-.article-body .nmm-comments-guide > p strong {
+.article-body .nmm-comments-guide>p strong {
   color: #ffffff;
   font-weight: 800;
 }
@@ -177,7 +273,7 @@ html[data-frontend-variant="default"] .matrix-only {
     font-size: 1.18rem;
   }
 
-  .article-body .nmm-comments-guide > p {
+  .article-body .nmm-comments-guide>p {
     font-size: 0.98rem;
     line-height: 1.72;
   }
