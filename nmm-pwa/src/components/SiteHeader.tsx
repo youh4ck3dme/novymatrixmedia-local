@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import type { SiteNavigationItem } from "@/types/wordpress";
+import SmartSearchOverlay from "@/components/SmartSearchOverlay";
 
 interface SiteHeaderProps {
   navigationItems: SiteNavigationItem[];
@@ -41,9 +42,11 @@ function NavigationLink({
 
 export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const hasOverlayOpen = isMobileMenuOpen || isSearchOpen;
 
   useEffect(() => {
-    if (!isMobileMenuOpen) {
+    if (!hasOverlayOpen) {
       return;
     }
 
@@ -60,24 +63,26 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
     };
-  }, [isMobileMenuOpen]);
+  }, [hasOverlayOpen]);
 
   useEffect(() => {
-    if (!isMobileMenuOpen) {
+    if (!hasOverlayOpen) {
       return;
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsMobileMenuOpen(false);
+        setIsSearchOpen(false);
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isMobileMenuOpen]);
+  }, [hasOverlayOpen]);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const closeSearch = () => setIsSearchOpen(false);
 
   const currentDate = new Date()
     .toLocaleDateString("sk-SK", {
@@ -98,7 +103,10 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
             aria-label={isMobileMenuOpen ? "Zatvoriť menu" : "Otvoriť menu"}
             aria-controls="mobile-navigation"
             aria-expanded={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            onClick={() => {
+              setIsSearchOpen(false);
+              setIsMobileMenuOpen((prev) => !prev);
+            }}
             className="relative z-[10000] flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-[rgba(111,231,255,0.12)] bg-[rgba(6,42,52,0.72)] text-(--foreground) transition-all hover:border-[rgba(111,231,255,0.28)] hover:bg-[rgba(10,72,88,0.85)] md:hidden"
           >
             <span className="sr-only">{isMobileMenuOpen ? "Zatvoriť menu" : "Otvoriť menu"}</span>
@@ -171,6 +179,29 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
             </h1>
           </div>
         </div>
+
+        <button
+          type="button"
+          aria-label="Otvoriť inteligentné vyhľadávanie"
+          onClick={() => {
+            setIsMobileMenuOpen(false);
+            setIsSearchOpen(true);
+          }}
+          className="flex h-11 w-11 items-center justify-center rounded-xl border border-[rgba(111,231,255,0.12)] bg-[rgba(6,42,52,0.72)] text-(--foreground) transition-colors hover:border-[rgba(111,231,255,0.28)] hover:bg-[rgba(10,72,88,0.85)]"
+        >
+          <span className="sr-only">Vyhľadávanie</span>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20L16.65 16.65" />
+          </svg>
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 text-sm sm:px-7">
@@ -187,6 +218,8 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
           })}
         </nav>
       </div>
+
+      <SmartSearchOverlay open={isSearchOpen} onClose={closeSearch} />
     </header>
   );
 }
