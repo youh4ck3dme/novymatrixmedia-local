@@ -355,6 +355,7 @@ function nmm_editorial_fields_render_meta_box( $post ) {
 	$sections    = nmm_editorial_fields_sections();
 
 	echo '<p style="margin:0 0 12px;">Bežne stačí vyplniť zdroje a video URL (ak je potrebné). Ostatné pomocné polia sa dopĺňajú automaticky pri uložení draftu.</p>';
+	nmm_editorial_fields_render_quality_checklist( $post );
 
 	foreach ( $definitions as $meta_key => $field ) {
 		if ( ( $field['section'] ?? '' ) !== 'primary' ) {
@@ -379,6 +380,219 @@ function nmm_editorial_fields_render_meta_box( $post ) {
 
 	echo '</details>';
 }
+
+/**
+ * @param WP_Post $post
+ */
+function nmm_editorial_fields_render_quality_checklist( $post ) {
+	$has_title          = '' !== trim( wp_strip_all_tags( (string) $post->post_title ) );
+	$has_content        = '' !== trim( wp_strip_all_tags( (string) $post->post_content ) );
+	$has_excerpt        = '' !== trim( (string) $post->post_excerpt );
+	$has_category       = has_category( '', $post );
+	$has_featured_image = (int) get_post_thumbnail_id( $post->ID ) > 0;
+	$video_value        = nmm_editorial_fields_get_meta_value( $post->ID, 'nmm_video_embed' );
+	$has_video_url      = '' !== $video_value;
+
+	$checks = array(
+		array(
+			'id'       => 'title',
+			'label'    => 'Titulok',
+			'ok'       => $has_title,
+			'required' => true,
+		),
+		array(
+			'id'       => 'content',
+			'label'    => 'Obsah',
+			'ok'       => $has_content,
+			'required' => true,
+		),
+		array(
+			'id'       => 'category',
+			'label'    => 'Kategória',
+			'ok'       => $has_category,
+			'required' => true,
+		),
+		array(
+			'id'       => 'excerpt',
+			'label'    => 'Perex / excerpt',
+			'ok'       => $has_excerpt,
+			'required' => false,
+		),
+		array(
+			'id'       => 'featured-image',
+			'label'    => 'Hlavný obrázok',
+			'ok'       => $has_featured_image,
+			'required' => false,
+		),
+		array(
+			'id'       => 'video-url',
+			'label'    => 'Video URL (iba ak ide o video článok)',
+			'ok'       => $has_video_url,
+			'required' => false,
+		),
+	);
+
+	$required_total = 0;
+	$required_ok    = 0;
+	$optional_total = 0;
+	$optional_ok    = 0;
+
+	foreach ( $checks as $check ) {
+		if ( ! empty( $check['required'] ) ) {
+			$required_total++;
+			if ( ! empty( $check['ok'] ) ) {
+				$required_ok++;
+			}
+		} else {
+			$optional_total++;
+			if ( ! empty( $check['ok'] ) ) {
+				$optional_ok++;
+			}
+		}
+	}
+
+	echo '<div id="nmm-editorial-checklist" style="margin:0 0 14px;border:1px solid #dcdcde;border-radius:6px;background:#fff;padding:12px;">';
+	echo '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-bottom:8px;">';
+	echo '<strong style="font-size:13px;">Rýchly kontrolný semafor</strong>';
+	echo '<span id="nmm-editorial-summary" style="font-size:12px;color:#50575e;">Povinné: ' . esc_html( (string) $required_ok ) . '/' . esc_html( (string) $required_total ) . ' · Odporúčané: ' . esc_html( (string) $optional_ok ) . '/' . esc_html( (string) $optional_total ) . '</span>';
+	echo '</div>';
+	echo '<ul style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;">';
+
+	foreach ( $checks as $check ) {
+		$status_icon  = ! empty( $check['ok'] ) ? '✓' : '•';
+		$status_color = ! empty( $check['ok'] ) ? '#0f766e' : ( ! empty( $check['required'] ) ? '#b91c1c' : '#a16207' );
+		$weight       = ! empty( $check['required'] ) ? '600' : '500';
+		$meta_suffix  = ! empty( $check['required'] ) ? ' (povinné)' : ' (odporúčané)';
+
+		echo '<li data-nmm-check="' . esc_attr( (string) $check['id'] ) . '" data-nmm-required="' . ( ! empty( $check['required'] ) ? '1' : '0' ) . '" style="display:flex;align-items:center;gap:8px;font-size:12px;">';
+		echo '<span data-nmm-check-icon="1" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;background:#f6f7f7;color:' . esc_attr( $status_color ) . ';font-weight:700;">' . esc_html( $status_icon ) . '</span>';
+		echo '<span data-nmm-check-label="1" style="font-weight:' . esc_attr( $weight ) . ';color:#1d2327;">' . esc_html( (string) $check['label'] . $meta_suffix ) . '</span>';
+		echo '</li>';
+	}
+
+	echo '</ul>';
+	echo '</div>';
+}
+
+/**
+ * Adds lightweight live refresh for checklist status in Classic and Block editor forms.
+ */
+function nmm_editorial_fields_enqueue_quality_checklist_script( $hook ) {
+	if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+		return;
+	}
+
+	$screen = get_current_screen();
+	if ( ! ( $screen instanceof WP_Screen ) || 'post' !== $screen->post_type ) {
+		return;
+	}
+	?>
+	<script>
+	(function () {
+		"use strict";
+
+		function stripHtml(value) {
+			const holder = document.createElement("div");
+			holder.innerHTML = value || "";
+			return (holder.textContent || holder.innerText || "").trim();
+		}
+
+		function getEditorContent() {
+			if (window.tinymce && window.tinymce.activeEditor && !window.tinymce.activeEditor.isHidden()) {
+				return stripHtml(window.tinymce.activeEditor.getContent());
+			}
+			const textarea = document.getElementById("content");
+			return textarea ? stripHtml(textarea.value) : "";
+		}
+
+		function getCheckedCategoryLabels() {
+			const boxes = document.querySelectorAll("#categorychecklist input[type='checkbox']:checked");
+			return Array.from(boxes).map(function (box) {
+				const label = box.closest("label");
+				return label ? (label.textContent || "").trim() : "";
+			});
+		}
+
+		function updateChecklist() {
+			const wrapper = document.getElementById("nmm-editorial-checklist");
+			if (!wrapper) {
+				return;
+			}
+
+			const titleInput = document.getElementById("title");
+			const excerptInput = document.getElementById("excerpt");
+			const thumbInput = document.getElementById("_thumbnail_id");
+			const videoInput = document.getElementById("nmm_video_embed");
+			const categories = getCheckedCategoryLabels();
+			const hasVideoCategory = categories.some(function (label) {
+				return /video/i.test(label);
+			});
+
+			const checks = {
+				"title": !!(titleInput && titleInput.value.trim()),
+				"content": getEditorContent().length > 0,
+				"category": categories.length > 0,
+				"excerpt": !!(excerptInput && excerptInput.value.trim()),
+				"featured-image": !!(thumbInput && thumbInput.value.trim()),
+				"video-url": !hasVideoCategory || !!(videoInput && videoInput.value.trim())
+			};
+
+			let requiredTotal = 0;
+			let requiredOk = 0;
+			let optionalTotal = 0;
+			let optionalOk = 0;
+
+			Object.keys(checks).forEach(function (checkId) {
+				const row = wrapper.querySelector("[data-nmm-check='" + checkId + "']");
+				if (!row) {
+					return;
+				}
+
+				const isRequired = row.getAttribute("data-nmm-required") === "1";
+				const isOk = checks[checkId];
+				const icon = row.querySelector("[data-nmm-check-icon='1']");
+				const label = row.querySelector("[data-nmm-check-label='1']");
+
+				if (isRequired) {
+					requiredTotal += 1;
+					if (isOk) {
+						requiredOk += 1;
+					}
+				} else {
+					optionalTotal += 1;
+					if (isOk) {
+						optionalOk += 1;
+					}
+				}
+
+				if (icon) {
+					icon.textContent = isOk ? "✓" : "•";
+					icon.style.color = isOk ? "#0f766e" : (isRequired ? "#b91c1c" : "#a16207");
+				}
+
+				if (label) {
+					label.style.opacity = isOk ? "1" : "0.84";
+				}
+			});
+
+			const summary = document.getElementById("nmm-editorial-summary");
+			if (summary) {
+				summary.textContent = "Povinné: " + requiredOk + "/" + requiredTotal + " · Odporúčané: " + optionalOk + "/" + optionalTotal;
+			}
+		}
+
+		document.addEventListener("input", updateChecklist, true);
+		document.addEventListener("change", updateChecklist, true);
+		document.addEventListener("tinymce-editor-init", function () {
+			setTimeout(updateChecklist, 0);
+		});
+		window.addEventListener("load", updateChecklist);
+		setTimeout(updateChecklist, 120);
+	})();
+	</script>
+	<?php
+}
+add_action( 'admin_footer', 'nmm_editorial_fields_enqueue_quality_checklist_script' );
 
 /**
  * @param WP_Post               $post

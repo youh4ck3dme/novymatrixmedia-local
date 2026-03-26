@@ -10,6 +10,9 @@ const AUTHOR_NAME_MAX_LENGTH = 120;
 const AUTHOR_EMAIL_MAX_LENGTH = 190;
 const AUTHOR_URL_MAX_LENGTH = 255;
 const MIN_FORM_FILL_MS = 2500;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX_SUBMITS = 4;
+const RATE_LIMIT_CLEANUP_INTERVAL_MS = 60 * 1000;
 
 interface CreateCommentPayload {
   postId?: number;
@@ -19,6 +22,29 @@ interface CreateCommentPayload {
   content?: string;
   company?: string;
   formStartedAt?: number;
+}
+
+interface CommentRateLimitEntry {
+  count: number;
+  expiresAt: number;
+}
+
+interface CommentRateLimitStore {
+  entries: Map<string, CommentRateLimitEntry>;
+  lastCleanupAt: number;
+}
+
+declare global {
+  var __nmmCommentRateLimitStore: CommentRateLimitStore | undefined;
+}
+
+const commentRateLimitStore: CommentRateLimitStore = globalThis.__nmmCommentRateLimitStore ?? {
+  entries: new Map<string, CommentRateLimitEntry>(),
+  lastCleanupAt: 0,
+};
+
+if (!globalThis.__nmmCommentRateLimitStore) {
+  globalThis.__nmmCommentRateLimitStore = commentRateLimitStore;
 }
 
 function normalizeString(value: unknown): string {
@@ -44,6 +70,62 @@ function isValidPublicUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+function getRequestClientIp(request: Request): string {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const [firstIp] = forwardedFor.split(",").map((part) => part.trim()).filter(Boolean);
+    if (firstIp) {
+      return firstIp;
+    }
+  }
+
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) {
+    return realIp;
+  }
+
+  return "unknown";
+}
+
+function cleanupRateLimitEntries(now: number): void {
+  if (now - commentRateLimitStore.lastCleanupAt < RATE_LIMIT_CLEANUP_INTERVAL_MS) {
+    return;
+  }
+
+  for (const [key, value] of commentRateLimitStore.entries) {
+    if (value.expiresAt <= now) {
+      commentRateLimitStore.entries.delete(key);
+    }
+  }
+
+  commentRateLimitStore.lastCleanupAt = now;
+}
+
+function isCommentSubmitRateLimited(request: Request, postId: number): boolean {
+  const now = Date.now();
+  cleanupRateLimitEntries(now);
+
+  const ip = getRequestClientIp(request);
+  const key = `${ip}:${postId}`;
+  const existing = commentRateLimitStore.entries.get(key);
+
+  if (!existing || existing.expiresAt <= now) {
+    commentRateLimitStore.entries.set(key, {
+      count: 1,
+      expiresAt: now + RATE_LIMIT_WINDOW_MS,
+    });
+    return false;
+  }
+
+  if (existing.count >= RATE_LIMIT_MAX_SUBMITS) {
+    return true;
+  }
+
+  existing.count += 1;
+  commentRateLimitStore.entries.set(key, existing);
+  return false;
 }
 
 function getWordPressCommentAuthHeader(): string | null {
@@ -124,6 +206,12 @@ export async function POST(request: Request) {
     return NextResponse.json({
       error: "Chýba identifikátor článku.",
     }, { status: 400 });
+  }
+
+  if (isCommentSubmitRateLimited(request, postId)) {
+    return NextResponse.json({
+      error: "Odosielate komentáre príliš rýchlo. Skúste to znova o pár minút.",
+    }, { status: 429 });
   }
 
   if (!authorName || authorName.length > AUTHOR_NAME_MAX_LENGTH) {

@@ -58,6 +58,7 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
                     src={post.imageUrl}
                     alt={post.imageAlt}
                     fill
+                    quality={90}
                     sizes="56px"
                     className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                   />

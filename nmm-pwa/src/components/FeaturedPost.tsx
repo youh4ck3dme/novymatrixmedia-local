@@ -30,7 +30,7 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
             fill
             priority
             fetchPriority="high"
-            quality={90}
+            quality={92}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 820px"
             className="object-cover transition-all duration-700 group-hover:scale-[1.02]"
           />

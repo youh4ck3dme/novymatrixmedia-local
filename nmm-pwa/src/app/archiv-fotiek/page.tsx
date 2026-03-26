@@ -74,7 +74,7 @@ export default async function PhotoArchivePage() {
                         src={post.imageUrl}
                         alt={post.imageAlt}
                         fill
-                        quality={90}
+                        quality={92}
                         sizes="(max-width: 768px) 100vw, 33vw"
                         className="object-cover transition-transform duration-300 hover:scale-[1.02]"
                       />

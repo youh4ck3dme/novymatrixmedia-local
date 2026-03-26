@@ -32,6 +32,9 @@ Reference file:
 3. If Google web verification is being tested, ensure the active production deploy contains:
    - `nmm-pwa/src/app/layout.tsx`
    - `nmm-pwa/public/google2e037b48f21a0d2d.html`
+4. Run automated smoke test before and after release:
+   - `cd nmm-pwa`
+   - `npm run test:smoke -- --base https://novymatrixmedia.sk`
 
 ## Smoke Test
 
@@ -90,6 +93,13 @@ Reference file:
 2. Check WordPress comments endpoint availability.
 3. Check app password env only if proxy auth is configured.
 4. Check moderation status in WordPress.
+
+## Rollback Playbook (Low Risk)
+
+1. Before release, keep previous successful Vercel deployment ID ready.
+2. If production smoke test fails, rollback immediately to previous deployment.
+3. Re-run `npm run test:smoke -- --base https://novymatrixmedia.sk` after rollback.
+4. Freeze further production deploys until preview smoke test is green again.
 
 ## Useful Technical Endpoints
 

@@ -243,7 +243,7 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
                               src={result.imageUrl}
                               alt={result.title}
                               fill
-                              quality={88}
+                              quality={90}
                               sizes="108px"
                               className="object-cover"
                             />

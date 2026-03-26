@@ -62,7 +62,7 @@ Canonical docs now are:
 Legacy overlap docs were reduced to redirect notes:
 
 - `docs/editorprepojenienextjs.md`
-- `docs/system-map.md`
+- `docs/SYSTEM-MAP.md`
 - `docs/produkcia-checklist.md`
 - `docs/workflow-headless-content-comments.md`
 - `docs/cms-article-model.md`
