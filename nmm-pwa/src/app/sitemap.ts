@@ -21,6 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "hourly",
       priority: 0.9,
     },
+    {
+      url: `${siteUrl}/archiv-fotiek`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
     ...slugs.map((slug) => ({
       url: `${siteUrl}/${slug}`,
       lastModified: now,

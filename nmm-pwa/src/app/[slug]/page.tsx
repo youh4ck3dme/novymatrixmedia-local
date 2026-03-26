@@ -30,6 +30,14 @@ function renderHtml(content?: string) {
   return { __html: linkifyPlainUrlsInHtml(content ?? "") };
 }
 
+function truncateLinkLabel(value: string, limit = 30): string {
+  if (value.length <= limit) {
+    return value;
+  }
+
+  return `${value.slice(0, limit)}...`;
+}
+
 function linkifyPlainUrlsInHtml(html: string): string {
   if (!html || !html.includes("http")) {
     return html;
@@ -63,7 +71,7 @@ function linkifyPlainUrlsInHtml(html: string): string {
           return rawUrl;
         }
 
-        return `<a href="${cleanUrl}" target="_blank" rel="noreferrer noopener">${cleanUrl}</a>${trailing}`;
+        return `<a href="${cleanUrl}" target="_blank" rel="noreferrer noopener">${truncateLinkLabel(cleanUrl, 30)}</a>${trailing}`;
       });
     })
     .join("");
@@ -170,6 +178,23 @@ function getVideoAsset(value?: string): { kind: "iframe" | "video"; src: string 
   return null;
 }
 
+function getRawVideoSourceLink(value?: string): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const candidate = extractIframeSrc(value) ?? value.trim();
+  if (!candidate) {
+    return null;
+  }
+
+  if (!/^https?:\/\//i.test(candidate)) {
+    return null;
+  }
+
+  return candidate;
+}
+
 function getIngestSourceLabel(source?: string): string | null {
   if (!source) {
     return null;
@@ -270,9 +295,12 @@ export default async function SlugPage({ params }: SlugPageProps) {
   const shareLinks = getArticleShareLinks(post.title, post.href);
   const galleryItems = parseGalleryItems(post.gallery);
   const videoAsset = getVideoAsset(post.videoEmbed);
+  const videoSourceLink = getRawVideoSourceLink(post.videoEmbed);
   const ingestSourceLabel = getIngestSourceLabel(post.ingestSource);
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
   const sources = post.sources ?? [];
+  const conclusionNumber = post.conclusionNumber?.trim() || "1";
+  const conclusionText = post.conclusionText?.trim();
 
   return (
     <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
@@ -378,6 +406,13 @@ export default async function SlugPage({ params }: SlugPageProps) {
 
               <div className="article-body mx-auto max-w-3xl" dangerouslySetInnerHTML={renderHtml(post.content || `<p>${post.excerpt}</p>`)} />
 
+              {conclusionText ? (
+                <section className="mx-auto mt-10 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
+                  <h2 className="font-serif text-3xl text-white"># Záver {conclusionNumber}</h2>
+                  <p className="mt-3 text-base leading-relaxed text-slate-100/84">{conclusionText}</p>
+                </section>
+              ) : null}
+
               {videoAsset ? (
                 <section className="mx-auto mt-12 max-w-4xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.62)] p-4 sm:p-6">
                   <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Video</div>
@@ -399,6 +434,19 @@ export default async function SlugPage({ params }: SlugPageProps) {
                       </video>
                     )}
                   </div>
+                  {videoSourceLink ? (
+                    <p className="mt-3 text-sm text-slate-300/80">
+                      Odkaz na video:{" "}
+                      <a
+                        href={videoSourceLink}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="text-(--accent) transition-colors hover:text-white"
+                      >
+                        {truncateLinkLabel(videoSourceLink, 30)}
+                      </a>
+                    </p>
+                  ) : null}
                 </section>
               ) : null}
 

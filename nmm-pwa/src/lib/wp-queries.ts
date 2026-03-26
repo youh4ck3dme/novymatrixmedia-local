@@ -202,6 +202,8 @@ function normalizeEditorialMeta(meta?: WordPressEditorialMetaRaw) {
     factBox: parseLines(meta?.nmm_fact_box),
     relatedPostIds: parseIdList(meta?.nmm_related_posts),
     quoteBlock: meta?.nmm_quote_block ? stripHtml(meta.nmm_quote_block) : undefined,
+    conclusionNumber: meta?.nmm_conclusion_number ? stripHtml(meta.nmm_conclusion_number) : undefined,
+    conclusionText: meta?.nmm_conclusion_text ? stripHtml(meta.nmm_conclusion_text) : undefined,
     seoTitle: meta?.nmm_seo_title ? stripHtml(meta.nmm_seo_title) : undefined,
     seoDescription: meta?.nmm_seo_description ? stripHtml(meta.nmm_seo_description) : undefined,
     ogTitle: meta?.nmm_og_title ? stripHtml(meta.nmm_og_title) : undefined,
@@ -268,6 +270,8 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     estimatedReadingTime: editorialMeta.estimatedReadingTime,
     factBox: editorialMeta.factBox,
     quoteBlock: editorialMeta.quoteBlock,
+    conclusionNumber: editorialMeta.conclusionNumber,
+    conclusionText: editorialMeta.conclusionText,
     tagLabels: getTagLabels(post),
     relatedPostIds: editorialMeta.relatedPostIds,
     videoEmbed: editorialMeta.videoEmbed,
@@ -285,6 +289,42 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     telegramAuthor: editorialMeta.telegramAuthor,
     telegramPermalink: editorialMeta.telegramPermalink,
   };
+}
+
+async function getAllPostsForArchive(maxPages = 10): Promise<WordPressPostRaw[]> {
+  const allPosts: WordPressPostRaw[] = [];
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    let pagePosts: WordPressPostRaw[] = [];
+
+    try {
+      pagePosts = await wpRestFetch<WordPressPostRaw[]>("posts", {
+        query: {
+          _embed: 1,
+          per_page: 100,
+          page,
+          orderby: "date",
+          order: "desc",
+        },
+        revalidate: 300,
+        tags: ["wp-posts", "wp-photo-archive"],
+      });
+    } catch {
+      break;
+    }
+
+    if (pagePosts.length === 0) {
+      break;
+    }
+
+    allPosts.push(...pagePosts);
+
+    if (pagePosts.length < 100) {
+      break;
+    }
+  }
+
+  return allPosts;
 }
 
 function normalizeCategory(category: WordPressCategoryRaw): SiteCategory {
@@ -895,5 +935,18 @@ export async function getHomePageData(): Promise<HomePageData> {
       recentComments: [],
       navigationItems: [],
     };
+  }
+}
+
+export async function getPhotoArchivePosts(): Promise<SitePost[]> {
+  try {
+    const posts = await getAllPostsForArchive();
+
+    return posts
+      .map(normalizePost)
+      .filter((post) => post.imageUrl !== FALLBACK_IMAGE)
+      .sort((a, b) => a.title.localeCompare(b.title, "sk", { sensitivity: "base" }));
+  } catch {
+    return [];
   }
 }

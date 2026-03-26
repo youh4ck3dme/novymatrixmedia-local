@@ -77,6 +77,20 @@ function nmm_editorial_fields_definitions() {
 			'help'        => 'Vlož YouTube URL alebo interné media URL (voliteľné).',
 			'placeholder' => 'https://www.youtube.com/watch?v=VIDEO_ID',
 		),
+		'nmm_conclusion_number' => array(
+			'section'     => 'primary',
+			'label'       => 'Záver - číslo',
+			'type'        => 'text',
+			'placeholder' => '1',
+		),
+		'nmm_conclusion_text' => array(
+			'section'     => 'primary',
+			'label'       => 'Záver - text',
+			'type'        => 'textarea',
+			'rows'        => 2,
+			'help'        => 'Voliteľné. Zobrazí sa pod obsahom ako blok „# Záver <číslo>“.',
+			'placeholder' => 'Krátke zhrnutie článku v 1-3 vetách.',
+		),
 		'nmm_article_type' => array(
 			'section' => 'advanced',
 			'label'   => 'Typ článku',

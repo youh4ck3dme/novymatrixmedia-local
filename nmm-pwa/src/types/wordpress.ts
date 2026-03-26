@@ -27,6 +27,8 @@ export interface WordPressEditorialMetaRaw {
   nmm_fact_box?: string;
   nmm_related_posts?: string;
   nmm_quote_block?: string;
+  nmm_conclusion_number?: string;
+  nmm_conclusion_text?: string;
   nmm_seo_title?: string;
   nmm_seo_description?: string;
   nmm_og_title?: string;
@@ -126,6 +128,8 @@ export interface SitePost {
   estimatedReadingTime?: string;
   factBox?: string[];
   quoteBlock?: string;
+  conclusionNumber?: string;
+  conclusionText?: string;
   tagLabels?: string[];
   relatedPostIds?: number[];
   videoEmbed?: string;
