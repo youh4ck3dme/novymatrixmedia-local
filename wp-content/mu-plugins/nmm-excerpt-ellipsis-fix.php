@@ -2,7 +2,7 @@
 /**
  * Plugin Name: NMM Excerpt Ellipsis Fix
  * Description: Normalizes malformed excerpt ellipsis tokens and provides a WP-CLI cleanup command for stored excerpts.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Novy Matrix Media
  */
 
@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Returns excerpt text with malformed trailing ellipsis tokens normalized.
+ * Returns excerpt text with malformed ellipsis tokens normalized.
  *
  * @param string $text Excerpt text.
  * @return string
@@ -21,11 +21,17 @@ function nmm_excerpt_normalize_ellipsis_token( $text ) {
 		return $text;
 	}
 
-	return preg_replace(
-		'/(?:\s|&nbsp;|&#160;)*(?:#8230|&#0*8230;|&amp;#0*8230;|&#0*38;#0*8230;|&hellip;|&amp;hellip;)\s*$/i',
+	$text = preg_replace(
+		'/(#8230|&#0*8230;|&amp;#0*8230;|&#0*38;#0*8230;|&hellip;|&amp;hellip;)/i',
 		'...',
 		$text
 	);
+
+	// Collapse noisy punctuation variants to a single plain-text ellipsis.
+	$text = preg_replace( '/\.{4,}/', '...', $text );
+	$text = preg_replace( '/\.\.\.\s+\./', '...', $text );
+
+	return $text;
 }
 
 /**
@@ -49,9 +55,10 @@ function nmm_excerpt_normalize_output( $excerpt ) {
 	return nmm_excerpt_normalize_ellipsis_token( $excerpt );
 }
 add_filter( 'get_the_excerpt', 'nmm_excerpt_normalize_output', 9999 );
+add_filter( 'the_excerpt', 'nmm_excerpt_normalize_output', 9999 );
 
 /**
- * Cleans malformed trailing ellipsis tokens in stored post excerpts.
+ * Cleans malformed ellipsis tokens in stored post excerpts.
  *
  * @param bool $dry_run    When true, does not write updates.
  * @param int  $batch_size Number of records loaded per loop.
@@ -73,7 +80,13 @@ function nmm_excerpt_cleanup_stored_values( $dry_run = true, $batch_size = 500 )
 				 WHERE ID > %d
 				   AND post_excerpt IS NOT NULL
 				   AND post_excerpt <> ''
-				   AND ( post_excerpt LIKE %s OR post_excerpt LIKE %s OR post_excerpt LIKE %s OR post_excerpt LIKE %s )
+				   AND (
+					post_excerpt LIKE %s
+					OR post_excerpt LIKE %s
+					OR post_excerpt LIKE %s
+					OR post_excerpt LIKE %s
+					OR post_excerpt LIKE %s
+				   )
 				 ORDER BY ID ASC
 				 LIMIT %d",
 				$last_id,
@@ -81,6 +94,7 @@ function nmm_excerpt_cleanup_stored_values( $dry_run = true, $batch_size = 500 )
 				'%8230;%',
 				'%hellip%',
 				'%#038;#8230;%',
+				'%....%',
 				$batch_size
 			)
 		);
