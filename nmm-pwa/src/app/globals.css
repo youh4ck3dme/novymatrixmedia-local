@@ -113,6 +113,12 @@ html[data-frontend-variant="default"] .matrix-only {
   }
 }
 
+@media (min-width: 1024px) {
+  html {
+    font-size: 80%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .home-matrix-rail::before,
