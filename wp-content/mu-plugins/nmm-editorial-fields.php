@@ -213,6 +213,27 @@ function nmm_editorial_fields_get_author_options( $selected_value = '' ) {
 		'' => 'Automaticky podľa WordPress autora',
 	);
 
+	$external_author_options = array(
+		'Hlavný denník',
+		'Hlavné Správy',
+		'Infovojna',
+		'Napalete',
+		'Zem a Vek',
+		'Slobodný vysielač',
+		'Extraplus',
+		'Veci verejné',
+		'Národný hlas',
+	);
+
+	foreach ( $external_author_options as $external_author_name ) {
+		$external_author_name = trim( (string) $external_author_name );
+		if ( '' === $external_author_name ) {
+			continue;
+		}
+
+		$options[ $external_author_name ] = $external_author_name;
+	}
+
 	$users = get_users(
 		array(
 			'who'     => 'authors',
@@ -1078,5 +1099,4 @@ function nmm_editorial_fields_sync_legacy_source_meta( $post_id, $post, $update 
 	}
 }
 add_action( 'save_post_post', 'nmm_editorial_fields_sync_legacy_source_meta', 25, 3 );
-
 
