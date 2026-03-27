@@ -46,11 +46,11 @@ export default function SiteFooter() {
   return (
     <footer className="border-t border-[rgba(111,231,255,0.1)] bg-[linear-gradient(180deg,rgba(5,26,34,0.9),rgba(3,18,24,0.96))]">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-[auto,1fr,auto] md:items-start">
+        <div className="grid grid-cols-1 gap-8 justify-items-center md:grid-cols-[auto,1fr,auto] md:items-start md:justify-items-stretch">
           <Link
             href="/"
             aria-label="NOVY MATRIX MEDIA - domov"
-            className="inline-flex items-center gap-3 rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(7,45,55,0.48)] px-3 py-2 transition-colors hover:border-[rgba(111,231,255,0.28)]"
+            className="inline-flex items-center gap-3 rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(7,45,55,0.48)] px-3 py-2 transition-colors hover:border-[rgba(111,231,255,0.28)] md:justify-self-start"
           >
             <Image
               src="/brand/www.png"
@@ -62,7 +62,7 @@ export default function SiteFooter() {
             <span className="font-serif text-sm uppercase tracking-[0.14em] text-white">NOVY MATRIX MEDIA</span>
           </Link>
 
-          <nav aria-label="Footer menu" className="flex flex-wrap items-center gap-x-5 gap-y-3 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200/80">
+          <nav aria-label="Footer menu" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-center font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200/80 md:justify-start md:text-left">
             {FOOTER_NAV_ITEMS.map((item) => (
               <Link key={item.href} href={item.href} className="transition-colors hover:text-(--accent)">
                 {item.label}
@@ -70,7 +70,7 @@ export default function SiteFooter() {
             ))}
           </nav>
 
-          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
             <a
               href={TELEGRAM_URL}
               target="_blank"
@@ -92,10 +92,11 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-6 border-t border-[rgba(111,231,255,0.08)] pt-4 font-sans text-[10px] uppercase tracking-[0.16em] text-slate-300/56">
+        <div className="mt-6 border-t border-[rgba(111,231,255,0.08)] pt-4 text-center font-sans text-[10px] uppercase tracking-[0.16em] text-slate-300/56 md:text-left">
           © {new Date().getFullYear()} NOVY MATRIX MEDIA
         </div>
       </div>
     </footer>
   );
 }
+
