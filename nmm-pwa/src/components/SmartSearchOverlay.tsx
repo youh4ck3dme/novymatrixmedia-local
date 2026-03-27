@@ -222,8 +222,9 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
           {hasSearched && results.length > 0 ? (
             <div className="space-y-3">
               {results.map((result) => {
-                const excerpt = truncateText(stripHtml(result.excerpt), 170);
+                const excerpt = truncateText(stripHtml(result.excerpt), 120);
                 const isPhotoResult = result.resultType === "photo";
+                const hasImage = typeof result.imageUrl === "string" && result.imageUrl.trim() !== "";
 
                 return (
                   <article key={`${result.resultType}-${result.id}`} className="rounded-lg border border-[rgba(111,231,255,0.1)] bg-[rgba(7,34,42,0.62)] p-3 sm:p-4">
@@ -236,15 +237,15 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
                         <span>{result.dateLabel}</span>
                       </div>
 
-                      <div className={isPhotoResult && result.imageUrl ? "grid grid-cols-[84px_minmax(0,1fr)] gap-3 sm:grid-cols-[108px_minmax(0,1fr)]" : ""}>
-                        {isPhotoResult && result.imageUrl ? (
+                      <div className={hasImage ? "grid grid-cols-[80px_minmax(0,1fr)] gap-3 sm:grid-cols-[96px_minmax(0,1fr)]" : ""}>
+                        {hasImage ? (
                           <div className="relative h-20 w-full overflow-hidden rounded-md border border-[rgba(111,231,255,0.12)] sm:h-24">
                             <Image
-                              src={result.imageUrl}
+                              src={result.imageUrl!}
                               alt={result.title}
                               fill
                               quality={90}
-                              sizes="108px"
+                              sizes="96px"
                               className="object-cover"
                             />
                           </div>
