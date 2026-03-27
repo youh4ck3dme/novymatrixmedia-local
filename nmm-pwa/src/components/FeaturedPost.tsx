@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
+import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { SitePost } from "@/types/wordpress";
 
 interface FeaturedPostProps {
@@ -13,6 +14,7 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
   const featuredLabel = post.highlightBadge || "Featured";
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
   const editorialReadinessTone = getEditorialReadinessTone(post.editorialReadiness);
+  const sourceAttribution = resolveSourceAttribution(post);
   const editorialReadinessClassName = editorialReadinessTone === "warning"
     ? "rounded-full border border-[rgba(251,146,60,0.28)] px-3 py-1 text-orange-100/84"
     : editorialReadinessTone === "progress"
@@ -39,7 +41,17 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
       <div className="space-y-5 p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3 font-sans text-xs uppercase tracking-[0.22em] text-(--foreground)/74">
           <span className="rounded-full bg-[rgba(26,149,190,0.72)] px-3 py-1 text-white">{post.categoryLabel}</span>
-          <span>{post.sourceName || "Nový Matrix Media"}</span>
+          {sourceAttribution ? (
+            sourceAttribution.url ? (
+              <a href={sourceAttribution.url} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+                Zdroj: {sourceAttribution.name}
+              </a>
+            ) : (
+              <span className="text-(--accent)">Zdroj: {sourceAttribution.name}</span>
+            )
+          ) : (
+            <span>{post.sourceName || "Nový Matrix Media"}</span>
+          )}
           <span className="text-(--accent)">{featuredLabel}</span>
           {post.articleType ? <span>{post.articleType}</span> : null}
           {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}

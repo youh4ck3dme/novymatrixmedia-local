@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
+import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { SitePost } from "@/types/wordpress";
 
 interface PostCardProps {
@@ -12,6 +13,7 @@ export default function PostCard({ post }: PostCardProps) {
   const isTelegramIngest = post.ingestSource === "telegram";
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
   const editorialReadinessTone = getEditorialReadinessTone(post.editorialReadiness);
+  const sourceAttribution = resolveSourceAttribution(post);
   const editorialReadinessClassName = editorialReadinessTone === "warning"
     ? "rounded-full border border-[rgba(251,146,60,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-orange-100/82"
     : editorialReadinessTone === "progress"
@@ -44,6 +46,15 @@ export default function PostCard({ post }: PostCardProps) {
       <p className="font-sans text-xs uppercase tracking-[0.2em] text-slate-300/68">
         {post.publishedAt}{post.estimatedReadingTime ? ` · ${post.estimatedReadingTime}` : ""}
       </p>
+      {sourceAttribution ? (
+        <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/72">
+          Zdroj: {sourceAttribution.url ? (
+            <a href={sourceAttribution.url} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+              {sourceAttribution.name}
+            </a>
+          ) : sourceAttribution.name}
+        </p>
+      ) : null}
     </article>
   );
 }

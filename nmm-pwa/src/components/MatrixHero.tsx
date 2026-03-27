@@ -4,6 +4,7 @@ import FeaturedPost from "@/components/FeaturedPost";
 import PostCard from "@/components/PostCard";
 import SiteHeader from "@/components/SiteHeader";
 
+import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { HomePageData, SitePost } from "@/types/wordpress";
 
 interface MatrixHeroProps {
@@ -28,16 +29,25 @@ function PostListColumn({ title, posts, href }: PostListColumnProps) {
 
       {posts.length > 0 ? (
         <div className="space-y-4">
-          {posts.map((post) => (
-            <article key={post.id} className="rounded-lg border border-[rgba(111,231,255,0.08)] bg-[rgba(6,34,42,0.4)] p-3">
-              <Link href={post.href} className="block font-serif text-lg leading-tight text-white transition-colors hover:text-(--accent)">
-                {post.title}
-              </Link>
-              <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/70">
-                {post.publishedAt}
-              </p>
-            </article>
-          ))}
+          {posts.map((post) => {
+            const sourceAttribution = resolveSourceAttribution(post);
+
+            return (
+              <article key={post.id} className="rounded-lg border border-[rgba(111,231,255,0.08)] bg-[rgba(6,34,42,0.4)] p-3">
+                <Link href={post.href} className="block font-serif text-lg leading-tight text-white transition-colors hover:text-(--accent)">
+                  {post.title}
+                </Link>
+                <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/70">
+                  {post.publishedAt}
+                </p>
+                {sourceAttribution ? (
+                  <p className="mt-1 font-sans text-[10px] uppercase tracking-[0.16em] text-slate-300/66">
+                    Zdroj: {sourceAttribution.name}
+                  </p>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       ) : (
         <p className="text-sm text-slate-300/74">Zatiaľ bez obsahu.</p>

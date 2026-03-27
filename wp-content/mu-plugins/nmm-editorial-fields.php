@@ -24,10 +24,11 @@ function nmm_editorial_fields_definitions() {
 			'placeholder' => 'Krátky kontext pod hlavným nadpisom',
 		),
 		'nmm_author_name' => array(
-			'section'     => 'advanced',
-			'label'       => 'Autor',
-			'type'        => 'text',
-			'placeholder' => 'Nový Matrix Media',
+			'section'          => 'advanced',
+			'label'            => 'Autor',
+			'type'             => 'select',
+			'help'             => 'Ak nezvolíš autora, použije sa WordPress autor článku.',
+			'options_callback' => 'nmm_editorial_fields_get_author_options',
 		),
 		'nmm_source_name' => array(
 			'section'     => 'advanced',
@@ -198,6 +199,50 @@ function nmm_editorial_fields_sections() {
 		'primary'      => 'Rýchle nastavenie',
 		'advanced'     => 'Rozšírené nastavenia',
 	);
+}
+
+/**
+ * Builds a stable list of selectable author names for the editorial field.
+ * Keeps backward compatibility by preserving unknown previously stored values.
+ *
+ * @param string $selected_value
+ * @return array<string, string>
+ */
+function nmm_editorial_fields_get_author_options( $selected_value = '' ) {
+	$options = array(
+		'' => 'Automaticky podľa WordPress autora',
+	);
+
+	$users = get_users(
+		array(
+			'who'     => 'authors',
+			'orderby' => 'display_name',
+			'order'   => 'ASC',
+			'fields'  => array( 'display_name' ),
+		)
+	);
+
+	if ( is_array( $users ) ) {
+		foreach ( $users as $user ) {
+			if ( ! ( $user instanceof WP_User ) ) {
+				continue;
+			}
+
+			$display_name = trim( (string) $user->display_name );
+			if ( '' === $display_name ) {
+				continue;
+			}
+
+			$options[ $display_name ] = $display_name;
+		}
+	}
+
+	$selected_value = trim( (string) $selected_value );
+	if ( '' !== $selected_value && ! isset( $options[ $selected_value ] ) ) {
+		$options[ $selected_value ] = $selected_value;
+	}
+
+	return $options;
 }
 
 /**
@@ -611,8 +656,20 @@ function nmm_editorial_fields_render_input( $post, $meta_key, $field ) {
 	if ( 'textarea' === $field['type'] ) {
 		echo '<textarea id="' . esc_attr( $meta_key ) . '" name="' . esc_attr( $meta_key ) . '" rows="' . esc_attr( (string) $rows ) . '" style="width:100%;"' . $placeholder_attr . '>' . esc_textarea( (string) $value ) . '</textarea>';
 	} elseif ( 'select' === $field['type'] ) {
+		$options = isset( $field['options'] ) && is_array( $field['options'] ) ? $field['options'] : array();
+		if (
+			isset( $field['options_callback'] ) &&
+			is_string( $field['options_callback'] ) &&
+			function_exists( $field['options_callback'] )
+		) {
+			$dynamic_options = call_user_func( $field['options_callback'], (string) $value );
+			if ( is_array( $dynamic_options ) ) {
+				$options = $dynamic_options;
+			}
+		}
+
 		echo '<select id="' . esc_attr( $meta_key ) . '" name="' . esc_attr( $meta_key ) . '" style="width:100%;">';
-		foreach ( $field['options'] as $option_value => $option_label ) {
+		foreach ( $options as $option_value => $option_label ) {
 			echo '<option value="' . esc_attr( (string) $option_value ) . '" ' . selected( (string) $value, (string) $option_value, false ) . '>' . esc_html( (string) $option_label ) . '</option>';
 		}
 		echo '</select>';
@@ -743,7 +800,10 @@ function nmm_editorial_fields_apply_fallbacks( $post_id, $post, $update ) {
 	$og_desc_source     = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_seo_description' );
 	$og_desc_fallback   = '' !== $og_desc_source ? $og_desc_source : $seo_desc_fallback;
 	$reading_time       = nmm_editorial_fields_calculate_reading_time( $post );
+	$post_author_name   = get_the_author_meta( 'display_name', (int) $post->post_author );
+	$author_fallback    = is_string( $post_author_name ) ? trim( $post_author_name ) : '';
 
+	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_author_name', $author_fallback );
 	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_seo_title', $seo_title_fallback );
 	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_seo_description', $seo_desc_fallback );
 	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_og_title', $og_title_fallback );
@@ -1018,3 +1078,5 @@ function nmm_editorial_fields_sync_legacy_source_meta( $post_id, $post, $update 
 	}
 }
 add_action( 'save_post_post', 'nmm_editorial_fields_sync_legacy_source_meta', 25, 3 );
+
+

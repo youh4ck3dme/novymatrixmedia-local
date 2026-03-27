@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel } from "@/lib/editorial-workflow";
+import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { SitePost } from "@/types/wordpress";
 
 interface SidebarFeedProps {
@@ -47,33 +48,42 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
           </div>
 
           <div className="flex flex-col gap-6 font-sans text-sm">
-            {latestPosts.map((post) => (
-              <Link
-                key={post.id}
-                href={post.href}
-                className="group flex items-start gap-3 rounded-lg border border-[rgba(111,231,255,0.06)] bg-[rgba(6,34,42,0.36)] p-3 transition-colors hover:border-(--accent)"
-              >
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-[rgba(111,231,255,0.10)]">
-                  <Image
-                    src={post.imageUrl}
-                    alt={post.imageAlt}
-                    fill
-                    quality={90}
-                    sizes="56px"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-(--accent)/90">
-                    {post.categoryLabel}
-                    {getEditorialReadinessLabel(post.editorialReadiness) ? ` / ${getEditorialReadinessLabel(post.editorialReadiness)}` : ""}
-                  </span>
-                  <p className="text-sm leading-relaxed text-slate-100/86 transition-colors group-hover:text-white">
-                    {post.title}
-                  </p>
-                </div>
-              </Link>
-            ))}
+            {latestPosts.map((post) => {
+              const sourceAttribution = resolveSourceAttribution(post);
+
+              return (
+                <Link
+                  key={post.id}
+                  href={post.href}
+                  className="group flex items-start gap-3 rounded-lg border border-[rgba(111,231,255,0.06)] bg-[rgba(6,34,42,0.36)] p-3 transition-colors hover:border-(--accent)"
+                >
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-[rgba(111,231,255,0.10)]">
+                    <Image
+                      src={post.imageUrl}
+                      alt={post.imageAlt}
+                      fill
+                      quality={90}
+                      sizes="56px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-(--accent)/90">
+                      {post.categoryLabel}
+                      {getEditorialReadinessLabel(post.editorialReadiness) ? ` / ${getEditorialReadinessLabel(post.editorialReadiness)}` : ""}
+                    </span>
+                    <p className="text-sm leading-relaxed text-slate-100/86 transition-colors group-hover:text-white">
+                      {post.title}
+                    </p>
+                    {sourceAttribution ? (
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-slate-300/68">
+                        Zdroj: {sourceAttribution.name}
+                      </p>
+                    ) : null}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>

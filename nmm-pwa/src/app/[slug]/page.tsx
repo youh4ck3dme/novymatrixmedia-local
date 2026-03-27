@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import ArticleComments from "@/components/ArticleComments";
 import SiteHeader from "@/components/SiteHeader";
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
+import { resolveSourceAttribution } from "@/lib/source-attribution";
 import { getCategoryPageData, getNavigationItems, getPostBySlug, getPostsByIds } from "@/lib/wp-queries";
 import { buildCategoryMetadata, buildPostMetadata } from "@/lib/seo";
 
@@ -330,6 +331,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
   const ingestSourceLabel = getIngestSourceLabel(post.ingestSource);
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
   const sources = post.sources ?? [];
+  const sourceAttribution = resolveSourceAttribution(post);
   const conclusionNumber = post.conclusionNumber?.trim() || "1";
   const conclusionText = post.conclusionText?.trim();
 
@@ -367,6 +369,16 @@ export default async function SlugPage({ params }: SlugPageProps) {
               <span>Publikované {post.publishedAt}</span>
               <span className="h-1 w-1 rounded-full bg-(--accent)/70" />
               <span>{post.authorName || "Nový Matrix Media"}</span>
+              {sourceAttribution ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
+              {sourceAttribution ? (
+                sourceAttribution.url ? (
+                  <a href={sourceAttribution.url} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+                    Zdroj: {sourceAttribution.name}
+                  </a>
+                ) : (
+                  <span className="text-(--accent)">Zdroj: {sourceAttribution.name}</span>
+                )
+              ) : null}
               {post.estimatedReadingTime ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
               {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}
             </div>
@@ -649,5 +661,4 @@ export default async function SlugPage({ params }: SlugPageProps) {
     </main>
   );
 }
-
 
