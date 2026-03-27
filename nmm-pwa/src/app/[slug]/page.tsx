@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import ArticleComments from "@/components/ArticleComments";
 import SiteHeader from "@/components/SiteHeader";
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
+import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, getContactEmailHref } from "@/lib/contact-links";
 import { resolveSourceAttribution } from "@/lib/source-attribution";
 import { getCategoryPageData, getNavigationItems, getPostBySlug, getPostsByIds } from "@/lib/wp-queries";
 import { buildCategoryMetadata, buildPostMetadata } from "@/lib/seo";
@@ -26,8 +27,6 @@ interface GalleryItem {
 export const revalidate = 300;
 
 const PUBLIC_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://novymatrixmedia.sk").replace(/\/$/, "");
-const CONTACT_EMAIL = "novymatrixmedia@gmail.com";
-const TELEGRAM_CHANNEL_URL = "https://t.me/novy_matrix_lm";
 
 function renderHtml(content?: string) {
   return { __html: linkifyPlainUrlsInHtml(content ?? "") };
@@ -121,6 +120,19 @@ function ContactTelegramIcon({ className }: { className?: string }) {
       fill="currentColor"
     >
       <path d="M20.58 4.37c.84-.33 1.63.32 1.41 1.18l-3.18 12.44c-.21.82-1.13 1.17-1.83.7l-4.04-2.73-2.06 2.02c-.51.49-1.38.24-1.54-.45l-1.21-5.03-4.03-1.47c-.93-.34-.97-1.64-.07-2.04L20.58 4.37zm-3.4 2.46L8.46 12.3a.75.75 0 00-.34.77l.73 3.03 1.08-1.06c.25-.24.64-.29.94-.1l3.96 2.68 2.35-9.79z" />
+    </svg>
+  );
+}
+
+function ContactTikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M16.76 3.2c.39 1.62 1.53 2.74 3.04 2.98v2.69a5.84 5.84 0 01-3-.86v6.03c0 3.2-2.32 5.6-5.48 5.6A5.53 5.53 0 015.8 14.1c0-3.12 2.34-5.53 5.4-5.53.39 0 .74.03 1.09.12v2.85a2.77 2.77 0 00-.98-.18 2.7 2.7 0 00-2.74 2.74c0 1.58 1.16 2.8 2.74 2.8 1.5 0 2.74-1.16 2.74-3.1V2.99h2.71z" />
     </svg>
   );
 }
@@ -372,7 +384,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
               {sourceAttribution ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
               {sourceAttribution ? (
                 sourceAttribution.url ? (
-                  <a href={sourceAttribution.url} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+                  <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
                     Zdroj: {sourceAttribution.name}
                   </a>
                 ) : (
@@ -390,7 +402,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                   {sources.map((source, index) => (
                     <span key={`${source.name}-${source.url ?? index}`}>
                       {source.url ? (
-                        <a href={source.url} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+                        <a href={source.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
                           {source.name}
                         </a>
                       ) : (
@@ -483,7 +495,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                       <a
                         href={videoSourceLink}
                         target="_blank"
-                        rel="noreferrer noopener"
+                        rel={EXTERNAL_LINK_REL}
                         className="text-(--accent) transition-colors hover:text-white"
                       >
                         {truncateLinkLabel(videoSourceLink, 30)}
@@ -541,7 +553,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <a
-                    href={`mailto:${CONTACT_EMAIL}`}
+                    href={getContactEmailHref()}
                     aria-label="Napísať email redakcii"
                     className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(8,52,64,0.38)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
                   >
@@ -551,12 +563,22 @@ export default async function SlugPage({ params }: SlugPageProps) {
                   <a
                     href={TELEGRAM_CHANNEL_URL}
                     target="_blank"
-                    rel="noreferrer noopener"
+                    rel={EXTERNAL_LINK_REL}
                     aria-label="Telegram kanál NOVY MATRIX MEDIA"
                     className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(10,72,88,0.38)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
                   >
                     <ContactTelegramIcon className="h-4 w-4 text-(--accent)" />
                     <span>Telegram kanál</span>
+                  </a>
+                  <a
+                    href={TIKTOK_PROFILE_URL}
+                    target="_blank"
+                    rel={EXTERNAL_LINK_REL}
+                    aria-label="TikTok profil NOVY MATRIX MEDIA"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(7,49,62,0.36)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+                  >
+                    <ContactTikTokIcon className="h-4 w-4 text-(--accent)" />
+                    <span>TikTok profil</span>
                   </a>
                 </div>
               </section>
@@ -599,7 +621,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                         <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Originál</dt>
                         <dd>
-                          <a href={post.telegramPermalink} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+                          <a href={post.telegramPermalink} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
                             Otvoriť Telegram príspevok
                           </a>
                         </dd>
@@ -615,7 +637,8 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-100/78">Pokračuj na domovskú stránku alebo si otvor ďalšie súvisiace texty z tejto sekcie.</p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link href="/" className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na domovskú stránku</Link>
-                  <a href={TELEGRAM_CHANNEL_URL} target="_blank" rel="noreferrer noopener" className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanál</a>
+                  <a href={TELEGRAM_CHANNEL_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanál</a>
+                  <a href={TIKTOK_PROFILE_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">TikTok profil</a>
                 </div>
               </section>
             </div>
@@ -625,11 +648,11 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 <section className="rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(7,34,42,0.72)] p-5">
                   <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Zdieľať</div>
                   <div className="space-y-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-200/80">
-                    <a href={shareLinks.telegram} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                    <a href={shareLinks.telegram} target="_blank" rel={EXTERNAL_LINK_REL} className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
                       <span>Telegram</span>
                       <span className="text-(--accent)">01</span>
                     </a>
-                    <a href={shareLinks.x} target="_blank" rel="noreferrer noopener" className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                    <a href={shareLinks.x} target="_blank" rel={EXTERNAL_LINK_REL} className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
                       <span>X / Twitter</span>
                       <span className="text-(--accent)">02</span>
                     </a>

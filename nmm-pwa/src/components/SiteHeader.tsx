@@ -6,13 +6,12 @@ import { useEffect, useState } from "react";
 
 import type { SiteNavigationItem } from "@/types/wordpress";
 import SmartSearchOverlay from "@/components/SmartSearchOverlay";
+import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, getContactEmailHref } from "@/lib/contact-links";
 
 interface SiteHeaderProps {
   navigationItems: SiteNavigationItem[];
 }
 
-const TELEGRAM_URL = "https://t.me/novy_matrix_lm";
-const CONTACT_EMAIL = "novymatrixmedia@gmail.com";
 
 function EmailIcon({ className }: { className?: string }) {
   return (
@@ -43,6 +42,19 @@ function TelegramIcon({ className }: { className?: string }) {
   );
 }
 
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M16.76 3.2c.39 1.62 1.53 2.74 3.04 2.98v2.69a5.84 5.84 0 01-3-.86v6.03c0 3.2-2.32 5.6-5.48 5.6A5.53 5.53 0 015.8 14.1c0-3.12 2.34-5.53 5.4-5.53.39 0 .74.03 1.09.12v2.85a2.77 2.77 0 00-.98-.18 2.7 2.7 0 00-2.74 2.74c0 1.58 1.16 2.8 2.74 2.8 1.5 0 2.74-1.16 2.74-3.1V2.99h2.71z" />
+    </svg>
+  );
+}
+
 function NavigationLink({
   item,
   className,
@@ -57,7 +69,7 @@ function NavigationLink({
       <a
         href={item.href}
         target={item.target || "_blank"}
-        rel="noreferrer noopener"
+        rel={EXTERNAL_LINK_REL}
         className={className}
         onClick={onClick}
       >
@@ -199,9 +211,9 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
                 <div className="pt-4">
                   <div className="mb-4 grid grid-cols-1 gap-2">
                     <a
-                      href={TELEGRAM_URL}
+                      href={TELEGRAM_CHANNEL_URL}
                       target="_blank"
-                      rel="noreferrer noopener"
+                      rel={EXTERNAL_LINK_REL}
                       onClick={closeMobileMenu}
                       aria-label="Telegram kanál NOVY MATRIX MEDIA"
                       className="flex w-full items-center justify-center gap-2 rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(10,72,88,0.35)] px-5 py-3 font-sans text-[10px] uppercase tracking-[0.24em] text-white/78 transition-all hover:bg-[rgba(26,149,190,0.55)] hover:text-white"
@@ -210,7 +222,18 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
                       <span>Telegram</span>
                     </a>
                     <a
-                      href={`mailto:${CONTACT_EMAIL}`}
+                      href={TIKTOK_PROFILE_URL}
+                      target="_blank"
+                      rel={EXTERNAL_LINK_REL}
+                      onClick={closeMobileMenu}
+                      aria-label="TikTok profil NOVY MATRIX MEDIA"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(7,49,62,0.34)] px-5 py-3 font-sans text-[10px] uppercase tracking-[0.24em] text-white/78 transition-all hover:bg-[rgba(16,88,106,0.55)] hover:text-white"
+                    >
+                      <TikTokIcon className="h-4 w-4" />
+                      <span>TikTok</span>
+                    </a>
+                    <a
+                      href={getContactEmailHref()}
                       onClick={closeMobileMenu}
                       aria-label="Napísať email redakcii"
                       className="flex w-full items-center justify-center gap-2 rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(8,52,64,0.32)] px-5 py-3 font-sans text-[10px] uppercase tracking-[0.2em] text-white/72 transition-all hover:bg-[rgba(16,88,106,0.55)] hover:text-white"
@@ -275,9 +298,9 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
           <a
-            href={TELEGRAM_URL}
+            href={TELEGRAM_CHANNEL_URL}
             target="_blank"
-            rel="noreferrer noopener"
+            rel={EXTERNAL_LINK_REL}
             aria-label="Otvoriť Telegram kanál NOVY MATRIX MEDIA"
             className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(10,72,88,0.34)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/84 transition-colors hover:border-(--accent) hover:text-white"
           >
@@ -285,7 +308,17 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
             <span>Telegram</span>
           </a>
           <a
-            href={`mailto:${CONTACT_EMAIL}`}
+            href={TIKTOK_PROFILE_URL}
+            target="_blank"
+            rel={EXTERNAL_LINK_REL}
+            aria-label="Otvoriť TikTok profil NOVY MATRIX MEDIA"
+            className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,49,62,0.32)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/84 transition-colors hover:border-(--accent) hover:text-white"
+          >
+            <TikTokIcon className="h-3.5 w-3.5 text-(--accent)" />
+            <span>TikTok</span>
+          </a>
+          <a
+            href={getContactEmailHref()}
             aria-label="Napísať email redakcii NOVY MATRIX MEDIA"
             className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(8,52,64,0.28)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.16em] text-slate-100/84 transition-colors hover:border-(--accent) hover:text-white"
           >

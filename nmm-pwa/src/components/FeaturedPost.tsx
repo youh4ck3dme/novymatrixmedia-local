@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
+import { EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL } from "@/lib/contact-links";
 import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { SitePost } from "@/types/wordpress";
 
@@ -43,7 +44,7 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
           <span className="rounded-full bg-[rgba(26,149,190,0.72)] px-3 py-1 text-white">{post.categoryLabel}</span>
           {sourceAttribution ? (
             sourceAttribution.url ? (
-              <a href={sourceAttribution.url} target="_blank" rel="noreferrer noopener" className="text-(--accent) transition-colors hover:text-white">
+              <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
                 Zdroj: {sourceAttribution.name}
               </a>
             ) : (
@@ -70,7 +71,7 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
           {post.excerpt}
         </p>
         <div className="flex flex-wrap gap-3 font-sans text-xs uppercase tracking-[0.25em] text-(--foreground)/76">
-          <Link href="https://t.me/novy_matrix_lm" className="rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(6,42,52,0.62)] px-4 py-3 transition-colors hover:bg-[rgba(26,149,190,0.72)] hover:text-white">
+          <Link href={TELEGRAM_CHANNEL_URL} className="rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(6,42,52,0.62)] px-4 py-3 transition-colors hover:bg-[rgba(26,149,190,0.72)] hover:text-white">
             Odoberať novinky
           </Link>
           <Link href={post.href} className="rounded-xl border border-[rgba(111,231,255,0.08)] px-4 py-3 transition-colors hover:border-[rgba(111,231,255,0.22)] hover:text-white">
@@ -81,3 +82,4 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
     </article>
   );
 }
+
