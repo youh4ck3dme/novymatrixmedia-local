@@ -214,13 +214,17 @@ function nmm_editorial_fields_get_author_options( $selected_value = '' ) {
 	);
 
 	$external_author_options = array(
+		'Ereport',
+		'Extraplus',
 		'Hlavný denník',
 		'Hlavné Správy',
 		'Infovojna',
 		'Napalete',
+		'sita',
 		'Zem a Vek',
 		'Slobodný vysielač',
-		'Extraplus',
+		'ta3',
+		'Tibor Eliot Rostas',
 		'Veci verejné',
 		'Národný hlas',
 	);
