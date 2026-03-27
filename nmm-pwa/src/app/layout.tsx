@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Merriweather } from "next/font/google";
 import "./globals.css";
+import SiteFooter from "@/components/SiteFooter";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -52,6 +53,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-[#031a22] selection:bg-[#58d9ea] selection:text-[#021118]">
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

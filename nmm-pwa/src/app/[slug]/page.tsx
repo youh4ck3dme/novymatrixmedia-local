@@ -25,6 +25,8 @@ interface GalleryItem {
 export const revalidate = 300;
 
 const PUBLIC_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://novymatrixmedia.sk").replace(/\/$/, "");
+const CONTACT_EMAIL = "novymatrixmedia@gmail.com";
+const TELEGRAM_CHANNEL_URL = "https://t.me/novy_matrix_lm";
 
 function renderHtml(content?: string) {
   return { __html: linkifyPlainUrlsInHtml(content ?? "") };
@@ -91,6 +93,35 @@ function getArticleShareLinks(title: string, path: string) {
     x: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
     email: `mailto:?subject=${encodedTitle}&body=${encodedUrl}`,
   };
+}
+
+function ContactEmailIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+    >
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M4 8.5L12 13.5L20 8.5" />
+    </svg>
+  );
+}
+
+function ContactTelegramIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M20.58 4.37c.84-.33 1.63.32 1.41 1.18l-3.18 12.44c-.21.82-1.13 1.17-1.83.7l-4.04-2.73-2.06 2.02c-.51.49-1.38.24-1.54-.45l-1.21-5.03-4.03-1.47c-.93-.34-.97-1.64-.07-2.04L20.58 4.37zm-3.4 2.46L8.46 12.3a.75.75 0 00-.34.77l.73 3.03 1.08-1.06c.25-.24.64-.29.94-.1l3.96 2.68 2.35-9.79z" />
+    </svg>
+  );
 }
 
 function isRelativeMediaUrl(value: string): boolean {
@@ -491,6 +522,33 @@ export default async function SlugPage({ params }: SlugPageProps) {
 
               <ArticleComments postId={post.id} />
 
+              <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[linear-gradient(135deg,rgba(8,39,47,0.84),rgba(11,58,70,0.62))] p-6">
+                <div className="mb-3 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Kontakt / Tip redakcii</div>
+                <p className="max-w-2xl text-base leading-relaxed text-slate-100/82">
+                  Máte tip, doplnenie alebo reakciu k článku? Napíšte nám email alebo sledujte redakčný Telegram kanál.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    aria-label="Napísať email redakcii"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(8,52,64,0.38)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+                  >
+                    <ContactEmailIcon className="h-4 w-4 text-(--accent)" />
+                    <span>{CONTACT_EMAIL}</span>
+                  </a>
+                  <a
+                    href={TELEGRAM_CHANNEL_URL}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label="Telegram kanál NOVY MATRIX MEDIA"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(10,72,88,0.38)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+                  >
+                    <ContactTelegramIcon className="h-4 w-4 text-(--accent)" />
+                    <span>Telegram kanál</span>
+                  </a>
+                </div>
+              </section>
+
               {ingestSourceLabel || editorialReadinessLabel || post.telegramChatTitle || post.telegramPermalink ? (
                 <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
                   <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Redakčný pôvod</div>
@@ -545,7 +603,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-100/78">Pokračuj na domovskú stránku alebo si otvor ďalšie súvisiace texty z tejto sekcie.</p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link href="/" className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na domovskú stránku</Link>
-                  <a href="https://t.me/novy_matrix_lm" target="_blank" rel="noreferrer noopener" className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanál</a>
+                  <a href={TELEGRAM_CHANNEL_URL} target="_blank" rel="noreferrer noopener" className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanál</a>
                 </div>
               </section>
             </div>
@@ -591,3 +649,5 @@ export default async function SlugPage({ params }: SlugPageProps) {
     </main>
   );
 }
+
+
