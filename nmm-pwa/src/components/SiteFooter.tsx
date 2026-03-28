@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, getContactEmailHref } from "@/lib/contact-links";
+import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, YOUTUBE_CHANNEL_URL, getContactEmailHref } from "@/lib/contact-links";
 
 const FOOTER_NAV_ITEMS = [
   { href: "/", label: "Domov" },
@@ -54,6 +54,19 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
+function YouTubeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M21.58 7.19a2.8 2.8 0 0 0-1.97-1.98C17.88 4.7 12 4.7 12 4.7s-5.88 0-7.61.51A2.8 2.8 0 0 0 2.42 7.2 29.2 29.2 0 0 0 1.9 12c0 1.64.18 3.23.52 4.8a2.8 2.8 0 0 0 1.97 1.98c1.73.51 7.61.51 7.61.51s5.88 0 7.61-.51a2.8 2.8 0 0 0 1.97-1.98A29.2 29.2 0 0 0 22.1 12c0-1.64-.18-3.23-.52-4.81ZM10.1 15.2V8.8l5.63 3.2-5.63 3.2Z" />
+    </svg>
+  );
+}
+
 export default function SiteFooter() {
   return (
     <footer className="border-t border-[rgba(111,231,255,0.1)] bg-[linear-gradient(180deg,rgba(5,26,34,0.9),rgba(3,18,24,0.96))]">
@@ -82,35 +95,48 @@ export default function SiteFooter() {
             ))}
           </nav>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
-            <a
-              href={TELEGRAM_CHANNEL_URL}
-              target="_blank"
-              rel={EXTERNAL_LINK_REL}
-              aria-label="Telegram kanál NOVY MATRIX MEDIA"
-              className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(10,72,88,0.34)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
-            >
-              <TelegramIcon className="h-3.5 w-3.5 text-(--accent)" />
-              <span>Telegram</span>
-            </a>
-            <a
-              href={TIKTOK_PROFILE_URL}
-              target="_blank"
-              rel={EXTERNAL_LINK_REL}
-              aria-label="TikTok profil NOVY MATRIX MEDIA"
-              className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,49,62,0.3)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
-            >
-              <TikTokIcon className="h-3.5 w-3.5 text-(--accent)" />
-              <span>TikTok</span>
-            </a>
-            <a
-              href={getContactEmailHref()}
-              aria-label="Napísať email redakcii NOVY MATRIX MEDIA"
-              className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(8,52,64,0.3)] px-3 py-2 font-sans text-[10px] tracking-[0.06em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
-            >
-              <EmailIcon className="h-3.5 w-3.5 text-(--accent)" />
-              <span>{CONTACT_EMAIL}</span>
-            </a>
+          <div className="flex flex-col items-center gap-2 md:items-end">
+            <div className="font-sans text-[10px] uppercase tracking-[0.22em] text-slate-300/56">Sledujte redakciu</div>
+            <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
+              <a
+                href={TELEGRAM_CHANNEL_URL}
+                target="_blank"
+                rel={EXTERNAL_LINK_REL}
+                aria-label="Telegram kanál NOVY MATRIX MEDIA"
+                className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(10,72,88,0.34)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+              >
+                <TelegramIcon className="h-3.5 w-3.5 text-(--accent)" />
+                <span>Telegram</span>
+              </a>
+              <a
+                href={YOUTUBE_CHANNEL_URL}
+                target="_blank"
+                rel={EXTERNAL_LINK_REL}
+                aria-label="YouTube kanál NOVY MATRIX MEDIA"
+                className="inline-flex items-center gap-2 rounded-lg border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.3)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/86 transition-colors hover:border-[rgba(248,113,113,0.44)] hover:text-white"
+              >
+                <YouTubeIcon className="h-3.5 w-3.5 text-red-200" />
+                <span>YouTube</span>
+              </a>
+              <a
+                href={TIKTOK_PROFILE_URL}
+                target="_blank"
+                rel={EXTERNAL_LINK_REL}
+                aria-label="TikTok profil NOVY MATRIX MEDIA"
+                className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,49,62,0.3)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+              >
+                <TikTokIcon className="h-3.5 w-3.5 text-(--accent)" />
+                <span>TikTok</span>
+              </a>
+              <a
+                href={getContactEmailHref()}
+                aria-label="Napísať email redakcii NOVY MATRIX MEDIA"
+                className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(8,52,64,0.3)] px-3 py-2 font-sans text-[10px] tracking-[0.06em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+              >
+                <EmailIcon className="h-3.5 w-3.5 text-(--accent)" />
+                <span>{CONTACT_EMAIL}</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -121,4 +147,3 @@ export default function SiteFooter() {
     </footer>
   );
 }
-

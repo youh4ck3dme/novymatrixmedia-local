@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import ArticleComments from "@/components/ArticleComments";
 import SiteHeader from "@/components/SiteHeader";
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
-import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, getContactEmailHref } from "@/lib/contact-links";
+import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, YOUTUBE_CHANNEL_URL, getContactEmailHref } from "@/lib/contact-links";
 import { resolveSourceAttribution } from "@/lib/source-attribution";
 import { getCategoryPageData, getNavigationItems, getPostBySlug, getPostsByIds } from "@/lib/wp-queries";
 import { buildCategoryMetadata, buildPostMetadata } from "@/lib/seo";
@@ -137,6 +137,18 @@ function ContactTikTokIcon({ className }: { className?: string }) {
   );
 }
 
+function ContactYouTubeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M21.58 7.19a2.8 2.8 0 0 0-1.97-1.98C17.88 4.7 12 4.7 12 4.7s-5.88 0-7.61.51A2.8 2.8 0 0 0 2.42 7.2 29.2 29.2 0 0 0 1.9 12c0 1.64.18 3.23.52 4.8a2.8 2.8 0 0 0 1.97 1.98c1.73.51 7.61.51 7.61.51s5.88 0 7.61-.51a2.8 2.8 0 0 0 1.97-1.98A29.2 29.2 0 0 0 22.1 12c0-1.64-.18-3.23-.52-4.81ZM10.1 15.2V8.8l5.63 3.2-5.63 3.2Z" />
+    </svg>
+  );
+}
 function isRelativeMediaUrl(value: string): boolean {
   return value.startsWith("/");
 }
@@ -549,7 +561,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
               <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[linear-gradient(135deg,rgba(8,39,47,0.84),rgba(11,58,70,0.62))] p-6">
                 <div className="mb-3 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Kontakt / Tip redakcii</div>
                 <p className="max-w-2xl text-base leading-relaxed text-slate-100/82">
-                  Máte tip, doplnenie alebo reakciu k článku? Napíšte nám email alebo sledujte redakčný Telegram kanál.
+                  Máte tip, doplnenie alebo reakciu k článku? Napíšte nám email alebo sledujte redakčné kanály na Telegrame a YouTube.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <a
@@ -569,6 +581,16 @@ export default async function SlugPage({ params }: SlugPageProps) {
                   >
                     <ContactTelegramIcon className="h-4 w-4 text-(--accent)" />
                     <span>Telegram kanál</span>
+                  </a>
+                  <a
+                    href={YOUTUBE_CHANNEL_URL}
+                    target="_blank"
+                    rel={EXTERNAL_LINK_REL}
+                    aria-label="YouTube kanál NOVY MATRIX MEDIA"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.32)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-[rgba(248,113,113,0.46)] hover:text-white"
+                  >
+                    <ContactYouTubeIcon className="h-4 w-4 text-red-200" />
+                    <span>YouTube kanál</span>
                   </a>
                   <a
                     href={TIKTOK_PROFILE_URL}
@@ -638,6 +660,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link href="/" className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na domovskú stránku</Link>
                   <a href={TELEGRAM_CHANNEL_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanál</a>
+                  <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.22)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-red-100/84 transition-colors hover:border-[rgba(248,113,113,0.46)] hover:text-white">YouTube kanál</a>
                   <a href={TIKTOK_PROFILE_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">TikTok profil</a>
                 </div>
               </section>
@@ -684,4 +707,5 @@ export default async function SlugPage({ params }: SlugPageProps) {
     </main>
   );
 }
+
 

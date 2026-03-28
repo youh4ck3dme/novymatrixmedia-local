@@ -6,12 +6,11 @@ import { useEffect, useState } from "react";
 
 import type { SiteNavigationItem } from "@/types/wordpress";
 import SmartSearchOverlay from "@/components/SmartSearchOverlay";
-import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, getContactEmailHref } from "@/lib/contact-links";
+import { EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, YOUTUBE_CHANNEL_URL, getContactEmailHref } from "@/lib/contact-links";
 
 interface SiteHeaderProps {
   navigationItems: SiteNavigationItem[];
 }
-
 
 function EmailIcon({ className }: { className?: string }) {
   return (
@@ -51,6 +50,19 @@ function TikTokIcon({ className }: { className?: string }) {
       fill="currentColor"
     >
       <path d="M16.76 3.2c.39 1.62 1.53 2.74 3.04 2.98v2.69a5.84 5.84 0 01-3-.86v6.03c0 3.2-2.32 5.6-5.48 5.6A5.53 5.53 0 015.8 14.1c0-3.12 2.34-5.53 5.4-5.53.39 0 .74.03 1.09.12v2.85a2.77 2.77 0 00-.98-.18 2.7 2.7 0 00-2.74 2.74c0 1.58 1.16 2.8 2.74 2.8 1.5 0 2.74-1.16 2.74-3.1V2.99h2.71z" />
+    </svg>
+  );
+}
+
+function YouTubeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M21.58 7.19a2.8 2.8 0 0 0-1.97-1.98C17.88 4.7 12 4.7 12 4.7s-5.88 0-7.61.51A2.8 2.8 0 0 0 2.42 7.2 29.2 29.2 0 0 0 1.9 12c0 1.64.18 3.23.52 4.8a2.8 2.8 0 0 0 1.97 1.98c1.73.51 7.61.51 7.61.51s5.88 0 7.61-.51a2.8 2.8 0 0 0 1.97-1.98A29.2 29.2 0 0 0 22.1 12c0-1.64-.18-3.23-.52-4.81ZM10.1 15.2V8.8l5.63 3.2-5.63 3.2Z" />
     </svg>
   );
 }
@@ -209,7 +221,7 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
                   })}
                 </div>
                 <div className="pt-4">
-                  <div className="mb-4 grid grid-cols-1 gap-2">
+                  <div className="mb-4 grid grid-cols-2 gap-2">
                     <a
                       href={TELEGRAM_CHANNEL_URL}
                       target="_blank"
@@ -220,6 +232,17 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
                     >
                       <TelegramIcon className="h-4 w-4" />
                       <span>Telegram</span>
+                    </a>
+                    <a
+                      href={YOUTUBE_CHANNEL_URL}
+                      target="_blank"
+                      rel={EXTERNAL_LINK_REL}
+                      onClick={closeMobileMenu}
+                      aria-label="YouTube kanál NOVY MATRIX MEDIA"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-[rgba(248,113,113,0.22)] bg-[rgba(159,18,57,0.34)] px-5 py-3 font-sans text-[10px] uppercase tracking-[0.24em] text-white/84 transition-all hover:bg-[rgba(185,28,28,0.58)] hover:text-white"
+                    >
+                      <YouTubeIcon className="h-4 w-4" />
+                      <span>YouTube</span>
                     </a>
                     <a
                       href={TIKTOK_PROFILE_URL}
@@ -239,7 +262,7 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
                       className="flex w-full items-center justify-center gap-2 rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(8,52,64,0.32)] px-5 py-3 font-sans text-[10px] uppercase tracking-[0.2em] text-white/72 transition-all hover:bg-[rgba(16,88,106,0.55)] hover:text-white"
                     >
                       <EmailIcon className="h-4 w-4" />
-                      <span>Email redakcii</span>
+                      <span>Email</span>
                     </a>
                   </div>
 
@@ -318,12 +341,22 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
             <span>TikTok</span>
           </a>
           <a
+            href={YOUTUBE_CHANNEL_URL}
+            target="_blank"
+            rel={EXTERNAL_LINK_REL}
+            aria-label="Otvoriť YouTube kanál NOVY MATRIX MEDIA"
+            className="inline-flex items-center gap-2 rounded-lg border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.3)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/84 transition-colors hover:border-[rgba(248,113,113,0.44)] hover:text-white"
+          >
+            <YouTubeIcon className="h-3.5 w-3.5 text-red-200" />
+            <span>YouTube</span>
+          </a>
+          <a
             href={getContactEmailHref()}
             aria-label="Napísať email redakcii NOVY MATRIX MEDIA"
             className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(8,52,64,0.28)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.16em] text-slate-100/84 transition-colors hover:border-(--accent) hover:text-white"
           >
             <EmailIcon className="h-3.5 w-3.5 text-(--accent)" />
-            <span>{CONTACT_EMAIL}</span>
+            <span>Email</span>
           </a>
         </div>
         <nav className="hidden flex-wrap items-center gap-5 font-sans text-[11px] uppercase tracking-[0.26em] text-(--foreground)/70 md:flex">
@@ -338,4 +371,3 @@ export default function SiteHeader({ navigationItems }: SiteHeaderProps) {
     </header>
   );
 }
-

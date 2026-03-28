@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
-import { EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL } from "@/lib/contact-links";
+import { EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, YOUTUBE_CHANNEL_URL } from "@/lib/contact-links";
 import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { SitePost } from "@/types/wordpress";
 
@@ -71,9 +71,22 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
           {post.excerpt}
         </p>
         <div className="flex flex-wrap gap-3 font-sans text-xs uppercase tracking-[0.25em] text-(--foreground)/76">
-          <Link href={TELEGRAM_CHANNEL_URL} className="rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(6,42,52,0.62)] px-4 py-3 transition-colors hover:bg-[rgba(26,149,190,0.72)] hover:text-white">
-            Odoberať novinky
-          </Link>
+          <a
+            href={TELEGRAM_CHANNEL_URL}
+            target="_blank"
+            rel={EXTERNAL_LINK_REL}
+            className="rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(6,42,52,0.62)] px-4 py-3 transition-colors hover:bg-[rgba(26,149,190,0.72)] hover:text-white"
+          >
+            Telegram
+          </a>
+          <a
+            href={YOUTUBE_CHANNEL_URL}
+            target="_blank"
+            rel={EXTERNAL_LINK_REL}
+            className="rounded-xl border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.26)] px-4 py-3 transition-colors hover:border-[rgba(248,113,113,0.44)] hover:text-white"
+          >
+            YouTube
+          </a>
           <Link href={post.href} className="rounded-xl border border-[rgba(111,231,255,0.08)] px-4 py-3 transition-colors hover:border-[rgba(111,231,255,0.22)] hover:text-white">
             Otvoriť článok
           </Link>
@@ -82,4 +95,3 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
     </article>
   );
 }
-
