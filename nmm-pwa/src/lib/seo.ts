@@ -4,6 +4,8 @@ import type { SiteCategory, SitePost } from "@/types/wordpress";
 
 const DEFAULT_TITLE = "Nový Matrix Media";
 const DEFAULT_DESCRIPTION = "Informačno-publicistický portál v novom rozmere.";
+const META_TITLE_MAX_LENGTH = 90;
+const META_DESCRIPTION_MAX_LENGTH = 220;
 
 export function getPublicSiteUrl(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://novymatrixmedia.sk").replace(/\/$/, "");
@@ -12,6 +14,71 @@ export function getPublicSiteUrl(): string {
 function buildAbsoluteUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${getPublicSiteUrl()}${normalizedPath}`;
+}
+
+function normalizeMetadataText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function isWordChar(value: string): boolean {
+  return /[\p{L}\p{N}]/u.test(value);
+}
+
+function isLikelyClippedPrefix(candidate: string, fallback: string): boolean {
+  if (!candidate || !fallback || candidate.length >= fallback.length) {
+    return false;
+  }
+
+  const candidateLower = candidate.toLocaleLowerCase("sk-SK");
+  const fallbackLower = fallback.toLocaleLowerCase("sk-SK");
+  if (!fallbackLower.startsWith(candidateLower)) {
+    return false;
+  }
+
+  const candidateLast = candidate.at(-1) ?? "";
+  const nextChar = fallback.slice(candidate.length, candidate.length + 1);
+  return Boolean(nextChar) && isWordChar(candidateLast) && isWordChar(nextChar);
+}
+
+function preferNonClippedValue(primary: string | undefined, fallback: string): string {
+  const normalizedPrimary = normalizeMetadataText(primary ?? "");
+  const normalizedFallback = normalizeMetadataText(fallback);
+
+  if (!normalizedPrimary) {
+    return normalizedFallback;
+  }
+
+  if (!normalizedFallback) {
+    return normalizedPrimary;
+  }
+
+  if (isLikelyClippedPrefix(normalizedPrimary, normalizedFallback)) {
+    return normalizedFallback;
+  }
+
+  return normalizedPrimary;
+}
+
+function truncateByWordBoundary(value: string, maxLength: number): string {
+  const normalized = normalizeMetadataText(value);
+
+  if (!normalized) {
+    return normalized;
+  }
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  const candidate = normalized.slice(0, maxLength + 1);
+  const lastSpace = candidate.lastIndexOf(" ");
+  const hardCut = normalized.slice(0, maxLength).trimEnd();
+
+  if (lastSpace > Math.floor(maxLength * 0.6)) {
+    return `${candidate.slice(0, lastSpace).trimEnd()}…`;
+  }
+
+  return `${hardCut}…`;
 }
 
 export function buildDefaultMetadata(): Metadata {
@@ -33,11 +100,18 @@ export function buildDefaultMetadata(): Metadata {
 }
 
 export function buildPostMetadata(post: SitePost): Metadata {
-  const title = post.seoTitle || post.title;
-  const description = post.seoDescription || post.excerpt || DEFAULT_DESCRIPTION;
+  const baseDescription = post.excerpt || DEFAULT_DESCRIPTION;
+
+  const titleSource = preferNonClippedValue(post.seoTitle, post.title);
+  const descriptionSource = preferNonClippedValue(post.seoDescription, baseDescription);
+  const ogTitleSource = preferNonClippedValue(post.ogTitle, titleSource);
+  const ogDescriptionSource = preferNonClippedValue(post.ogDescription, descriptionSource);
+
+  const title = truncateByWordBoundary(titleSource, META_TITLE_MAX_LENGTH);
+  const description = truncateByWordBoundary(descriptionSource, META_DESCRIPTION_MAX_LENGTH);
   const canonical = buildAbsoluteUrl(post.href);
-  const ogTitle = post.ogTitle || title;
-  const ogDescription = post.ogDescription || description;
+  const ogTitle = truncateByWordBoundary(ogTitleSource, META_TITLE_MAX_LENGTH);
+  const ogDescription = truncateByWordBoundary(ogDescriptionSource, META_DESCRIPTION_MAX_LENGTH);
   const ogImage = post.ogImage || post.imageUrl;
 
   return {
