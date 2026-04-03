@@ -16,6 +16,12 @@ export default function PostCard({ post }: PostCardProps) {
   const editorialReadinessTone = getEditorialReadinessTone(post.editorialReadiness);
   const sourceAttribution = resolveSourceAttribution(post);
   const publicAuthor = resolvePublicAuthor(post);
+  const summaryCandidate = (post.subtitle?.trim() || post.excerpt?.trim() || "");
+  const normalizedTitle = post.title.replace(/\s+/g, " ").trim().toLowerCase();
+  const normalizedSummary = summaryCandidate.replace(/\s+/g, " ").trim().toLowerCase();
+  const cardSummary = normalizedSummary && normalizedSummary !== normalizedTitle
+    ? summaryCandidate
+    : "";
   const editorialReadinessClassName = editorialReadinessTone === "warning"
     ? "rounded-full border border-[rgba(251,146,60,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-orange-100/82"
     : editorialReadinessTone === "progress"
@@ -41,10 +47,17 @@ export default function PostCard({ post }: PostCardProps) {
         {isTelegramIngest ? <span className="rounded-full border border-[rgba(111,231,255,0.12)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
         {editorialReadinessLabel ? <span className={editorialReadinessClassName}>{editorialReadinessLabel}</span> : null}
       </div>
-      <Link href={post.href} className="mb-2 block font-serif text-2xl leading-tight text-white transition-colors group-hover:text-(--accent)">
+      <Link
+        href={post.href}
+        className="mb-2 block overflow-hidden font-serif text-2xl leading-tight text-white transition-colors group-hover:text-(--accent) [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]"
+      >
         {post.title}
       </Link>
-      {post.subtitle ? <p className="mb-2 text-sm leading-relaxed text-slate-200/72">{post.subtitle}</p> : null}
+      {cardSummary ? (
+        <p className="mb-2 overflow-hidden text-sm leading-relaxed text-slate-200/72 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+          {cardSummary}
+        </p>
+      ) : null}
       <p className="font-sans text-xs uppercase tracking-[0.2em] text-slate-300/68">
         {post.publishedAt}{publicAuthor ? ` · ${publicAuthor.name}` : ""}{post.estimatedReadingTime ? ` · ${post.estimatedReadingTime}` : ""}
       </p>
