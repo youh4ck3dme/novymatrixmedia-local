@@ -14,6 +14,7 @@ import type {
   WordPressCommentRaw,
   WordPressEditorialMetaRaw,
   WordPressPostRaw,
+  WordPressPublicAuthorRaw,
 } from "@/types/wordpress";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=1200&auto=format&fit=crop";
@@ -172,6 +173,30 @@ function parseSourceItems(rawSources?: string, fallbackSourceName?: string, fall
   return items;
 }
 
+function normalizePublicAuthor(rawAuthor?: WordPressPublicAuthorRaw, fallbackId?: string) {
+  const normalizedFallbackId = fallbackId ? stripHtml(fallbackId) : "";
+  const authorId = typeof rawAuthor?.id === "string" && rawAuthor.id.trim() !== ""
+    ? rawAuthor.id.trim()
+    : normalizedFallbackId || undefined;
+  const authorName = typeof rawAuthor?.name === "string" ? stripHtml(rawAuthor.name) : "";
+
+  if (!authorId || !authorName) {
+    return undefined;
+  }
+
+  const authorType = typeof rawAuthor?.type === "string" ? stripHtml(rawAuthor.type) : "";
+  const wpUserId = Number.isInteger(rawAuthor?.wpUserId) && Number(rawAuthor?.wpUserId) > 0
+    ? Number(rawAuthor?.wpUserId)
+    : undefined;
+
+  return {
+    id: authorId,
+    name: authorName,
+    type: authorType || undefined,
+    wpUserId,
+  };
+}
+
 function getTagLabels(post: WordPressPostRaw): string[] {
   const terms = post._embedded?.["wp:term"]?.flat() ?? [];
 
@@ -189,6 +214,7 @@ function normalizeEditorialMeta(meta?: WordPressEditorialMetaRaw) {
   return {
     subtitle: meta?.nmm_subtitle ? stripHtml(meta.nmm_subtitle) : undefined,
     authorName: meta?.nmm_author_name ? stripHtml(meta.nmm_author_name) : undefined,
+    publicAuthorId: meta?.nmm_public_author_id ? stripHtml(meta.nmm_public_author_id) : undefined,
     sourceName: normalizedSources[0]?.name ?? normalizedSourceName,
     sourceUrl: normalizedSources[0]?.url ?? normalizedSourceUrl,
     sources: normalizedSources,
@@ -223,6 +249,7 @@ function normalizePost(post: WordPressPostRaw): SitePost {
   const featuredMedia = post._embedded?.["wp:featuredmedia"]?.[0];
   const category = post._embedded?.["wp:term"]?.flat().find((term) => term.taxonomy === "category" && typeof term.slug === "string");
   const editorialMeta = normalizeEditorialMeta(post.meta);
+  const normalizedPublicAuthor = normalizePublicAuthor(post.nmm_public_author, editorialMeta.publicAuthorId);
   const postFeaturedImageUrl = typeof post.nmm_featured_image_url === "string" && post.nmm_featured_image_url.trim() !== ""
     ? post.nmm_featured_image_url.trim()
     : undefined;
@@ -255,6 +282,7 @@ function normalizePost(post: WordPressPostRaw): SitePost {
     publishedAt: formatDate(post.date),
     modifiedAt: post.modified,
     authorName: editorialMeta.authorName,
+    publicAuthor: normalizedPublicAuthor,
     sourceName: editorialMeta.sourceName,
     sourceUrl: editorialMeta.sourceUrl,
     sources: editorialMeta.sources,

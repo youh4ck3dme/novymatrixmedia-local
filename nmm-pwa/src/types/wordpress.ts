@@ -14,6 +14,7 @@ export interface WordPressCategoryRaw {
 export interface WordPressEditorialMetaRaw {
   nmm_subtitle?: string;
   nmm_author_name?: string;
+  nmm_public_author_id?: string;
   nmm_source_name?: string;
   nmm_source_url?: string;
   nmm_sources?: string;
@@ -43,6 +44,13 @@ export interface WordPressEditorialMetaRaw {
   nmm_ingest_source?: string;
 }
 
+export interface WordPressPublicAuthorRaw {
+  id?: string;
+  name?: string;
+  type?: string;
+  wpUserId?: number | null;
+}
+
 export interface WordPressMediaRaw {
   source_url: string;
   alt_text: string;
@@ -70,6 +78,7 @@ export interface WordPressPostRaw {
   nmm_featured_image_url?: string;
   nmm_featured_image_alt_public?: string;
   nmm_featured_image_caption_public?: string;
+  nmm_public_author?: WordPressPublicAuthorRaw;
   _embedded?: {
     "wp:featuredmedia"?: WordPressMediaRaw[];
     "wp:term"?: WordPressCategoryRaw[][];
@@ -102,6 +111,13 @@ export interface SitePostSource {
   url?: string;
 }
 
+export interface SitePublicAuthor {
+  id: string;
+  name: string;
+  type?: string;
+  wpUserId?: number;
+}
+
 export interface SitePost {
   id: number;
   slug: string;
@@ -113,6 +129,7 @@ export interface SitePost {
   publishedAt: string;
   modifiedAt?: string;
   authorName?: string;
+  publicAuthor?: SitePublicAuthor;
   sourceName?: string;
   sourceUrl?: string;
   sources?: SitePostSource[];

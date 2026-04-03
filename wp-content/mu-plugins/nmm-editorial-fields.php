@@ -23,11 +23,18 @@ function nmm_editorial_fields_definitions() {
 			'type'        => 'text',
 			'placeholder' => 'Krátky kontext pod hlavným nadpisom',
 		),
+		'nmm_public_author_id' => array(
+			'section'          => 'advanced',
+			'label'            => 'Verejný autor / redakcia',
+			'type'             => 'select',
+			'help'             => 'Odporúčané pole pre verejný byline na webe. Ak nezvolíš autora, použije sa WordPress autor článku.',
+			'options_callback' => 'nmm_editorial_fields_get_public_author_options',
+		),
 		'nmm_author_name' => array(
 			'section'          => 'advanced',
-			'label'            => 'Autor',
+			'label'            => 'Autor (legacy)',
 			'type'             => 'select',
-			'help'             => 'Ak nezvolíš autora, použije sa WordPress autor článku.',
+			'help'             => 'Legacy pole pre staršie integrácie. Frontend preferuje „Verejný autor / redakcia“.',
 			'options_callback' => 'nmm_editorial_fields_get_author_options',
 		),
 		'nmm_source_name' => array(
@@ -213,24 +220,8 @@ function nmm_editorial_fields_get_author_options( $selected_value = '' ) {
 		'' => 'Automaticky podľa WordPress autora',
 	);
 
-	$external_author_options = array(
-		'Ereport',
-		'Extraplus',
-		'Hlavný denník',
-		'Hlavné Správy',
-		'Infovojna',
-		'Napalete',
-		'sita',
-		'Zem a Vek',
-		'Slobodný vysielač',
-		'ta3',
-		'Tibor Eliot Rostas',
-		'Veci verejné',
-		'Národný hlas',
-	);
-
-	foreach ( $external_author_options as $external_author_name ) {
-		$external_author_name = trim( (string) $external_author_name );
+	foreach ( nmm_editorial_fields_get_external_public_author_profiles() as $profile ) {
+		$external_author_name = isset( $profile['name'] ) ? trim( (string) $profile['name'] ) : '';
 		if ( '' === $external_author_name ) {
 			continue;
 		}
@@ -268,6 +259,279 @@ function nmm_editorial_fields_get_author_options( $selected_value = '' ) {
 	}
 
 	return $options;
+}
+
+/**
+ * @return array<int, array{id:string,name:string,type:string}>
+ */
+function nmm_editorial_fields_get_external_public_author_profiles() {
+	return array(
+		array(
+			'id'   => 'external-ereport',
+			'name' => 'Ereport',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-extraplus',
+			'name' => 'Extraplus',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-hlavny-dennik',
+			'name' => 'Hlavný denník',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-hlavne-spravy',
+			'name' => 'Hlavné Správy',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-infovojna',
+			'name' => 'Infovojna',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-napalete',
+			'name' => 'Napalete',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-sita',
+			'name' => 'SITA',
+			'type' => 'agency',
+		),
+		array(
+			'id'   => 'external-zem-a-vek',
+			'name' => 'Zem a Vek',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-slobodny-vysielac',
+			'name' => 'Slobodný vysielač',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-ta3',
+			'name' => 'TA3',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-tibor-eliot-rostas',
+			'name' => 'Tibor Eliot Rostas',
+			'type' => 'person',
+		),
+		array(
+			'id'   => 'external-veci-verejne',
+			'name' => 'Veci verejné',
+			'type' => 'newsroom',
+		),
+		array(
+			'id'   => 'external-narodny-hlas',
+			'name' => 'Národný hlas',
+			'type' => 'newsroom',
+		),
+	);
+}
+
+/**
+ * @param string $value
+ * @return string
+ */
+function nmm_editorial_fields_normalize_author_lookup_key( $value ) {
+	$value = trim( wp_strip_all_tags( (string) $value ) );
+	if ( '' === $value ) {
+		return '';
+	}
+
+	$value = preg_replace( '/\s+/', ' ', $value ) ?? $value;
+	if ( function_exists( 'mb_strtolower' ) ) {
+		return mb_strtolower( $value, 'UTF-8' );
+	}
+
+	return strtolower( $value );
+}
+
+/**
+ * @param int    $user_id
+ * @param string $display_name
+ * @return array<string, mixed>|null
+ */
+function nmm_editorial_fields_build_wp_user_public_author_profile( $user_id, $display_name = '' ) {
+	$user_id = (int) $user_id;
+	if ( $user_id <= 0 ) {
+		return null;
+	}
+
+	$display_name = trim( (string) $display_name );
+	if ( '' === $display_name ) {
+		$user = get_user_by( 'id', $user_id );
+		if ( $user instanceof WP_User ) {
+			$display_name = trim( (string) $user->display_name );
+		}
+	}
+
+	if ( '' === $display_name ) {
+		return null;
+	}
+
+	return array(
+		'id'         => 'wp-user-' . $user_id,
+		'name'       => $display_name,
+		'type'       => 'person',
+		'kind_label' => 'interný autor',
+		'wp_user_id' => $user_id,
+	);
+}
+
+/**
+ * @return array<string, array<string, mixed>>
+ */
+function nmm_editorial_fields_get_public_author_profiles() {
+	static $profiles_cache = null;
+
+	if ( is_array( $profiles_cache ) ) {
+		return $profiles_cache;
+	}
+
+	$profiles = array();
+
+	foreach ( nmm_editorial_fields_get_external_public_author_profiles() as $profile ) {
+		$id   = isset( $profile['id'] ) ? trim( (string) $profile['id'] ) : '';
+		$name = isset( $profile['name'] ) ? trim( (string) $profile['name'] ) : '';
+		$type = isset( $profile['type'] ) ? trim( (string) $profile['type'] ) : 'newsroom';
+
+		if ( '' === $id || '' === $name ) {
+			continue;
+		}
+
+		$kind_label = 'externá redakcia';
+		if ( 'agency' === $type ) {
+			$kind_label = 'agentúra';
+		} elseif ( 'person' === $type ) {
+			$kind_label = 'externý autor';
+		}
+
+		$profiles[ $id ] = array(
+			'id'         => $id,
+			'name'       => $name,
+			'type'       => $type,
+			'kind_label' => $kind_label,
+		);
+	}
+
+	$users = get_users(
+		array(
+			'who'     => 'authors',
+			'orderby' => 'display_name',
+			'order'   => 'ASC',
+			'fields'  => array( 'ID', 'display_name' ),
+		)
+	);
+
+	if ( is_array( $users ) ) {
+		foreach ( $users as $user ) {
+			if ( ! ( $user instanceof WP_User ) ) {
+				continue;
+			}
+
+			$profile = nmm_editorial_fields_build_wp_user_public_author_profile( (int) $user->ID, (string) $user->display_name );
+			if ( ! is_array( $profile ) || empty( $profile['id'] ) ) {
+				continue;
+			}
+
+			$profiles[ (string) $profile['id'] ] = $profile;
+		}
+	}
+
+	$profiles_cache = $profiles;
+	return $profiles_cache;
+}
+
+/**
+ * @param string $public_author_id
+ * @return array<string, mixed>|null
+ */
+function nmm_editorial_fields_get_public_author_profile( $public_author_id ) {
+	$public_author_id = trim( (string) $public_author_id );
+	if ( '' === $public_author_id ) {
+		return null;
+	}
+
+	$profiles = nmm_editorial_fields_get_public_author_profiles();
+	if ( isset( $profiles[ $public_author_id ] ) ) {
+		return $profiles[ $public_author_id ];
+	}
+
+	if ( preg_match( '/^wp-user-(\d+)$/', $public_author_id, $matches ) ) {
+		$profile = nmm_editorial_fields_build_wp_user_public_author_profile( (int) $matches[1] );
+		if ( is_array( $profile ) ) {
+			return $profile;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * @param string $selected_value
+ * @return array<string, string>
+ */
+function nmm_editorial_fields_get_public_author_options( $selected_value = '' ) {
+	$options = array(
+		'' => 'Automaticky podľa WordPress autora',
+	);
+
+	foreach ( nmm_editorial_fields_get_public_author_profiles() as $profile ) {
+		if ( ! is_array( $profile ) ) {
+			continue;
+		}
+
+		$profile_id   = isset( $profile['id'] ) ? trim( (string) $profile['id'] ) : '';
+		$profile_name = isset( $profile['name'] ) ? trim( (string) $profile['name'] ) : '';
+		if ( '' === $profile_id || '' === $profile_name ) {
+			continue;
+		}
+
+		$kind_label = isset( $profile['kind_label'] ) ? trim( (string) $profile['kind_label'] ) : '';
+		$options[ $profile_id ] = '' !== $kind_label ? sprintf( '%s (%s)', $profile_name, $kind_label ) : $profile_name;
+	}
+
+	$selected_value = trim( (string) $selected_value );
+	if ( '' !== $selected_value && ! isset( $options[ $selected_value ] ) ) {
+		$selected_profile = nmm_editorial_fields_get_public_author_profile( $selected_value );
+		if ( is_array( $selected_profile ) && ! empty( $selected_profile['name'] ) ) {
+			$options[ $selected_value ] = (string) $selected_profile['name'];
+		} else {
+			$options[ $selected_value ] = $selected_value;
+		}
+	}
+
+	return $options;
+}
+
+/**
+ * @param string $author_name
+ * @return string
+ */
+function nmm_editorial_fields_find_public_author_id_by_name( $author_name ) {
+	$author_name_key = nmm_editorial_fields_normalize_author_lookup_key( $author_name );
+	if ( '' === $author_name_key ) {
+		return '';
+	}
+
+	foreach ( nmm_editorial_fields_get_public_author_profiles() as $profile_id => $profile ) {
+		$profile_name = is_array( $profile ) && isset( $profile['name'] ) ? (string) $profile['name'] : '';
+		if ( '' === $profile_name ) {
+			continue;
+		}
+
+		if ( $author_name_key === nmm_editorial_fields_normalize_author_lookup_key( $profile_name ) ) {
+			return (string) $profile_id;
+		}
+	}
+
+	return '';
 }
 
 /**
@@ -381,6 +645,56 @@ function nmm_editorial_fields_register_public_featured_image_fields() {
 				'description' => 'Public featured image caption for headless clients.',
 				'type'        => 'string',
 				'context'     => array( 'view', 'embed', 'edit' ),
+			),
+		)
+	);
+
+	register_rest_field(
+		'post',
+		'nmm_public_author',
+		array(
+			'get_callback' => static function( array $post_data ): array {
+				$post_id = isset( $post_data['id'] ) ? (int) $post_data['id'] : 0;
+				if ( $post_id <= 0 ) {
+					return array();
+				}
+
+				$public_author_id = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_public_author_id' );
+				if ( '' === $public_author_id ) {
+					return array();
+				}
+
+				$profile = nmm_editorial_fields_get_public_author_profile( $public_author_id );
+				if ( ! is_array( $profile ) || empty( $profile['name'] ) ) {
+					return array(
+						'id'   => $public_author_id,
+						'name' => '',
+						'type' => '',
+					);
+				}
+
+				$payload = array(
+					'id'   => isset( $profile['id'] ) ? (string) $profile['id'] : $public_author_id,
+					'name' => (string) $profile['name'],
+					'type' => isset( $profile['type'] ) ? (string) $profile['type'] : '',
+				);
+
+				if ( isset( $profile['wp_user_id'] ) ) {
+					$payload['wpUserId'] = (int) $profile['wp_user_id'];
+				}
+
+				return $payload;
+			},
+			'schema'       => array(
+				'description' => 'Resolved public author profile for headless byline rendering.',
+				'type'        => 'object',
+				'context'     => array( 'view', 'embed', 'edit' ),
+				'properties'  => array(
+					'id'       => array( 'type' => 'string' ),
+					'name'     => array( 'type' => 'string' ),
+					'type'     => array( 'type' => 'string' ),
+					'wpUserId' => array( 'type' => 'integer' ),
+				),
 			),
 		)
 	);
@@ -824,11 +1138,13 @@ function nmm_editorial_fields_apply_fallbacks( $post_id, $post, $update ) {
 	$og_title_fallback  = '' !== $og_title_source ? $og_title_source : $seo_title_fallback;
 	$og_desc_source     = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_seo_description' );
 	$og_desc_fallback   = '' !== $og_desc_source ? $og_desc_source : $seo_desc_fallback;
-	$reading_time       = nmm_editorial_fields_calculate_reading_time( $post );
-	$post_author_name   = get_the_author_meta( 'display_name', (int) $post->post_author );
-	$author_fallback    = is_string( $post_author_name ) ? trim( $post_author_name ) : '';
+	$reading_time           = nmm_editorial_fields_calculate_reading_time( $post );
+	$post_author_name       = get_the_author_meta( 'display_name', (int) $post->post_author );
+	$author_fallback        = is_string( $post_author_name ) ? trim( $post_author_name ) : '';
+	$public_author_fallback = ( (int) $post->post_author ) > 0 ? 'wp-user-' . (int) $post->post_author : '';
 
 	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_author_name', $author_fallback );
+	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_public_author_id', $public_author_fallback );
 	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_seo_title', $seo_title_fallback );
 	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_seo_description', $seo_desc_fallback );
 	nmm_editorial_fields_update_meta_if_empty( $post_id, 'nmm_og_title', $og_title_fallback );
@@ -1063,6 +1379,45 @@ function nmm_editorial_fields_parse_sources( $raw_sources ) {
 
 	return $items;
 }
+
+
+/**
+ * Keeps new public-author id and legacy author name synchronized for backward compatibility.
+ *
+ * @param int      $post_id
+ * @param WP_Post  $post
+ * @param bool     $update
+ */
+function nmm_editorial_fields_sync_public_author_meta( $post_id, $post, $update ) {
+	unset( $update );
+
+	if ( ! ( $post instanceof WP_Post ) || 'post' !== $post->post_type ) {
+		return;
+	}
+
+	if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+		return;
+	}
+
+	$public_author_id   = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_public_author_id' );
+	$legacy_author_name = nmm_editorial_fields_get_meta_value( $post_id, 'nmm_author_name' );
+
+	if ( '' === $public_author_id && '' !== $legacy_author_name ) {
+		$mapped_public_author_id = nmm_editorial_fields_find_public_author_id_by_name( $legacy_author_name );
+		if ( '' !== $mapped_public_author_id ) {
+			update_post_meta( $post_id, 'nmm_public_author_id', nmm_editorial_fields_sanitize( $mapped_public_author_id ) );
+			$public_author_id = $mapped_public_author_id;
+		}
+	}
+
+	if ( '' !== $public_author_id && '' === $legacy_author_name ) {
+		$profile = nmm_editorial_fields_get_public_author_profile( $public_author_id );
+		if ( is_array( $profile ) && ! empty( $profile['name'] ) ) {
+			update_post_meta( $post_id, 'nmm_author_name', nmm_editorial_fields_sanitize( (string) $profile['name'] ) );
+		}
+	}
+}
+add_action( 'save_post_post', 'nmm_editorial_fields_sync_public_author_meta', 24, 3 );
 
 /**
  * Syncs first source from nmm_sources to legacy single-source fields when they are empty.

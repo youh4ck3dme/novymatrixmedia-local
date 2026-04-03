@@ -8,6 +8,7 @@ import ArticleComments from "@/components/ArticleComments";
 import SiteHeader from "@/components/SiteHeader";
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
 import { CONTACT_EMAIL, EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, TIKTOK_PROFILE_URL, YOUTUBE_CHANNEL_URL, getContactEmailHref } from "@/lib/contact-links";
+import { resolvePublicAuthor } from "@/lib/public-author";
 import { resolveSourceAttribution } from "@/lib/source-attribution";
 import { getCategoryPageData, getNavigationItems, getPostBySlug, getPostsByIds } from "@/lib/wp-queries";
 import { buildCategoryMetadata, buildPostMetadata } from "@/lib/seo";
@@ -356,6 +357,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
   const sources = post.sources ?? [];
   const sourceAttribution = resolveSourceAttribution(post);
+  const publicAuthor = resolvePublicAuthor(post);
   const conclusionNumber = post.conclusionNumber?.trim() || "1";
   const conclusionText = post.conclusionText?.trim();
 
@@ -391,8 +393,8 @@ export default async function SlugPage({ params }: SlugPageProps) {
 
             <div className="mt-8 flex flex-wrap items-center gap-4 border-y border-[rgba(111,231,255,0.12)] py-4 font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/62">
               <span>Publikované {post.publishedAt}</span>
-              <span className="h-1 w-1 rounded-full bg-(--accent)/70" />
-              <span>{post.authorName || "Nový Matrix Media"}</span>
+              {publicAuthor ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
+              {publicAuthor ? <span>{publicAuthor.name}</span> : null}
               {sourceAttribution ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
               {sourceAttribution ? (
                 sourceAttribution.url ? (
@@ -441,13 +443,13 @@ export default async function SlugPage({ params }: SlugPageProps) {
                   priority
                 />
               </div>
-              {post.imageCaption || post.sourceName ? (
+              {post.imageCaption || sourceAttribution ? (
                 <figcaption className="border-t border-[rgba(111,231,255,0.1)] px-5 py-4 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/58">
                   {post.imageCaption || "Cover image"}
-                  {post.sourceName ? (
+                  {sourceAttribution ? (
                     <>
                       <span className="mx-2 text-(--accent)/70">/</span>
-                      {post.sourceUrl ? <a href={post.sourceUrl} target="_blank" rel="noreferrer" className="hover:text-white">{post.sourceName}</a> : post.sourceName}
+                      {sourceAttribution.url ? <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="hover:text-white">{sourceAttribution.name}</a> : sourceAttribution.name}
                     </>
                   ) : null}
                 </figcaption>

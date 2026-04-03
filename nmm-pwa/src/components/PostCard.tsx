@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getEditorialReadinessLabel, getEditorialReadinessTone } from "@/lib/editorial-workflow";
+import { resolvePublicAuthor } from "@/lib/public-author";
 import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { SitePost } from "@/types/wordpress";
 
@@ -14,6 +15,7 @@ export default function PostCard({ post }: PostCardProps) {
   const editorialReadinessLabel = getEditorialReadinessLabel(post.editorialReadiness);
   const editorialReadinessTone = getEditorialReadinessTone(post.editorialReadiness);
   const sourceAttribution = resolveSourceAttribution(post);
+  const publicAuthor = resolvePublicAuthor(post);
   const editorialReadinessClassName = editorialReadinessTone === "warning"
     ? "rounded-full border border-[rgba(251,146,60,0.28)] px-2 py-1 text-[10px] tracking-[0.18em] text-orange-100/82"
     : editorialReadinessTone === "progress"
@@ -44,7 +46,7 @@ export default function PostCard({ post }: PostCardProps) {
       </Link>
       {post.subtitle ? <p className="mb-2 text-sm leading-relaxed text-slate-200/72">{post.subtitle}</p> : null}
       <p className="font-sans text-xs uppercase tracking-[0.2em] text-slate-300/68">
-        {post.publishedAt}{post.estimatedReadingTime ? ` · ${post.estimatedReadingTime}` : ""}
+        {post.publishedAt}{publicAuthor ? ` · ${publicAuthor.name}` : ""}{post.estimatedReadingTime ? ` · ${post.estimatedReadingTime}` : ""}
       </p>
       {sourceAttribution ? (
         <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/72">
