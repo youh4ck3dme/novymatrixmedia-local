@@ -108,3 +108,11 @@ __MACOSX/
 *.log
 debug.log
 .vercel
+# Local secrets pack (never commit real values)
+docs/TythonX-Project-Pack/SECRETS.local.env
+mobile/tython_x_sos_app/lib/src/config/firebase_web_config.dart
+
+# Local Flutter toolchain/cache used for offline setup
+.flutter_local/
+.gitconfig_flutter
+tools/flutter/

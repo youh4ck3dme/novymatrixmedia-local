@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
  * @return string
  */
 function nmm_switcher_option_name() {
@@ -63,6 +64,7 @@ function nmm_switcher_is_maintenance_enabled() {
 	return '1' === (string) $value;
 }
 
+/**
  * Public endpoint for Next.js layout to read maintenance mode.
  */
 add_action(
