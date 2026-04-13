@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Merriweather } from "next/font/google";
 import "./globals.css";
+import GlobalServiceNotice from "@/components/GlobalServiceNotice";
 import SiteFooter from "@/components/SiteFooter";
 
 const inter = Inter({
@@ -52,6 +53,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//info.novymatrixmedia.sk" />
       </head>
       <body className="antialiased bg-[#031a22] selection:bg-[#58d9ea] selection:text-[#021118]">
+        <GlobalServiceNotice />
         {children}
         <SiteFooter />
       </body>
