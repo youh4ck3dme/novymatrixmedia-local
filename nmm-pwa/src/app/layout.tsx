@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Merriweather } from "next/font/google";
+import Image from "next/image";
 import "./globals.css";
-import GlobalServiceNotice from "@/components/GlobalServiceNotice";
-import SiteFooter from "@/components/SiteFooter";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -41,21 +40,25 @@ export const viewport: Viewport = {
   themeColor: "#58d9ea",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout() {
   return (
     <html lang="sk" className={`${inter.variable} ${merriweather.variable}`}>
       <head>
         <link rel="preconnect" href="https://info.novymatrixmedia.sk" crossOrigin="" />
         <link rel="dns-prefetch" href="//info.novymatrixmedia.sk" />
       </head>
-      <body className="antialiased bg-[#031a22] selection:bg-[#58d9ea] selection:text-[#021118]">
-        <GlobalServiceNotice />
-        {children}
-        <SiteFooter />
+      <body className="overflow-hidden bg-[#05050d] antialiased">
+        <main className="flex min-h-svh min-h-dvh items-center justify-center overflow-hidden bg-[#05050d]">
+          <Image
+            src="/vercelblok.png"
+            alt="Deployment suspended"
+            width={1024}
+            height={1536}
+            className="h-svh h-dvh w-auto max-w-none shrink-0 select-none"
+            priority
+            draggable={false}
+          />
+        </main>
       </body>
     </html>
   );

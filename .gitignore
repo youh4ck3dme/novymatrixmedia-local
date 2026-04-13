@@ -66,7 +66,6 @@ wp-content/mu-plugins/*
 !wp-content/mu-plugins/nmm-headless-routing.php
 !wp-content/mu-plugins/nmm-comments-moderation.php
 !wp-content/mu-plugins/nmm-excerpt-ellipsis-fix.php
-!wp-content/mu-plugins/nmm-vercel-billing-notice.php
 wp-content/settings/
 wp-content/advanced-cache.php
 wp-content/index.php
