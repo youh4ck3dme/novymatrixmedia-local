@@ -1,21 +1,13 @@
 <?php
 /**
  * Plugin Name: NMM Maintenance Switcher
- * Description: Enforces single super-admin email access and provides an admin switcher for frontend maintenance mode.
+ * Description: Provides an admin switcher for frontend maintenance mode with emergency fallback URLs.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * @return string
- */
-function nmm_switcher_allowed_email() {
-	return 'larsenevans@proton.me';
-}
-
-/**
  * @return string
  */
 function nmm_switcher_option_name() {
@@ -71,87 +63,6 @@ function nmm_switcher_is_maintenance_enabled() {
 	return '1' === (string) $value;
 }
 
-/**
- * @param WP_User $user
- *
- * @return bool
- */
-function nmm_switcher_is_allowed_user( $user ) {
-	if ( ! ( $user instanceof WP_User ) ) {
-		return false;
-	}
-
-	$email = isset( $user->user_email ) ? (string) $user->user_email : '';
-	return '' !== $email && 0 === strcasecmp( $email, nmm_switcher_allowed_email() );
-}
-
-/**
- * Ensure the allowed user keeps administrator role.
- */
-add_action(
-	'init',
-	static function () {
-		$allowed_user = get_user_by( 'email', nmm_switcher_allowed_email() );
-		if ( ! ( $allowed_user instanceof WP_User ) ) {
-			return;
-		}
-
-		if ( ! in_array( 'administrator', $allowed_user->roles, true ) ) {
-			$allowed_user->set_role( 'administrator' );
-		}
-	},
-	20
-);
-
-/**
- * Block login for every account except the allowed email.
- *
- * @param WP_User|WP_Error $user WP user after credentials check.
- *
- * @return WP_User|WP_Error
- */
-add_filter(
-	'wp_authenticate_user',
-	static function ( $user ) {
-		if ( is_wp_error( $user ) || ! ( $user instanceof WP_User ) ) {
-			return $user;
-		}
-
-		if ( nmm_switcher_is_allowed_user( $user ) ) {
-			return $user;
-		}
-
-		return new WP_Error(
-			'nmm_access_blocked',
-			'Tento pristup je vyhradeny pre hlavneho super admina.'
-		);
-	},
-	99,
-	1
-);
-
-/**
- * Block wp-admin for everyone except the allowed email user.
- */
-add_action(
-	'admin_init',
-	static function () {
-		if ( ! is_user_logged_in() ) {
-			return;
-		}
-
-		$current_user = wp_get_current_user();
-		if ( nmm_switcher_is_allowed_user( $current_user ) ) {
-			return;
-		}
-
-		wp_logout();
-		wp_die( 'Pristup zamietnuty.', 'Pristup zamietnuty', array( 'response' => 403 ) );
-	},
-	1
-);
-
-/**
  * Public endpoint for Next.js layout to read maintenance mode.
  */
 add_action(
@@ -243,7 +154,7 @@ add_action(
  * Render switcher admin page.
  */
 function nmm_switcher_render_admin_page() {
-	if ( ! is_user_logged_in() || ! nmm_switcher_is_allowed_user( wp_get_current_user() ) ) {
+	if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
 		wp_die( 'Pristup zamietnuty.', 'Pristup zamietnuty', array( 'response' => 403 ) );
 	}
 
@@ -272,15 +183,14 @@ function nmm_switcher_render_admin_page() {
 add_action(
 	'admin_menu',
 	static function () {
-		$current_user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! nmm_switcher_is_allowed_user( $current_user ) ) {
+		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
 		add_menu_page(
 			'NMM Switcher',
 			'NMM Switcher',
-			'read',
+			'manage_options',
 			'nmm-maintenance-switcher',
 			'nmm_switcher_render_admin_page',
 			'dashicons-shield',
@@ -295,7 +205,7 @@ add_action(
 add_action(
 	'admin_post_nmm_switcher_toggle_mode',
 	static function () {
-		if ( ! is_user_logged_in() || ! nmm_switcher_is_allowed_user( wp_get_current_user() ) ) {
+		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Pristup zamietnuty.', 'Pristup zamietnuty', array( 'response' => 403 ) );
 		}
 
