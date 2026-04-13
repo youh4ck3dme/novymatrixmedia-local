@@ -23,6 +23,47 @@ function nmm_switcher_option_name() {
 }
 
 /**
+ * @return string
+ */
+function nmm_switcher_token_option_name() {
+	return 'nmm_switcher_emergency_token';
+}
+
+/**
+ * @return string
+ */
+function nmm_switcher_emergency_token() {
+	$configured = defined( 'NMM_SWITCHER_TOKEN' ) ? (string) NMM_SWITCHER_TOKEN : '';
+	if ( '' !== $configured ) {
+		return $configured;
+	}
+
+	$stored = (string) get_option( nmm_switcher_token_option_name(), '' );
+	if ( '' !== $stored ) {
+		return $stored;
+	}
+
+	$generated = wp_generate_password( 48, false, false );
+	update_option( nmm_switcher_token_option_name(), $generated, false );
+	return $generated;
+}
+
+/**
+ * @param string $mode
+ *
+ * @return string
+ */
+function nmm_switcher_build_emergency_url( $mode ) {
+	return add_query_arg(
+		array(
+			'nmm_switcher_token' => nmm_switcher_emergency_token(),
+			'nmm_mode'           => $mode,
+		),
+		wp_login_url()
+	);
+}
+
+/**
  * @return bool
  */
 function nmm_switcher_is_maintenance_enabled() {
@@ -164,6 +205,41 @@ function nmm_switcher_trigger_revalidate() {
 }
 
 /**
+ * Emergency fallback endpoint:
+ * /wp-login.php?nmm_switcher_token=...&nmm_mode=0|1
+ * Allows switching maintenance mode even if wp-admin is inaccessible.
+ */
+add_action(
+	'init',
+	static function () {
+		if ( ! isset( $_GET['nmm_switcher_token'] ) ) {
+			return;
+		}
+
+		$provided_token = sanitize_text_field( wp_unslash( $_GET['nmm_switcher_token'] ) );
+		$expected_token = nmm_switcher_emergency_token();
+
+		if ( '' === $provided_token || ! hash_equals( $expected_token, $provided_token ) ) {
+			wp_die( 'Invalid emergency token.', 'Access denied', array( 'response' => 403 ) );
+		}
+
+		$mode = isset( $_GET['nmm_mode'] ) ? sanitize_text_field( wp_unslash( $_GET['nmm_mode'] ) ) : '';
+		if ( '0' !== $mode && '1' !== $mode ) {
+			wp_die( 'Invalid mode. Use nmm_mode=0 or nmm_mode=1.', 'Invalid mode', array( 'response' => 400 ) );
+		}
+
+		update_option( nmm_switcher_option_name(), $mode, true );
+		nmm_switcher_trigger_revalidate();
+
+		header( 'Content-Type: text/plain; charset=utf-8' );
+		echo 'OK: maintenance mode set to ';
+		echo '1' === $mode ? 'ON' : 'OFF';
+		exit;
+	},
+	0
+);
+
+/**
  * Render switcher admin page.
  */
 function nmm_switcher_render_admin_page() {
@@ -172,6 +248,8 @@ function nmm_switcher_render_admin_page() {
 	}
 
 	$enabled = nmm_switcher_is_maintenance_enabled();
+	$emergency_on_url  = nmm_switcher_build_emergency_url( '1' );
+	$emergency_off_url = nmm_switcher_build_emergency_url( '0' );
 	?>
 	<div class="wrap">
 		<h1>NMM Maintenance Switcher</h1>
@@ -182,6 +260,11 @@ function nmm_switcher_render_admin_page() {
 			<input type="hidden" name="mode" value="<?php echo esc_attr( $enabled ? '0' : '1' ); ?>" />
 			<?php submit_button( $enabled ? 'Vypnut maintenance mode' : 'Zapnut maintenance mode', 'primary large' ); ?>
 		</form>
+		<hr />
+		<h2>Emergency fallback URL</h2>
+		<p>Pouzite, ak by bol wp-admin nedostupny.</p>
+		<p><strong>Zapnut (ON):</strong><br /><code><?php echo esc_html( $emergency_on_url ); ?></code></p>
+		<p><strong>Vypnut (OFF):</strong><br /><code><?php echo esc_html( $emergency_off_url ); ?></code></p>
 	</div>
 	<?php
 }
@@ -226,4 +309,3 @@ add_action(
 		exit;
 	}
 );
-
