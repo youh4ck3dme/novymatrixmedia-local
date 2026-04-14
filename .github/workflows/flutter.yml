@@ -1,0 +1,26 @@
+name: Flutter CI
+
+on:
+  push:
+    paths:
+      - "mobile/tython_x_sos_app/**"
+      - ".github/workflows/flutter.yml"
+  pull_request:
+    paths:
+      - "mobile/tython_x_sos_app/**"
+      - ".github/workflows/flutter.yml"
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/tython_x_sos_app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.5"
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
