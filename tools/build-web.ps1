@@ -9,4 +9,7 @@ Set-Location $appRoot
 
 Write-Host ""
 Write-Host "Building web from: $appRoot" -ForegroundColor Cyan
-& "C:\flutter\bin\flutter.bat" build web --web-renderer html
+& "C:\flutter\bin\flutter.bat" build web
+if ($LASTEXITCODE -ne 0) {
+  throw "flutter build web failed with exit code $LASTEXITCODE"
+}
