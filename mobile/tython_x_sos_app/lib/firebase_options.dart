@@ -70,6 +70,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '914726204957',
     projectId: 'thyton-sos',
     storageBucket: 'thyton-sos.firebasestorage.app',
+    iosClientId: '914726204957-13k9958ceumio85h845j6avfplraa19s.apps.googleusercontent.com',
     iosBundleId: 'com.tythonx.sos',
   );
 

@@ -14,6 +14,11 @@ if ($LASTEXITCODE -ne 0) {
   throw "flutter build web failed with exit code $LASTEXITCODE"
 }
 
+& "$projectRoot\tools\patch-flutter-sw.ps1" -AppRoot $appRoot
+if ($LASTEXITCODE -ne 0) {
+  throw "patch-flutter-sw.ps1 failed with exit code $LASTEXITCODE"
+}
+
 Write-Host ""
 Write-Host "Deploying Firebase Hosting from: $appRoot" -ForegroundColor Cyan
 firebase deploy
