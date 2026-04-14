@@ -12,12 +12,7 @@
           "package_name": "com.tythonx.sos"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "914726204957-uvkv96n86qevmb3v420ib7bv7eeo8bik.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyCi7Ykp4vJPtlRGrkFu-lgea3AB4BvtoVA"
@@ -25,19 +20,7 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "914726204957-uvkv96n86qevmb3v420ib7bv7eeo8bik.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "914726204957-13k9958ceumio85h845j6avfplraa19s.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.tythonx.sos"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
