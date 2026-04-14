@@ -19,11 +19,16 @@ class PlatformCapabilities {
   final bool supportsSilentSmsSending;
   final bool supportsSilentEmergencyDial;
 
-  static PlatformCapabilities detect({required String localeName}) {
+  static PlatformCapabilities detect({
+    required String localeName,
+    bool? isWebOverride,
+    TargetPlatform? targetPlatformOverride,
+  }) {
     final countryCode = _parseCountryCode(localeName);
     final emergencyNumber = _resolveEmergencyNumber(countryCode);
 
-    if (kIsWeb) {
+    final isWeb = isWebOverride ?? kIsWeb;
+    if (isWeb) {
       return PlatformCapabilities(
         platformLabel: 'Web',
         emergencyNumber: emergencyNumber,
@@ -35,7 +40,8 @@ class PlatformCapabilities {
       );
     }
 
-    switch (defaultTargetPlatform) {
+    final platform = targetPlatformOverride ?? defaultTargetPlatform;
+    switch (platform) {
       case TargetPlatform.android:
       return PlatformCapabilities(
         platformLabel: 'Android',
@@ -58,7 +64,7 @@ class PlatformCapabilities {
       );
       default:
         return PlatformCapabilities(
-          platformLabel: defaultTargetPlatform.name,
+          platformLabel: platform.name,
           emergencyNumber: emergencyNumber,
           countryCode: countryCode,
           supportsForegroundExecution: false,

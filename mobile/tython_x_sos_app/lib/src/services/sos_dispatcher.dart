@@ -4,6 +4,16 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/contact.dart';
 import '../core/platform_capabilities.dart';
 
+typedef CanLaunchUriFn = Future<bool> Function(Uri uri);
+typedef LaunchUriFn = Future<bool> Function(Uri uri, {LaunchMode mode});
+typedef IsLocationServiceEnabledFn = Future<bool> Function();
+typedef CheckPermissionFn = Future<LocationPermission> Function();
+typedef RequestPermissionFn = Future<LocationPermission> Function();
+typedef GetCurrentPositionFn = Future<Position> Function({
+  required LocationAccuracy desiredAccuracy,
+  Duration? timeLimit,
+});
+
 class SosDispatchResult {
   const SosDispatchResult({
     required this.smsIntentOpened,
@@ -32,11 +42,29 @@ class SosDispatchResult {
 }
 
 class SosDispatcher {
-  const SosDispatcher({
+  SosDispatcher({
     required this.capabilities,
-  });
+    CanLaunchUriFn? canLaunchUri,
+    LaunchUriFn? launchUri,
+    IsLocationServiceEnabledFn? isLocationServiceEnabled,
+    CheckPermissionFn? checkPermission,
+    RequestPermissionFn? requestPermission,
+    GetCurrentPositionFn? getCurrentPosition,
+  })  : _canLaunchUri = canLaunchUri ?? canLaunchUrl,
+        _launchUri = launchUri ?? launchUrl,
+        _isLocationServiceEnabled =
+            isLocationServiceEnabled ?? Geolocator.isLocationServiceEnabled,
+        _checkPermission = checkPermission ?? Geolocator.checkPermission,
+        _requestPermission = requestPermission ?? Geolocator.requestPermission,
+        _getCurrentPosition = getCurrentPosition ?? Geolocator.getCurrentPosition;
 
   final PlatformCapabilities capabilities;
+  final CanLaunchUriFn _canLaunchUri;
+  final LaunchUriFn _launchUri;
+  final IsLocationServiceEnabledFn _isLocationServiceEnabled;
+  final CheckPermissionFn _checkPermission;
+  final RequestPermissionFn _requestPermission;
+  final GetCurrentPositionFn _getCurrentPosition;
 
   Future<SosDispatchResult> dispatch({
     required List<EmergencyContact> contacts,
@@ -69,15 +97,15 @@ class SosDispatcher {
   }
 
   Future<Position?> _tryResolvePosition(List<String> warnings) async {
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    final serviceEnabled = await _isLocationServiceEnabled();
     if (!serviceEnabled) {
       warnings.add('Location services are disabled.');
       return null;
     }
 
-    var permission = await Geolocator.checkPermission();
+    var permission = await _checkPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+      permission = await _requestPermission();
     }
 
     if (permission == LocationPermission.denied ||
@@ -87,7 +115,7 @@ class SosDispatcher {
     }
 
     try {
-      return await Geolocator.getCurrentPosition(
+      return await _getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 8),
       );
@@ -143,13 +171,13 @@ class SosDispatcher {
       },
     );
 
-    final canLaunch = await canLaunchUrl(smsUri);
+    final canLaunch = await _canLaunchUri(smsUri);
     if (!canLaunch) {
       warnings.add('SMS app is not available.');
       return false;
     }
 
-    return launchUrl(smsUri, mode: LaunchMode.externalApplication);
+    return _launchUri(smsUri, mode: LaunchMode.externalApplication);
   }
 
   Future<bool> _openEmergencyDialer({
@@ -160,13 +188,13 @@ class SosDispatcher {
       path: capabilities.emergencyNumber,
     );
 
-    final canLaunch = await canLaunchUrl(telUri);
+    final canLaunch = await _canLaunchUri(telUri);
     if (!canLaunch) {
       warnings.add('Dialer app is not available.');
       return false;
     }
 
-    return launchUrl(telUri, mode: LaunchMode.externalApplication);
+    return _launchUri(telUri, mode: LaunchMode.externalApplication);
   }
 
   String _mapUrl(Position position) {
