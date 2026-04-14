@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Tython X SOS is a fast emergency screen for trusted contacts and one-tap help dispatch.">
+  <meta name="theme-color" content="#10182D">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Tython X SOS">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Tython X SOS</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: #050816;
+      color: #ffffff;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    #boot-splash {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: #050816;
+      z-index: 0;
+    }
+
+    #boot-card {
+      max-width: 520px;
+      margin: 24px;
+      padding: 28px 30px;
+      border-radius: 28px;
+      border: 1px solid rgba(134, 160, 224, 0.25);
+      background: rgba(10, 17, 34, 0.9);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      text-align: center;
+    }
+
+    #boot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(28, 40, 71, 0.95);
+      color: #dbe6ff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    #boot-title {
+      margin: 0;
+      font-size: 38px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    #boot-copy {
+      margin: 14px 0 0;
+      font-size: 16px;
+      line-height: 1.55;
+      color: #b9c4e6;
+    }
+
+    #boot-list {
+      display: grid;
+      gap: 10px;
+      margin: 22px 0 0;
+      padding: 0;
+      list-style: none;
+      text-align: left;
+      color: #d3dcf8;
+      font-size: 14px;
+    }
+
+    #boot-list li {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(16, 26, 49, 0.95);
+      border: 1px solid rgba(45, 63, 101, 0.95);
+    }
+
+    #boot-foot {
+      margin-top: 18px;
+      color: #9ab0e8;
+      font-size: 13px;
+    }
+
+    #offline-banner,
+    #update-banner {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 2;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    #offline-banner {
+      bottom: 18px;
+      background: #2b1a16;
+      border: 1px solid #5c2e24;
+      color: #f5d6cc;
+    }
+
+    #update-banner {
+      top: 18px;
+      background: #131b33;
+      border: 1px solid #2f4271;
+      color: #dbe6ff;
+    }
+
+    #update-banner button {
+      margin-left: auto;
+      background: #2d6bff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="boot-splash" aria-hidden="true">
+    <div id="boot-card">
+      <div id="boot-badge">Tython X SOS</div>
+      <h1 id="boot-title">One press. One signal. Immediate help.</h1>
+      <p id="boot-copy">Emergency screen for trusted contacts, country-aware emergency numbers, and a simple SOS flow that stays visible on web and mobile.</p>
+      <ul id="boot-list">
+        <li>One-place setup for contacts and emergency number support.</li>
+        <li>Long-press SOS action for mobile and quick test action on web.</li>
+        <li>Built for a clean, dark, high-contrast emergency layout.</li>
+      </ul>
+      <div id="boot-foot">Loading secure interface...</div>
+    </div>
+  </div>
+  <div id="offline-banner">Offline mode: some SOS actions may require reconnection.</div>
+  <div id="update-banner">
+    Update available. Reload to apply the latest version.
+    <button id="update-reload">Reload</button>
+  </div>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    const offlineBanner = document.getElementById('offline-banner');
+    const updateBanner = document.getElementById('update-banner');
+    const updateReload = document.getElementById('update-reload');
+    const bootSplash = document.getElementById('boot-splash');
+    let waitingWorker = null;
+
+    function setOfflineBanner() {
+      const offline = !navigator.onLine;
+      if (offlineBanner) {
+        offlineBanner.style.display = offline ? 'flex' : 'none';
+      }
+    }
+
+    function showUpdateBanner(worker) {
+      waitingWorker = worker;
+      if (updateBanner) {
+        updateBanner.style.display = 'flex';
+      }
+    }
+
+    window.addEventListener('online', setOfflineBanner);
+    window.addEventListener('offline', setOfflineBanner);
+    setOfflineBanner();
+
+    window.addEventListener('flutter-first-frame', () => {
+      if (bootSplash) {
+        bootSplash.style.display = 'none';
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((registration) => {
+        if (!registration) return;
+        if (registration.waiting) {
+          showUpdateBanner(registration.waiting);
+        }
+        registration.addEventListener('updatefound', () => {
+          const worker = registration.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner(worker);
+            }
+          });
+        });
+      });
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
+
+    if (updateReload) {
+      updateReload.addEventListener('click', () => {
+        if (waitingWorker) {
+          waitingWorker.postMessage('skipWaiting');
+        }
+        window.location.reload();
+      });
+    }
+  </script>
+</body>
+</html>

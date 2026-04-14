@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "914726204957",
+    "project_id": "thyton-sos",
+    "storage_bucket": "thyton-sos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:914726204957:android:3f2ddeb2937b8d30fbf8f4",
+        "android_client_info": {
+          "package_name": "com.tythonx.sos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCi7Ykp4vJPtlRGrkFu-lgea3AB4BvtoVA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
