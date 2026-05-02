@@ -43,17 +43,17 @@ export default async function ReakciePage({ searchParams }: ReakciePageProps) {
     <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
       <SiteHeader navigationItems={navigationItems} />
 
-      <section className="rounded-lg border border-[rgba(111,231,255,0.2)] bg-[rgba(5,36,44,0.72)] p-6 shadow-[0_0_40px_rgba(80,226,255,0.08)] backdrop-blur-md sm:p-8">
-        <div className="mb-3 font-sans text-xs uppercase tracking-[0.32em] text-(--accent)">Reakcie čitateľov</div>
+      <section className="rounded-lg border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50 backdrop-blur-md sm:p-8">
+        <div className="mb-3 font-sans text-xs uppercase tracking-[0.32em] text-cyan-400">Reakcie čitateľov</div>
         <h1 className="font-serif text-4xl text-white sm:text-5xl">Schválené komentáre naprieč webom</h1>
         <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-200/82">
           Na tejto stránke sa zobrazujú iba komentáre, ktoré prešli manuálnym schválením v redakcii.
         </p>
       </section>
 
-      <section className="mt-8 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,39,48,0.68)] p-5 backdrop-blur-sm sm:p-6">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.12)] pb-4">
-          <div className="font-sans text-[11px] uppercase tracking-[0.26em] text-(--accent)">
+      <section className="mt-8 rounded-lg border border-slate-700 bg-slate-900/90 p-5 backdrop-blur-sm sm:p-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-700 pb-4">
+          <div className="font-sans text-[11px] uppercase tracking-[0.26em] text-cyan-400">
             {commentsData.total} schválených komentárov
           </div>
           <div className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-200/64">
@@ -68,7 +68,7 @@ export default async function ReakciePage({ searchParams }: ReakciePageProps) {
         ) : (
           <div className="space-y-4">
             {commentsData.comments.map((comment) => (
-              <article key={comment.id} className="rounded-lg border border-[rgba(111,231,255,0.12)] bg-[rgba(4,21,28,0.74)] p-4">
+              <article key={comment.id} className="rounded-lg border border-slate-700 bg-slate-950/80 p-4">
                 <div className="mb-2 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300/68">
                   {comment.authorUrl ? (
                     <a href={comment.authorUrl} target="_blank" rel="noreferrer noopener" className="transition-colors hover:text-white">
@@ -82,9 +82,9 @@ export default async function ReakciePage({ searchParams }: ReakciePageProps) {
                 </div>
                 <p className="text-base leading-relaxed text-slate-100/86">{comment.excerpt}</p>
                 {comment.postHref ? (
-                  <div className="mt-3 border-t border-[rgba(111,231,255,0.08)] pt-3 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300/70">
+                  <div className="mt-3 border-t border-slate-700 pt-3 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300/70">
                     K článku:{" "}
-                    <Link href={comment.postHref} className="text-(--accent) transition-colors hover:text-white">
+                    <Link href={comment.postHref} className="text-cyan-400 transition-colors hover:text-white">
                       {comment.postTitle || "Otvoriť článok"}
                     </Link>
                   </div>
@@ -95,14 +95,14 @@ export default async function ReakciePage({ searchParams }: ReakciePageProps) {
         )}
 
         {commentsData.totalPages > 1 ? (
-          <nav aria-label="Stránkovanie komentárov" className="mt-6 flex flex-wrap gap-3 border-t border-[rgba(111,231,255,0.12)] pt-5">
+          <nav aria-label="Stránkovanie komentárov" className="mt-6 flex flex-wrap gap-3 border-t border-slate-700 pt-5">
             {commentsData.hasPrevPage ? (
-              <Link href={buildPageHref(commentsData.page - 1)} className="rounded-lg border border-[rgba(111,231,255,0.2)] px-4 py-2 font-sans text-xs uppercase tracking-[0.2em] text-white transition-colors hover:border-(--accent)">
+              <Link href={buildPageHref(commentsData.page - 1)} className="rounded-lg border border-slate-700 px-4 py-2 font-sans text-xs uppercase tracking-[0.2em] text-white transition-colors hover:border-cyan-500/70">
                 Novšie
               </Link>
             ) : null}
             {commentsData.hasNextPage ? (
-              <Link href={buildPageHref(commentsData.page + 1)} className="rounded-lg border border-[rgba(111,231,255,0.2)] px-4 py-2 font-sans text-xs uppercase tracking-[0.2em] text-white transition-colors hover:border-(--accent)">
+              <Link href={buildPageHref(commentsData.page + 1)} className="rounded-lg border border-slate-700 px-4 py-2 font-sans text-xs uppercase tracking-[0.2em] text-white transition-colors hover:border-cyan-500/70">
                 Staršie
               </Link>
             ) : null}
@@ -112,3 +112,4 @@ export default async function ReakciePage({ searchParams }: ReakciePageProps) {
     </main>
   );
 }
+

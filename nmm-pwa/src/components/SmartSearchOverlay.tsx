@@ -163,32 +163,32 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
         type="button"
         aria-label="Zatvoriť vyhľadávanie"
         onClick={onClose}
-        className="absolute inset-0 bg-[rgba(1,8,12,0.76)] backdrop-blur-[2px]"
+        className="absolute inset-0 bg-slate-950/90 backdrop-blur-[2px]"
       />
 
-      <section className="absolute inset-x-3 top-[4.5rem] max-h-[calc(100vh-6.5rem)] overflow-hidden rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(4,20,28,0.97)] shadow-[0_18px_48px_rgba(0,0,0,0.45)] sm:inset-x-6 md:mx-auto md:max-w-4xl">
-        <div className="border-b border-[rgba(111,231,255,0.08)] px-4 py-3 sm:px-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Inteligentné vyhľadávanie</div>
-            <button
-              type="button"
-              aria-label="Zatvoriť vyhľadávanie"
-              onClick={onClose}
-              className="rounded-lg border border-[rgba(111,231,255,0.12)] px-3 py-1 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200/84 transition-colors hover:border-[rgba(111,231,255,0.28)] hover:text-white"
-            >
-              Zavrieť
-            </button>
-          </div>
+      <section className="absolute inset-x-3 top-[4.5rem] max-h-[calc(100vh-6.5rem)] overflow-hidden rounded-xl border border-slate-800 bg-slate-950 sm:inset-x-6 md:mx-auto md:max-w-4xl">
+        <header className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-3 sm:px-5">
+          <h2 className="font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Inteligentné vyhľadávanie</h2>
+          <button
+            type="button"
+            aria-label="Zatvoriť vyhľadávanie"
+            onClick={onClose}
+            className="rounded-lg border border-slate-700 px-3 py-1 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200 transition-colors hover:border-cyan-500/70 hover:text-white"
+          >
+            Zavrieť
+          </button>
+        </header>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+        <div className="border-b border-slate-800 px-4 py-3 sm:px-5">
+          <div className="flex flex-wrap gap-2">
             {MODE_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => setMode(option.value)}
                 className={mode === option.value
-                  ? "rounded-full border border-[rgba(74,191,207,0.18)] bg-[rgba(74,191,207,0.14)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.18em] text-(--accent)"
-                  : "rounded-full border border-[rgba(111,231,255,0.08)] bg-[rgba(8,36,46,0.42)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-100/74 transition-colors hover:text-white"}
+                  ? "rounded-full border border-cyan-500/35 bg-slate-900 px-4 py-2 font-sans text-[11px] uppercase tracking-[0.18em] text-cyan-400"
+                  : "rounded-full border border-slate-700 bg-slate-900 px-4 py-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-200 transition-colors hover:border-cyan-500/60 hover:text-white"}
               >
                 {option.label}
               </button>
@@ -213,9 +213,9 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
               }
             }}
             placeholder="Hľadaj články, témy alebo fotky..."
-            className="mt-3 w-full rounded-xl border border-[rgba(111,231,255,0.18)] bg-[rgba(5,25,31,0.8)] px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-slate-300/48 focus:border-(--accent)"
+            className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-slate-400 focus:border-cyan-500/70"
           />
-          <p className="mt-2 text-sm text-slate-300/72">{statusText}</p>
+          <p className="mt-2 text-sm text-slate-300">{statusText}</p>
         </div>
 
         <div className="max-h-[calc(100vh-18rem)] overflow-y-auto p-4 sm:p-5">
@@ -227,11 +227,11 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
                 const hasImage = typeof result.imageUrl === "string" && result.imageUrl.trim() !== "";
 
                 return (
-                  <article key={`${result.resultType}-${result.id}`} className="rounded-lg border border-[rgba(111,231,255,0.1)] bg-[rgba(7,34,42,0.62)] p-3 sm:p-4">
+                  <article key={`${result.resultType}-${result.id}`} className="rounded-lg border border-slate-800 bg-slate-900 p-3 sm:p-4">
                     <Link href={result.href} onClick={onClose} className="group block">
-                      <div className="mb-2 flex flex-wrap items-center gap-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-300/72">
-                        <span className="rounded-full border border-[rgba(111,231,255,0.14)] px-2 py-1 text-slate-100/80">{result.categoryLabel}</span>
-                        <span className={isPhotoResult ? "text-emerald-200/82" : "text-(--accent)"}>
+                      <div className="mb-2 flex flex-wrap items-center gap-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-300">
+                        <span className="rounded-full border border-slate-700 px-2 py-1 text-slate-100">{result.categoryLabel}</span>
+                        <span className={isPhotoResult ? "text-blue-400" : "text-cyan-400"}>
                           {isPhotoResult ? "Fotka" : "Článok"}
                         </span>
                         <span>{result.dateLabel}</span>
@@ -239,7 +239,7 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
 
                       <div className={hasImage ? "grid grid-cols-[80px_minmax(0,1fr)] gap-3 sm:grid-cols-[96px_minmax(0,1fr)]" : ""}>
                         {hasImage ? (
-                          <div className="relative h-20 w-full overflow-hidden rounded-md border border-[rgba(111,231,255,0.12)] sm:h-24">
+                          <div className="relative h-20 w-full overflow-hidden rounded-md border border-slate-700 sm:h-24">
                             <Image
                               src={result.imageUrl!}
                               alt={result.title}
@@ -252,8 +252,8 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
                         ) : null}
 
                         <div>
-                          <h3 className="font-serif text-xl leading-tight text-white transition-colors group-hover:text-(--accent)">{result.title}</h3>
-                          {excerpt ? <p className="mt-2 text-sm leading-relaxed text-slate-200/76">{excerpt}</p> : null}
+                          <h3 className="font-serif text-xl leading-tight text-white transition-colors group-hover:text-cyan-400">{result.title}</h3>
+                          {excerpt ? <p className="mt-2 text-sm leading-relaxed text-slate-300">{excerpt}</p> : null}
                         </div>
                       </div>
                     </Link>

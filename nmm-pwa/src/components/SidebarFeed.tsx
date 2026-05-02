@@ -26,23 +26,23 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
   return (
     <aside className="lg:col-span-4">
       <div className="sticky top-6">
-        <div className="relative overflow-hidden rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(5,30,38,0.62)] p-6 md:shadow-[0_0_24px_rgba(80,226,255,0.02)] md:backdrop-blur-md">
-          <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-(--accent)" />
+        <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-6 md:backdrop-blur-md">
+          <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-cyan-500/60" />
 
-          <div className="mb-6 flex items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.07)] pb-4">
+          <div className="mb-6 flex items-center justify-between gap-3 border-b border-slate-800 pb-4">
             <div className="flex items-center gap-3">
-              <div className="h-2.5 w-2.5 animate-pulse rounded-sm bg-(--accent)" />
-              <h2 className="font-serif text-lg uppercase tracking-[0.28em] text-(--accent)">
+              <div className="h-2.5 w-2.5 animate-pulse rounded-sm bg-cyan-400" />
+              <h2 className="text-base font-bold uppercase tracking-widest text-cyan-400">
                 Najnovšie
               </h2>
             </div>
           </div>
 
-          <div className="mb-6 rounded-xl border border-[rgba(111,231,255,0.06)] bg-[rgba(6,42,52,0.52)] p-5">
-            <div className="mb-2 font-sans text-[11px] uppercase tracking-[0.3em] text-(--accent)">
+          <div className="mb-6 rounded-xl border border-slate-800 bg-slate-950/70 p-5">
+            <div className="mb-2 font-sans text-[10px] font-bold uppercase tracking-widest text-cyan-400">
               Nový Matrix Media
             </div>
-            <p className="text-sm leading-relaxed text-slate-100/88">
+            <p className="text-sm leading-relaxed text-slate-300">
               Najnovšie publikované články prehľadne na jednom mieste.
             </p>
           </div>
@@ -55,12 +55,12 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
                 <Link
                   key={post.id}
                   href={post.href}
-                  className="group flex items-start gap-3 rounded-lg border border-[rgba(111,231,255,0.06)] bg-[rgba(6,34,42,0.36)] p-3 transition-colors hover:border-(--accent)"
+                  className="group flex items-start gap-3 rounded-lg border border-slate-800 bg-slate-950/70 p-3 transition-colors hover:border-cyan-500/70"
                 >
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-[rgba(111,231,255,0.10)]">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-slate-800">
                     <Image
                       src={post.imageUrl}
-                      alt={post.imageAlt}
+                      alt={post.imageAlt || post.title || "Ilustračný obrázok k článku"}
                       fill
                       quality={90}
                       sizes="56px"
@@ -68,15 +68,15 @@ export default function SidebarFeed({ posts }: SidebarFeedProps) {
                     />
                   </div>
                   <div className="min-w-0">
-                    <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-(--accent)/90">
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                       {post.categoryLabel}
                       {getEditorialReadinessLabel(post.editorialReadiness) ? ` / ${getEditorialReadinessLabel(post.editorialReadiness)}` : ""}
                     </span>
-                    <p className="text-sm leading-relaxed text-slate-100/86 transition-colors group-hover:text-white">
+                    <p className="text-sm leading-snug text-slate-200 transition-colors group-hover:text-white">
                       {post.title}
                     </p>
                     {sourceAttribution ? (
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-slate-300/68">
+                      <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
                         Zdroj: {sourceAttribution.name}
                       </p>
                     ) : null}

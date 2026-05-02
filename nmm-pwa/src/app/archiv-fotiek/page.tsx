@@ -51,8 +51,8 @@ export default async function PhotoArchivePage() {
     <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
       <SiteHeader navigationItems={navigationItems} />
 
-      <section className="mt-8 rounded-lg border border-[rgba(111,231,255,0.2)] bg-[rgba(5,36,44,0.72)] p-6 shadow-[0_0_40px_rgba(80,226,255,0.08)] backdrop-blur-md sm:p-8">
-        <div className="mb-3 font-sans text-xs uppercase tracking-[0.32em] text-(--accent)">Archív</div>
+      <section className="mt-8 rounded-lg border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50 backdrop-blur-md sm:p-8">
+        <div className="mb-3 font-sans text-xs uppercase tracking-[0.32em] text-cyan-400">Archív</div>
         <h1 className="font-serif text-4xl text-white sm:text-5xl">Archív fotiek A-Z</h1>
         <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-200/82">
           Všetky články s fotografiou zoradené podľa abecedy.
@@ -64,11 +64,11 @@ export default async function PhotoArchivePage() {
           <p className="text-sm text-slate-300/74">Zatiaľ nie sú dostupné žiadne články s fotografiou.</p>
         ) : (
           orderedKeys.map((key) => (
-            <section key={key} className="rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(7,39,48,0.62)] p-5 backdrop-blur-sm">
-              <h2 className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-serif text-3xl text-white">{key}</h2>
+            <section key={key} className="rounded-lg border border-slate-700 bg-slate-900/90 p-5 backdrop-blur-sm">
+              <h2 className="mb-4 border-b border-slate-700 pb-3 font-serif text-3xl text-white">{key}</h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {(grouped.get(key) ?? []).map((post) => (
-                  <article key={post.id} className="overflow-hidden rounded-lg border border-[rgba(111,231,255,0.12)] bg-[rgba(5,28,35,0.72)]">
+                  <article key={post.id} className="overflow-hidden rounded-lg border border-slate-700 bg-slate-950/80">
                     <Link href={post.href} className="relative block h-44 w-full">
                       <Image
                         src={post.imageUrl}
@@ -80,7 +80,7 @@ export default async function PhotoArchivePage() {
                       />
                     </Link>
                     <div className="p-4">
-                      <Link href={post.href} className="block font-serif text-xl leading-tight text-white transition-colors hover:text-(--accent)">
+                      <Link href={post.href} className="block font-serif text-xl leading-tight text-white transition-colors hover:text-cyan-400">
                         {post.title}
                       </Link>
                       <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300/62">{post.publishedAt}</p>
@@ -95,3 +95,4 @@ export default async function PhotoArchivePage() {
     </main>
   );
 }
+

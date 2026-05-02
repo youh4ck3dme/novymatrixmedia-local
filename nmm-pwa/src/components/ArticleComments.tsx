@@ -18,6 +18,8 @@ interface CommentFormState {
 }
 
 const COMMENTS_PER_PAGE = 8;
+const FIELD_CLASS_NAME = "rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-cyan-500/70";
+const LABEL_CLASS_NAME = "font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300";
 
 function getInitialFormState(): CommentFormState {
   return {
@@ -57,7 +59,6 @@ export default function ArticleComments({ postId }: ArticleCommentsProps) {
     }
 
     const data = await response.json() as SiteCommentsPageData;
-
     setComments((prev) => append ? [...prev, ...data.comments] : data.comments);
     setPage(data.page);
     setTotal(data.total);
@@ -154,12 +155,10 @@ export default function ArticleComments({ postId }: ArticleCommentsProps) {
   };
 
   return (
-    <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(111,231,255,0.12)] pb-3">
-        <div className="font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">
-          Reakcie čitateľov
-        </div>
-        <Link href="/reakcie" className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-200/70 transition-colors hover:text-white">
+    <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-slate-800 bg-slate-900 p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3">
+        <h2 className="font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Reakcie čitateľov</h2>
+        <Link href="/reakcie" className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300 transition-colors hover:text-white">
           Všetky reakcie
         </Link>
       </div>
@@ -167,41 +166,41 @@ export default function ArticleComments({ postId }: ArticleCommentsProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-2">
-            <span className="font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200/74">Meno</span>
+            <span className={LABEL_CLASS_NAME}>Meno</span>
             <input
               required
               maxLength={120}
               value={formState.authorName}
               onChange={(event) => setFormState((prev) => ({ ...prev, authorName: event.target.value }))}
-              className="rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(5,25,31,0.8)] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-(--accent)"
+              className={FIELD_CLASS_NAME}
             />
           </label>
           <label className="flex flex-col gap-2">
-            <span className="font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200/74">E-mail</span>
+            <span className={LABEL_CLASS_NAME}>E-mail</span>
             <input
               required
               type="email"
               maxLength={190}
               value={formState.authorEmail}
               onChange={(event) => setFormState((prev) => ({ ...prev, authorEmail: event.target.value }))}
-              className="rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(5,25,31,0.8)] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-(--accent)"
+              className={FIELD_CLASS_NAME}
             />
           </label>
         </div>
 
         <label className="flex flex-col gap-2">
-          <span className="font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200/74">Web (voliteľné)</span>
+          <span className={LABEL_CLASS_NAME}>Web (voliteľné)</span>
           <input
             type="url"
             maxLength={255}
             value={formState.authorUrl}
             onChange={(event) => setFormState((prev) => ({ ...prev, authorUrl: event.target.value }))}
-            className="rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(5,25,31,0.8)] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-(--accent)"
+            className={FIELD_CLASS_NAME}
           />
         </label>
 
         <label className="flex flex-col gap-2">
-          <span className="font-sans text-[11px] uppercase tracking-[0.2em] text-slate-200/74">Komentár</span>
+          <span className={LABEL_CLASS_NAME}>Komentár</span>
           <textarea
             required
             minLength={5}
@@ -209,7 +208,7 @@ export default function ArticleComments({ postId }: ArticleCommentsProps) {
             rows={5}
             value={formState.content}
             onChange={(event) => setFormState((prev) => ({ ...prev, content: event.target.value }))}
-            className="rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(5,25,31,0.8)] px-3 py-2 text-sm text-white outline-none transition-colors focus:border-(--accent)"
+            className={FIELD_CLASS_NAME}
           />
         </label>
 
@@ -227,54 +226,51 @@ export default function ArticleComments({ postId }: ArticleCommentsProps) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-cyan-500/50 bg-slate-900 px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-cyan-300 transition-colors hover:border-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Odosielam..." : "Odoslať komentár"}
           </button>
-          <span className="text-xs text-slate-300/70">
-            Komentár sa zobrazí až po schválení redakciou.
-          </span>
+          <span className="text-xs text-slate-400">Komentár sa zobrazí až po schválení redakciou.</span>
         </div>
 
-        {submitMessage ? <p className="text-sm text-emerald-200/90">{submitMessage}</p> : null}
-        {submitError ? <p className="text-sm text-rose-200/90">{submitError}</p> : null}
+        {submitMessage ? <p className="text-sm text-cyan-300">{submitMessage}</p> : null}
+        {submitError ? <p className="text-sm text-blue-300">{submitError}</p> : null}
       </form>
 
-      <div className="mt-8 space-y-4 border-t border-[rgba(111,231,255,0.12)] pt-6">
+      <section className="mt-8 space-y-4 border-t border-slate-800 pt-6">
         <h3 className="font-serif text-2xl text-white">Schválené komentáre ({total})</h3>
 
-        {isLoading ? (
-          <p className="text-sm text-slate-300/74">Načítavam komentáre...</p>
-        ) : comments.length === 0 ? (
-          <p className="text-sm text-slate-300/74">Zatiaľ tu nie sú žiadne schválené komentáre.</p>
-        ) : (
+        {isLoading ? <p className="text-sm text-slate-300">Načítavam komentáre...</p> : null}
+        {!isLoading && comments.length === 0 ? <p className="text-sm text-slate-300">Zatiaľ tu nie sú žiadne schválené komentáre.</p> : null}
+
+        {!isLoading && comments.length > 0 ? (
           <div className="space-y-4">
             {comments.map((comment) => (
-              <article key={comment.id} className="rounded-lg border border-[rgba(111,231,255,0.12)] bg-[rgba(4,21,28,0.74)] p-4">
-                <div className="mb-2 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300/68">
+              <article key={comment.id} className="rounded-lg border border-slate-800 bg-slate-950/70 p-4">
+                <div className="mb-2 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300">
                   <span>{comment.authorName}</span>
-                  <span className="h-1 w-1 rounded-full bg-(--accent)/70" />
+                  <span className="h-1 w-1 rounded-full bg-cyan-400/80" />
                   <span>{comment.dateLabel}</span>
                 </div>
-                <div className="article-body text-sm leading-relaxed text-slate-100/84" dangerouslySetInnerHTML={{ __html: comment.contentHtml }} />
+                <div className="article-body text-sm leading-relaxed text-slate-100" dangerouslySetInnerHTML={{ __html: comment.contentHtml }} />
               </article>
             ))}
           </div>
-        )}
+        ) : null}
 
-        {loadError ? <p className="text-sm text-rose-200/90">{loadError}</p> : null}
+        {loadError ? <p className="text-sm text-blue-300">{loadError}</p> : null}
 
         {hasMore ? (
           <button
             type="button"
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="rounded-lg border border-[rgba(111,231,255,0.2)] px-4 py-2 font-sans text-xs uppercase tracking-[0.2em] text-white transition-colors hover:border-(--accent) disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-slate-700 px-4 py-2 font-sans text-xs uppercase tracking-[0.2em] text-slate-200 transition-colors hover:border-cyan-500/70 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoadingMore ? "Načítavam..." : "Načítať ďalšie"}
           </button>
         ) : null}
-      </div>
+      </section>
     </section>
   );
 }

@@ -19,19 +19,19 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
   const sourceAttribution = resolveSourceAttribution(post);
   const publicAuthor = resolvePublicAuthor(post);
   const editorialReadinessClassName = editorialReadinessTone === "warning"
-    ? "rounded-full border border-[rgba(251,146,60,0.28)] px-3 py-1 text-orange-100/84"
+    ? "rounded-full border border-blue-600/35 px-3 py-1 text-slate-200"
     : editorialReadinessTone === "progress"
-      ? "rounded-full border border-[rgba(59,130,246,0.28)] px-3 py-1 text-sky-100/84"
-      : "rounded-full border border-[rgba(16,185,129,0.28)] px-3 py-1 text-emerald-100/84";
+      ? "rounded-full border border-cyan-500/35 px-3 py-1 text-cyan-300"
+      : "rounded-full border border-slate-700 px-3 py-1 text-slate-200";
 
   return (
-    <article className="group overflow-hidden rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(4,30,38,0.60)] md:shadow-[0_0_24px_rgba(80,226,255,0.02)] md:backdrop-blur-md">
-      <div className="relative overflow-hidden border-b border-[rgba(111,231,255,0.07)]">
+    <article className="group overflow-hidden rounded-xl border border-slate-800 bg-slate-900 md:backdrop-blur-md">
+      <div className="relative overflow-hidden border-b border-slate-800">
         <div className="relative h-80 w-full sm:h-112">
-          <div className="absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(5,31,40,0.08),rgba(5,31,40,0.38))]" />
+          <div className="absolute inset-0 z-10 bg-gradient-to-b from-slate-950/10 to-slate-950/45" />
           <Image
             src={post.imageUrl}
-            alt={post.imageAlt}
+            alt={post.imageAlt || post.title || "Ilustračný obrázok k článku"}
             fill
             priority
             fetchPriority="high"
@@ -42,41 +42,41 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
         </div>
       </div>
       <div className="space-y-5 p-6 sm:p-8">
-        <div className="flex flex-wrap items-center gap-3 font-sans text-xs uppercase tracking-[0.22em] text-(--foreground)/74">
-          <span className="rounded-full bg-[rgba(26,149,190,0.72)] px-3 py-1 text-white">{post.categoryLabel}</span>
+        <div className="flex flex-wrap items-center gap-3 font-sans text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <span className="rounded-full border border-cyan-500/30 bg-slate-900 px-3 py-1 text-cyan-400">{post.categoryLabel}</span>
           {publicAuthor ? <span>{publicAuthor.name}</span> : null}
           {sourceAttribution ? (
             sourceAttribution.url ? (
-              <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
+              <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-cyan-400 transition-colors hover:text-white">
                 Zdroj: {sourceAttribution.name}
               </a>
             ) : (
-              <span className="text-(--accent)">Zdroj: {sourceAttribution.name}</span>
+              <span className="text-cyan-400">Zdroj: {sourceAttribution.name}</span>
             )
           ) : null}
-          <span className="text-(--accent)">{featuredLabel}</span>
+          <span className="text-cyan-400">{featuredLabel}</span>
           {post.articleType ? <span>{post.articleType}</span> : null}
           {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}
-          {isTelegramIngest ? <span className="rounded-full border border-[rgba(111,231,255,0.14)] px-3 py-1 text-(--accent)">Telegram ingest</span> : null}
+          {isTelegramIngest ? <span className="rounded-full border border-slate-700 px-3 py-1 text-cyan-300">Telegram ingest</span> : null}
           {editorialReadinessLabel ? <span className={editorialReadinessClassName}>{editorialReadinessLabel}</span> : null}
         </div>
-        <Link href={post.href} className="block max-w-4xl font-serif text-3xl leading-[1.1] text-white transition-colors group-hover:text-(--accent) sm:text-5xl">
+        <Link href={post.href} className="block max-w-4xl text-2xl font-bold leading-tight text-slate-200 transition-colors group-hover:text-cyan-400 sm:text-3xl">
           {post.title}
         </Link>
         {post.subtitle ? (
-          <p className="max-w-3xl text-lg leading-relaxed text-slate-100/80">
+          <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
             {post.subtitle}
           </p>
         ) : null}
-        <p className="max-w-3xl text-lg leading-relaxed text-slate-100/88">
+        <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
           {post.excerpt}
         </p>
-        <div className="flex flex-wrap gap-3 font-sans text-xs uppercase tracking-[0.25em] text-(--foreground)/76">
+        <div className="flex flex-wrap gap-3 font-sans text-[10px] font-bold uppercase tracking-widest text-slate-500">
           <a
             href={TELEGRAM_CHANNEL_URL}
             target="_blank"
             rel={EXTERNAL_LINK_REL}
-            className="rounded-xl border border-[rgba(111,231,255,0.14)] bg-[rgba(6,42,52,0.62)] px-4 py-3 transition-colors hover:bg-[rgba(26,149,190,0.72)] hover:text-white"
+            className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 transition-colors hover:border-cyan-500/70 hover:text-white"
           >
             Telegram
           </a>
@@ -84,11 +84,11 @@ export default function FeaturedPost({ post }: FeaturedPostProps) {
             href={YOUTUBE_CHANNEL_URL}
             target="_blank"
             rel={EXTERNAL_LINK_REL}
-            className="rounded-xl border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.26)] px-4 py-3 transition-colors hover:border-[rgba(248,113,113,0.44)] hover:text-white"
+            className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 transition-colors hover:border-cyan-500/70 hover:text-white"
           >
             YouTube
           </a>
-          <Link href={post.href} className="rounded-xl border border-[rgba(111,231,255,0.08)] px-4 py-3 transition-colors hover:border-[rgba(111,231,255,0.22)] hover:text-white">
+          <Link href={post.href} className="rounded-xl border border-slate-700 px-4 py-3 transition-colors hover:border-cyan-500/70 hover:text-white">
             Otvoriť článok
           </Link>
         </div>

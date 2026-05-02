@@ -40,7 +40,7 @@ const MatrixBackground: React.FC = () => {
         const draw = () => {
             if (variantRef.current !== "matrix") return;
 
-            ctx.fillStyle = "rgba(2, 14, 20, 0.08)";
+      ctx.fillStyle = "#02061714";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.font = `bold ${fontSize}px monospace`;
 
@@ -48,7 +48,7 @@ const MatrixBackground: React.FC = () => {
                 const text = characters.charAt(Math.floor(Math.random() * characters.length));
                 const rand = Math.random();
                 if (rand > 0.985) ctx.fillStyle = "#d0e6ea";
-                else if (rand > 0.92) ctx.fillStyle = "#4abfcf";
+                else if (rand > 0.92) ctx.fillStyle = "#3d6dcc";
                 else ctx.fillStyle = "#0a4f5e";
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
                 if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {

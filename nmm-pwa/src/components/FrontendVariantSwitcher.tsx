@@ -39,7 +39,7 @@ export default function FrontendVariantSwitcher() {
   }, []);
 
   return (
-    <div className="inline-flex items-center rounded-full border border-[rgba(111,231,255,0.16)] bg-[rgba(6,42,52,0.62)] p-1 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/72">
+      <div className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900 p-1 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-300">
       {SWITCH_OPTIONS.map((option) => {
         const active = option.value === variant;
         return (
@@ -47,7 +47,7 @@ export default function FrontendVariantSwitcher() {
             key={option.value}
             type="button"
             className={active
-              ? "rounded-full bg-[rgba(26,149,190,0.78)] px-3 py-1.5 text-white"
+                  ? "rounded-full bg-slate-800 px-3 py-1.5 text-white"
               : "rounded-full px-3 py-1.5 text-slate-100/68 transition-colors hover:text-white"}
             onClick={() => applyBrowserFrontendVariant(option.value)}
             aria-pressed={active}

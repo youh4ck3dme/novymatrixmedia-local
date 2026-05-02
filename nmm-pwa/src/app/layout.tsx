@@ -1,27 +1,31 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Merriweather } from "next/font/google";
+import { Inter } from "next/font/google";
 import Image from "next/image";
 import "./globals.css";
 import SiteFooter from "@/components/SiteFooter";
+import { buildDefaultMetadata } from "@/lib/seo";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-inter",
-  display: "optional",
-  preload: false,
+  display: "swap",
 });
 
-const merriweather = Merriweather({
-  subsets: ["latin", "latin-ext"],
-  weight: ["700"],
-  variable: "--font-merriweather",
-  display: "optional",
-  preload: false,
-});
+const defaultMetadata = buildDefaultMetadata();
 
 export const metadata: Metadata = {
+  ...defaultMetadata,
   title: "NOVY MATRIX MEDIA | PWA",
   description: "Informačno-publicistický portál v novom rozmere.",
+  openGraph: {
+    ...defaultMetadata.openGraph,
+    title: "NOVY MATRIX MEDIA | PWA",
+    description: "Informačno-publicistický portál v novom rozmere.",
+  },
+  twitter: {
+    ...defaultMetadata.twitter,
+    title: "NOVY MATRIX MEDIA | PWA",
+    description: "Informačno-publicistický portál v novom rozmere.",
+  },
   manifest: "/manifest.json",
   verification: {
     google: "-wCURK9Y7qxlvcyGjWtw39xEehSvVAwPxnQtCaN2Wt8",
@@ -38,7 +42,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#58d9ea",
+  themeColor: "#020617",
 };
 
 const SITE_STATE_URL = "https://info.novymatrixmedia.sk/wp-json/nmm/v1/site-state";
@@ -72,13 +76,13 @@ export default async function RootLayout({
   const maintenanceMode = await getMaintenanceMode();
 
   return (
-    <html lang="sk" className={`${inter.variable} ${merriweather.variable}`}>
+    <html lang="sk">
       <head>
         <link rel="preconnect" href="https://info.novymatrixmedia.sk" crossOrigin="" />
         <link rel="dns-prefetch" href="//info.novymatrixmedia.sk" />
       </head>
       {maintenanceMode ? (
-        <body className="overflow-hidden bg-[#05050d] antialiased">
+        <body className={`${inter.className} overflow-hidden bg-[#05050d] antialiased`}>
           <main className="flex min-h-svh min-h-dvh items-center justify-center overflow-hidden bg-[#05050d]">
             <Image
               src="/vercelblok.png"
@@ -92,7 +96,7 @@ export default async function RootLayout({
           </main>
         </body>
       ) : (
-        <body className="bg-[#031a22] antialiased selection:bg-[#58d9ea] selection:text-[#021118]">
+        <body className={`${inter.className} bg-slate-950 text-slate-200 antialiased selection:bg-cyan-500 selection:text-slate-950`}>
           {children}
           <SiteFooter />
         </body>

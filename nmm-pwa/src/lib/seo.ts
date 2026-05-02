@@ -96,6 +96,11 @@ export function buildDefaultMetadata(): Metadata {
       locale: "sk_SK",
       type: "website",
     },
+    twitter: {
+      card: "summary_large_image",
+      title: DEFAULT_TITLE,
+      description: DEFAULT_DESCRIPTION,
+    },
   };
 }
 
@@ -157,6 +162,11 @@ export function buildCategoryMetadata(category: SiteCategory): Metadata {
       siteName: DEFAULT_TITLE,
       locale: "sk_SK",
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }

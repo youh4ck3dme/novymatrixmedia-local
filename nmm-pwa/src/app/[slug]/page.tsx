@@ -268,14 +268,14 @@ function getReadinessBadgeClassName(readiness?: string): string {
   const tone = getEditorialReadinessTone(readiness);
 
   if (tone === "warning") {
-    return "rounded-full border border-[rgba(251,146,60,0.34)] px-2 py-1 text-[10px] tracking-[0.18em] text-orange-100/82";
+    return "rounded-full border border-blue-600/35 px-2 py-1 text-[10px] tracking-[0.18em] text-slate-200";
   }
 
   if (tone === "progress") {
-    return "rounded-full border border-[rgba(59,130,246,0.34)] px-2 py-1 text-[10px] tracking-[0.18em] text-sky-100/82";
+    return "rounded-full border border-cyan-500/35 px-2 py-1 text-[10px] tracking-[0.18em] text-cyan-300";
   }
 
-  return "rounded-full border border-[rgba(16,185,129,0.34)] px-2 py-1 text-[10px] tracking-[0.18em] text-emerald-100/82";
+  return "rounded-full border border-slate-700 px-2 py-1 text-[10px] tracking-[0.18em] text-slate-200";
 }
 
 export async function generateMetadata({ params }: SlugPageProps): Promise<Metadata> {
@@ -302,19 +302,19 @@ export default async function SlugPage({ params }: SlugPageProps) {
     return (
       <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
         <SiteHeader navigationItems={categoryData.navigationItems} />
-        <section className="rounded-lg border border-[rgba(111,231,255,0.2)] bg-[rgba(5,36,44,0.72)] p-6 shadow-[0_0_40px_rgba(80,226,255,0.08)] backdrop-blur-md sm:p-8">
-          <div className="mb-3 font-sans text-xs uppercase tracking-[0.32em] text-(--accent)">{categoryData.category.name}</div>
+        <section className="rounded-lg border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50 backdrop-blur-md sm:p-8">
+          <div className="mb-3 font-sans text-xs uppercase tracking-[0.32em] text-cyan-400">{categoryData.category.name}</div>
           <h1 className="font-serif text-4xl text-white sm:text-5xl">{categoryData.category.name}</h1>
           <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-200/82">
             {categoryData.category.description || `Výber článkov z kategórie ${categoryData.category.name}.`}
           </p>
           {categoryData.posts.some((post) => post.ingestSource === "telegram") ? (
-            <div className="mt-6 inline-flex items-center rounded-lg border border-[rgba(111,231,255,0.18)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
+            <div className="mt-6 inline-flex items-center rounded-lg border border-slate-700 px-4 py-2 font-sans text-[11px] uppercase tracking-[0.22em] text-cyan-400">
               Obsahuje Telegram ingest články
             </div>
           ) : null}
           {categoryData.posts.some((item) => item.editorialReadiness) ? (
-            <div className="mt-3 inline-flex items-center rounded-lg border border-[rgba(251,146,60,0.22)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.22em] text-orange-100/82">
+            <div className="mt-3 inline-flex items-center rounded-lg border border-blue-600/35 px-4 py-2 font-sans text-[11px] uppercase tracking-[0.22em] text-slate-200">
               Obsahuje články v redakčnom workflow
             </div>
           ) : null}
@@ -322,13 +322,13 @@ export default async function SlugPage({ params }: SlugPageProps) {
 
         <section className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {categoryData.posts.map((post) => (
-            <article key={post.id} className="rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,39,48,0.68)] p-4 backdrop-blur-sm">
-              <div className="mb-3 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent)">
+            <article key={post.id} className="rounded-lg border border-slate-700 bg-slate-900/90 p-4 backdrop-blur-sm">
+              <div className="mb-3 flex flex-wrap items-center gap-2 font-sans text-[11px] uppercase tracking-[0.22em] text-cyan-400">
                 <span>{post.categoryLabel}</span>
-                {post.ingestSource === "telegram" ? <span className="rounded-lg border border-[rgba(111,231,255,0.22)] px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
+                {post.ingestSource === "telegram" ? <span className="rounded-lg border border-slate-700 px-2 py-1 text-[10px] tracking-[0.18em] text-slate-100/78">Telegram ingest</span> : null}
                 {getEditorialReadinessLabel(post.editorialReadiness) ? <span className={getReadinessBadgeClassName(post.editorialReadiness)}>{getEditorialReadinessLabel(post.editorialReadiness)}</span> : null}
               </div>
-              <Link href={post.href} className="block font-serif text-2xl leading-tight text-white transition-colors hover:text-(--accent)">{post.title}</Link>
+              <Link href={post.href} className="block font-serif text-2xl leading-tight text-white transition-colors hover:text-cyan-400">{post.title}</Link>
               <p className="mt-3 text-sm leading-relaxed text-slate-200/78">{post.excerpt}</p>
               <p className="mt-4 font-sans text-xs uppercase tracking-[0.2em] text-slate-300/60">{post.publishedAt}</p>
             </article>
@@ -364,59 +364,59 @@ export default async function SlugPage({ params }: SlugPageProps) {
   return (
     <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
       <SiteHeader navigationItems={navigationItems} />
-      <article className="rounded-lg border border-[rgba(111,231,255,0.18)] bg-[linear-gradient(180deg,rgba(6,31,39,0.88),rgba(5,24,31,0.82))] shadow-[0_0_40px_rgba(80,226,255,0.06)] backdrop-blur-md">
-        <div className="border-b border-[rgba(111,231,255,0.12)] px-6 py-5 sm:px-10">
+      <article className="rounded-lg border border-slate-700 bg-slate-900/95 shadow-xl shadow-slate-950/50 backdrop-blur-md">
+        <div className="border-b border-slate-700 px-6 py-5 sm:px-10">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-3 font-sans text-[11px] uppercase tracking-[0.24em] text-slate-300/62">
             <Link href="/" className="transition-colors hover:text-white">Domov</Link>
-            <span className="text-(--accent)/70">/</span>
+            <span className="text-cyan-400/70">/</span>
             <Link href={`/${post.categorySlug}`} className="transition-colors hover:text-white">{post.categoryLabel}</Link>
-            <span className="text-(--accent)/70">/</span>
+            <span className="text-cyan-400/70">/</span>
             <span className="text-slate-100/78">Článok</span>
           </nav>
         </div>
 
         <div className="px-6 py-8 sm:px-10 sm:py-12">
           <div className="max-w-4xl">
-            <div className="mb-5 flex flex-wrap items-center gap-3">
-              {post.highlightBadge ? (
-                <span className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.18)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">
-                  {post.highlightBadge}
-                </span>
-              ) : null}
-              <span className="font-sans text-xs uppercase tracking-[0.34em] text-(--accent)">{post.categoryLabel}</span>
-              {post.articleType ? <span className="font-sans text-[11px] uppercase tracking-[0.24em] text-slate-300/56">{post.articleType}</span> : null}
-              {editorialReadinessLabel ? <span className={getReadinessBadgeClassName(post.editorialReadiness)}>{editorialReadinessLabel}</span> : null}
-            </div>
-            <h1 className="max-w-5xl font-serif text-4xl leading-[0.95] text-white sm:text-6xl xl:text-7xl">{post.title}</h1>
-            {post.subtitle ? <p className="mt-6 max-w-4xl text-xl leading-relaxed text-slate-100/82 sm:text-2xl">{post.subtitle}</p> : null}
-            <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-100/76 sm:text-xl">{post.excerpt}</p>
+              <div className="mb-5 flex flex-wrap items-center gap-3">
+                {post.highlightBadge ? (
+                  <span className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 font-sans text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                    {post.highlightBadge}
+                  </span>
+                ) : null}
+                <span className="font-sans text-[10px] font-bold uppercase tracking-widest text-cyan-400">{post.categoryLabel}</span>
+                {post.articleType ? <span className="font-sans text-xs font-medium uppercase tracking-[0.2em] text-slate-500">{post.articleType}</span> : null}
+                {editorialReadinessLabel ? <span className={getReadinessBadgeClassName(post.editorialReadiness)}>{editorialReadinessLabel}</span> : null}
+              </div>
+              <h1 className="max-w-5xl text-2xl font-bold leading-tight text-slate-200 sm:text-3xl">{post.title}</h1>
+              {post.subtitle ? <p className="mt-6 max-w-4xl text-sm leading-relaxed text-slate-400 sm:text-base">{post.subtitle}</p> : null}
+              <p className="mt-6 max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">{post.excerpt}</p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4 border-y border-[rgba(111,231,255,0.12)] py-4 font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/62">
+              <div className="mt-8 flex flex-wrap items-center gap-4 border-y border-slate-700 py-4 font-sans text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
               <span>Publikované {post.publishedAt}</span>
-              {publicAuthor ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
+              {publicAuthor ? <span className="h-1 w-1 rounded-full bg-cyan-400/70" /> : null}
               {publicAuthor ? <span>{publicAuthor.name}</span> : null}
-              {sourceAttribution ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
+              {sourceAttribution ? <span className="h-1 w-1 rounded-full bg-cyan-400/70" /> : null}
               {sourceAttribution ? (
                 sourceAttribution.url ? (
-                  <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
+                  <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-cyan-400 transition-colors hover:text-white">
                     Zdroj: {sourceAttribution.name}
                   </a>
                 ) : (
-                  <span className="text-(--accent)">Zdroj: {sourceAttribution.name}</span>
+                  <span className="text-cyan-400">Zdroj: {sourceAttribution.name}</span>
                 )
               ) : null}
-              {post.estimatedReadingTime ? <span className="h-1 w-1 rounded-full bg-(--accent)/70" /> : null}
+              {post.estimatedReadingTime ? <span className="h-1 w-1 rounded-full bg-cyan-400/70" /> : null}
               {post.estimatedReadingTime ? <span>{post.estimatedReadingTime}</span> : null}
             </div>
 
             {sources.length > 0 ? (
-              <section className="mt-6 rounded-lg border border-[rgba(111,231,255,0.12)] bg-[rgba(7,34,42,0.44)] px-4 py-3">
+              <section className="mt-6 rounded-lg border border-slate-700 bg-slate-900/90 px-4 py-3">
                 <div className="mb-2 font-sans text-[10px] uppercase tracking-[0.22em] text-slate-300/58">Zdroje</div>
                 <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-slate-100/80">
                   {sources.map((source, index) => (
                     <span key={`${source.name}-${source.url ?? index}`}>
                       {source.url ? (
-                        <a href={source.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
+                        <a href={source.url} target="_blank" rel={EXTERNAL_LINK_REL} className="text-cyan-400 transition-colors hover:text-white">
                           {source.name}
                         </a>
                       ) : (
@@ -431,7 +431,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
           </div>
 
           {post.imageUrl ? (
-            <figure className="mt-10 overflow-hidden rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(8,35,42,0.72)]">
+            <figure className="mt-10 overflow-hidden rounded-lg border border-slate-700 bg-slate-900/90">
               <div className="relative h-72 w-full sm:h-112 xl:h-144">
                 <Image
                   src={post.imageUrl}
@@ -444,11 +444,11 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 />
               </div>
               {post.imageCaption || sourceAttribution ? (
-                <figcaption className="border-t border-[rgba(111,231,255,0.1)] px-5 py-4 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/58">
+                <figcaption className="border-t border-slate-700 px-5 py-4 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/58">
                   {post.imageCaption || "Cover image"}
                   {sourceAttribution ? (
                     <>
-                      <span className="mx-2 text-(--accent)/70">/</span>
+                      <span className="mx-2 text-cyan-400/70">/</span>
                       {sourceAttribution.url ? <a href={sourceAttribution.url} target="_blank" rel={EXTERNAL_LINK_REL} className="hover:text-white">{sourceAttribution.name}</a> : sourceAttribution.name}
                     </>
                   ) : null}
@@ -460,12 +460,12 @@ export default async function SlugPage({ params }: SlugPageProps) {
           <div className="mt-12 grid grid-cols-1 gap-12 xl:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="min-w-0">
               {post.factBox && post.factBox.length > 0 ? (
-                <section className="mx-auto mb-10 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.72)] p-6">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Co je dolezite vediet</div>
+                <section className="mx-auto mb-10 max-w-3xl rounded-lg border border-slate-700 bg-slate-900/90 p-6">
+                  <div className="mb-4 border-b border-slate-700 pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Co je dolezite vediet</div>
                   <ul className="space-y-3 text-base leading-relaxed text-slate-100/84">
                     {post.factBox.map((item) => (
                       <li key={item} className="flex gap-3">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-(--accent)" />
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
                         <span>{item}</span>
                       </li>
                     ))}
@@ -476,16 +476,16 @@ export default async function SlugPage({ params }: SlugPageProps) {
               <div className="article-body mx-auto max-w-3xl" dangerouslySetInnerHTML={renderHtml(post.content || `<p>${post.excerpt}</p>`)} />
 
               {conclusionText ? (
-                <section className="mx-auto mt-10 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
+                <section className="mx-auto mt-10 max-w-3xl rounded-lg border border-slate-700 bg-slate-900/90 p-6">
                   <h2 className="font-serif text-3xl text-white"># Záver {conclusionNumber}</h2>
                   <p className="mt-3 text-base leading-relaxed text-slate-100/84">{conclusionText}</p>
                 </section>
               ) : null}
 
               {videoAsset ? (
-                <section className="mx-auto mt-12 max-w-4xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.62)] p-4 sm:p-6">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Video</div>
-                  <div className="overflow-hidden rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(3,18,24,0.92)]">
+                <section className="mx-auto mt-12 max-w-4xl rounded-lg border border-slate-700 bg-slate-900/90 p-4 sm:p-6">
+                  <div className="mb-4 border-b border-slate-700 pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Video</div>
+                  <div className="overflow-hidden rounded-lg border border-slate-700 bg-slate-950/95">
                     {videoAsset.kind === "iframe" ? (
                       <iframe
                         src={videoAsset.src}
@@ -510,7 +510,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                         href={videoSourceLink}
                         target="_blank"
                         rel={EXTERNAL_LINK_REL}
-                        className="text-(--accent) transition-colors hover:text-white"
+                        className="text-cyan-400 transition-colors hover:text-white"
                       >
                         {truncateLinkLabel(videoSourceLink, 30)}
                       </a>
@@ -520,16 +520,16 @@ export default async function SlugPage({ params }: SlugPageProps) {
               ) : null}
 
               {galleryItems.length > 0 ? (
-                <section className="mx-auto mt-12 max-w-5xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.4)] p-5 sm:p-6">
-                  <div className="mb-5 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Galeria</div>
+                <section className="mx-auto mt-12 max-w-5xl rounded-lg border border-slate-700 bg-slate-900/90 p-5 sm:p-6">
+                  <div className="mb-5 border-b border-slate-700 pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Galeria</div>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {galleryItems.map((item) => (
-                      <figure key={`${item.url}-${item.alt}`} className="overflow-hidden rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(6,24,31,0.76)]">
+                      <figure key={`${item.url}-${item.alt}`} className="overflow-hidden rounded-lg border border-slate-700 bg-slate-950/80">
                         <div className="relative h-80 w-full">
                           <Image src={item.url} alt={item.alt} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" unoptimized />
                         </div>
                         {item.caption ? (
-                          <figcaption className="border-t border-[rgba(111,231,255,0.1)] px-4 py-3 text-sm leading-relaxed text-slate-200/72">
+                          <figcaption className="border-t border-slate-700 px-4 py-3 text-sm leading-relaxed text-slate-200/72">
                             {item.caption}
                           </figcaption>
                         ) : null}
@@ -540,17 +540,17 @@ export default async function SlugPage({ params }: SlugPageProps) {
               ) : null}
 
               {post.quoteBlock ? (
-                <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.52)] p-8">
+                <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-slate-700 bg-slate-900/90 p-8">
                   <div className="font-serif text-3xl leading-tight text-white sm:text-4xl">&ldquo;{post.quoteBlock}&rdquo;</div>
                 </section>
               ) : null}
 
               {(post.tagLabels?.length ?? 0) > 0 ? (
-                <section className="mx-auto mt-12 max-w-3xl border-t border-[rgba(111,231,255,0.12)] pt-6">
-                  <div className="mb-4 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Tagy</div>
+                <section className="mx-auto mt-12 max-w-3xl border-t border-slate-700 pt-6">
+                  <div className="mb-4 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Tagy</div>
                   <div className="flex flex-wrap gap-3">
                     {post.tagLabels?.map((tag) => (
-                      <span key={tag} className="rounded-lg border border-[rgba(111,231,255,0.18)] px-4 py-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-100/74">
+                      <span key={tag} className="rounded-lg border border-slate-700 px-4 py-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-100/74">
                         {tag}
                       </span>
                     ))}
@@ -560,8 +560,8 @@ export default async function SlugPage({ params }: SlugPageProps) {
 
               <ArticleComments postId={post.id} />
 
-              <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[linear-gradient(135deg,rgba(8,39,47,0.84),rgba(11,58,70,0.62))] p-6">
-                <div className="mb-3 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Kontakt / Tip redakcii</div>
+              <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-slate-700 bg-slate-900/90 p-6">
+                <div className="mb-3 border-b border-slate-700 pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Kontakt / Tip redakcii</div>
                 <p className="max-w-2xl text-base leading-relaxed text-slate-100/82">
                   Máte tip, doplnenie alebo reakciu k článku? Napíšte nám email alebo sledujte redakčné kanály na Telegrame a YouTube.
                 </p>
@@ -569,9 +569,9 @@ export default async function SlugPage({ params }: SlugPageProps) {
                   <a
                     href={getContactEmailHref()}
                     aria-label="Napísať email redakcii"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(8,52,64,0.38)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-cyan-500/70 hover:text-white"
                   >
-                    <ContactEmailIcon className="h-4 w-4 text-(--accent)" />
+                    <ContactEmailIcon className="h-4 w-4 text-cyan-400" />
                     <span>{CONTACT_EMAIL}</span>
                   </a>
                   <a
@@ -579,9 +579,9 @@ export default async function SlugPage({ params }: SlugPageProps) {
                     target="_blank"
                     rel={EXTERNAL_LINK_REL}
                     aria-label="Telegram kanál NOVY MATRIX MEDIA"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(10,72,88,0.38)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-cyan-500/70 hover:text-white"
                   >
-                    <ContactTelegramIcon className="h-4 w-4 text-(--accent)" />
+                    <ContactTelegramIcon className="h-4 w-4 text-cyan-400" />
                     <span>Telegram kanál</span>
                   </a>
                   <a
@@ -589,7 +589,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                     target="_blank"
                     rel={EXTERNAL_LINK_REL}
                     aria-label="YouTube kanál NOVY MATRIX MEDIA"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.32)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-[rgba(248,113,113,0.46)] hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-400/25 bg-red-900/30 px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-red-400/45 hover:text-white"
                   >
                     <ContactYouTubeIcon className="h-4 w-4 text-red-200" />
                     <span>YouTube kanál</span>
@@ -599,17 +599,17 @@ export default async function SlugPage({ params }: SlugPageProps) {
                     target="_blank"
                     rel={EXTERNAL_LINK_REL}
                     aria-label="TikTok profil NOVY MATRIX MEDIA"
-                    className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.18)] bg-[rgba(7,49,62,0.36)] px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-5 py-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-100/86 transition-colors hover:border-cyan-500/70 hover:text-white"
                   >
-                    <ContactTikTokIcon className="h-4 w-4 text-(--accent)" />
+                    <ContactTikTokIcon className="h-4 w-4 text-cyan-400" />
                     <span>TikTok profil</span>
                   </a>
                 </div>
               </section>
 
               {ingestSourceLabel || editorialReadinessLabel || post.telegramChatTitle || post.telegramPermalink ? (
-                <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(7,34,42,0.56)] p-6">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Redakčný pôvod</div>
+                <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-slate-700 bg-slate-900/90 p-6">
+                  <div className="mb-4 border-b border-slate-700 pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Redakčný pôvod</div>
                   <dl className="space-y-3 text-sm leading-relaxed text-slate-100/78">
                     {ingestSourceLabel ? (
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -645,7 +645,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                         <dt className="font-sans text-[11px] uppercase tracking-[0.22em] text-slate-300/58">Originál</dt>
                         <dd>
-                          <a href={post.telegramPermalink} target="_blank" rel={EXTERNAL_LINK_REL} className="text-(--accent) transition-colors hover:text-white">
+                          <a href={post.telegramPermalink} target="_blank" rel={EXTERNAL_LINK_REL} className="text-cyan-400 transition-colors hover:text-white">
                             Otvoriť Telegram príspevok
                           </a>
                         </dd>
@@ -655,46 +655,46 @@ export default async function SlugPage({ params }: SlugPageProps) {
                 </section>
               ) : null}
 
-              <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-[rgba(111,231,255,0.16)] bg-[linear-gradient(135deg,rgba(8,39,47,0.84),rgba(11,58,70,0.62))] p-8">
-                <div className="mb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Ďalší obsah</div>
+              <section className="mx-auto mt-12 max-w-3xl rounded-lg border border-slate-700 bg-slate-900/90 p-8">
+                <div className="mb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Ďalší obsah</div>
                 <h2 className="font-serif text-3xl text-white sm:text-4xl">Sleduj ďalšie komentáre, analýzy a rýchle správy.</h2>
                 <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-100/78">Pokračuj na domovskú stránku alebo si otvor ďalšie súvisiace texty z tejto sekcie.</p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/" className="rounded-lg border border-[rgba(111,231,255,0.22)] bg-[rgba(31,169,214,0.72)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-[rgba(31,169,214,0.9)]">Na domovskú stránku</Link>
-                  <a href={TELEGRAM_CHANNEL_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">Telegram kanál</a>
-                  <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(248,113,113,0.26)] bg-[rgba(153,27,27,0.22)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-red-100/84 transition-colors hover:border-[rgba(248,113,113,0.46)] hover:text-white">YouTube kanál</a>
-                  <a href={TIKTOK_PROFILE_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-[rgba(111,231,255,0.16)] px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-(--accent) hover:text-white">TikTok profil</a>
+                  <Link href="/" className="rounded-lg border border-slate-700 bg-slate-900 px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-white transition-colors hover:bg-slate-800">Na domovskú stránku</Link>
+                  <a href={TELEGRAM_CHANNEL_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-slate-700 px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-cyan-500/70 hover:text-white">Telegram kanál</a>
+                  <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-red-400/25 bg-red-900/20 px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-red-100/84 transition-colors hover:border-red-400/45 hover:text-white">YouTube kanál</a>
+                  <a href={TIKTOK_PROFILE_URL} target="_blank" rel={EXTERNAL_LINK_REL} className="rounded-lg border border-slate-700 px-5 py-3 font-sans text-xs uppercase tracking-[0.24em] text-slate-100/78 transition-colors hover:border-cyan-500/70 hover:text-white">TikTok profil</a>
                 </div>
               </section>
             </div>
 
             <aside className="xl:block">
               <div className="sticky top-8 space-y-6">
-                <section className="rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(7,34,42,0.72)] p-5">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Zdieľať</div>
+                <section className="rounded-lg border border-slate-700 bg-slate-900/90 p-5">
+                  <div className="mb-4 border-b border-slate-700 pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Zdieľať</div>
                   <div className="space-y-3 font-sans text-xs uppercase tracking-[0.2em] text-slate-200/80">
-                    <a href={shareLinks.telegram} target="_blank" rel={EXTERNAL_LINK_REL} className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                    <a href={shareLinks.telegram} target="_blank" rel={EXTERNAL_LINK_REL} className="flex items-center justify-between rounded-lg border border-slate-700 px-4 py-3 transition-colors hover:border-cyan-500/70 hover:text-white">
                       <span>Telegram</span>
-                      <span className="text-(--accent)">01</span>
+                      <span className="text-cyan-400">01</span>
                     </a>
-                    <a href={shareLinks.x} target="_blank" rel={EXTERNAL_LINK_REL} className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                    <a href={shareLinks.x} target="_blank" rel={EXTERNAL_LINK_REL} className="flex items-center justify-between rounded-lg border border-slate-700 px-4 py-3 transition-colors hover:border-cyan-500/70 hover:text-white">
                       <span>X / Twitter</span>
-                      <span className="text-(--accent)">02</span>
+                      <span className="text-cyan-400">02</span>
                     </a>
-                    <a href={shareLinks.email} className="flex items-center justify-between rounded-lg border border-[rgba(111,231,255,0.16)] px-4 py-3 transition-colors hover:border-(--accent) hover:text-white">
+                    <a href={shareLinks.email} className="flex items-center justify-between rounded-lg border border-slate-700 px-4 py-3 transition-colors hover:border-cyan-500/70 hover:text-white">
                       <span>Email</span>
-                      <span className="text-(--accent)">03</span>
+                      <span className="text-cyan-400">03</span>
                     </a>
                   </div>
                 </section>
 
-                <section className="rounded-lg border border-[rgba(111,231,255,0.14)] bg-[rgba(7,34,42,0.72)] p-5">
-                  <div className="mb-4 border-b border-[rgba(111,231,255,0.12)] pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Súvisiace</div>
+                <section className="rounded-lg border border-slate-700 bg-slate-900/90 p-5">
+                  <div className="mb-4 border-b border-slate-700 pb-3 font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Súvisiace</div>
                   <div className="space-y-5">
                     {relatedPosts.length > 0 ? relatedPosts.map((relatedPost) => (
-                      <div key={relatedPost.id} className="border-b border-[rgba(111,231,255,0.08)] pb-4 last:border-b-0 last:pb-0">
+                      <div key={relatedPost.id} className="border-b border-slate-700 pb-4 last:border-b-0 last:pb-0">
                         <div className="mb-2 font-sans text-[10px] uppercase tracking-[0.24em] text-slate-300/58">{relatedPost.categoryLabel}</div>
-                        <Link href={relatedPost.href} className="font-serif text-xl leading-tight text-white transition-colors hover:text-(--accent)">{relatedPost.title}</Link>
+                        <Link href={relatedPost.href} className="font-serif text-xl leading-tight text-white transition-colors hover:text-cyan-400">{relatedPost.title}</Link>
                       </div>
                     )) : (
                       <p className="text-sm leading-relaxed text-slate-200/72">Ďalšie články z tejto sekcie pribudnú po napojení plného CMS feedu.</p>
@@ -709,5 +709,6 @@ export default async function SlugPage({ params }: SlugPageProps) {
     </main>
   );
 }
+
 
 

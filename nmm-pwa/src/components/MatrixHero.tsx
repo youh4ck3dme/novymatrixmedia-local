@@ -3,8 +3,8 @@ import Link from "next/link";
 import FeaturedPost from "@/components/FeaturedPost";
 import PostCard from "@/components/PostCard";
 import SiteHeader from "@/components/SiteHeader";
-
-import { EXTERNAL_LINK_REL, TELEGRAM_CHANNEL_URL, YOUTUBE_CHANNEL_URL } from "@/lib/contact-links";
+import SocialLinksRow from "@/components/SocialLinksRow";
+import { EXTERNAL_LINK_REL, YOUTUBE_CHANNEL_URL } from "@/lib/contact-links";
 import { resolveSourceAttribution } from "@/lib/source-attribution";
 import type { HomePageData, SitePost } from "@/types/wordpress";
 
@@ -17,6 +17,8 @@ interface PostListColumnProps {
   posts: SitePost[];
   href: string;
 }
+
+const SECTION_PANEL_CLASS_NAME = "relative rounded-2xl border border-slate-800 bg-slate-900/95 p-4 shadow-xl shadow-slate-950/50 backdrop-blur-md md:p-6";
 
 function YouTubeIcon({ className }: { className?: string }) {
   return (
@@ -33,10 +35,10 @@ function YouTubeIcon({ className }: { className?: string }) {
 
 function PostListColumn({ title, posts, href }: PostListColumnProps) {
   return (
-    <article className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(5,30,38,0.62)] p-5 md:backdrop-blur-md">
-      <div className="mb-4 flex items-center justify-between gap-3 border-b border-[rgba(111,231,255,0.08)] pb-3">
+    <article className="rounded-xl border border-slate-800 bg-slate-900 p-5 md:backdrop-blur-md">
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <h3 className="font-serif text-xl text-white">{title}</h3>
-        <Link href={href} className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+        <Link href={href} className="font-sans text-[11px] uppercase tracking-[0.22em] text-cyan-400 transition-colors hover:text-white">
           Viac
         </Link>
       </div>
@@ -47,15 +49,15 @@ function PostListColumn({ title, posts, href }: PostListColumnProps) {
             const sourceAttribution = resolveSourceAttribution(post);
 
             return (
-              <article key={post.id} className="rounded-lg border border-[rgba(111,231,255,0.08)] bg-[rgba(6,34,42,0.4)] p-3">
-                <Link href={post.href} className="block font-serif text-lg leading-tight text-white transition-colors hover:text-(--accent)">
+              <article key={post.id} className="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
+                <Link href={post.href} className="block font-serif text-lg leading-tight text-white transition-colors hover:text-cyan-400">
                   {post.title}
                 </Link>
-                <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300/70">
+                <p className="mt-2 font-sans text-[11px] uppercase tracking-[0.18em] text-slate-300">
                   {post.publishedAt}
                 </p>
                 {sourceAttribution ? (
-                  <p className="mt-1 font-sans text-[10px] uppercase tracking-[0.16em] text-slate-300/66">
+                  <p className="mt-1 font-sans text-[10px] uppercase tracking-[0.16em] text-slate-400">
                     Zdroj: {sourceAttribution.name}
                   </p>
                 ) : null}
@@ -64,7 +66,7 @@ function PostListColumn({ title, posts, href }: PostListColumnProps) {
           })}
         </div>
       ) : (
-        <p className="text-sm text-slate-300/74">Zatiaľ bez obsahu.</p>
+        <p className="text-sm text-slate-300">Zatiaľ bez obsahu.</p>
       )}
     </article>
   );
@@ -74,17 +76,17 @@ function VideoNewsroomPanel({ videoPosts }: { videoPosts: SitePost[] }) {
   const topVideoPosts = videoPosts.slice(0, 3);
 
   return (
-    <section className="mb-6 overflow-hidden rounded-xl border border-[rgba(248,113,113,0.25)] bg-[radial-gradient(circle_at_20%_0%,rgba(239,68,68,0.22),rgba(6,26,34,0.92)_56%)] p-6 shadow-[0_20px_50px_rgba(127,29,29,0.22)] sm:p-7">
+    <section className="mb-6 overflow-hidden rounded-xl border border-slate-700 bg-[linear-gradient(140deg,#0f172a_0%,#0b2448_52%,#020617_100%)] p-6 shadow-2xl shadow-slate-950/60 sm:p-7">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-start">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(248,113,113,0.35)] bg-[rgba(153,27,27,0.34)] px-3 py-1 font-sans text-[10px] uppercase tracking-[0.22em] text-red-100/92">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/40 bg-slate-900 px-3 py-1 font-sans text-[10px] uppercase tracking-[0.22em] text-cyan-400">
             <YouTubeIcon className="h-3.5 w-3.5" />
             YouTube newsroom
           </div>
           <h3 className="mt-4 max-w-2xl font-serif text-3xl leading-tight text-white sm:text-4xl">
             Krátke správy, komentáre a video formát na jednom mieste.
           </h3>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-red-50/86 sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-200 sm:text-base">
             Sleduj oficiálny kanál NOVY MATRIX MEDIA a maj nové video výstupy okamžite po publikovaní.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
@@ -92,39 +94,39 @@ function VideoNewsroomPanel({ videoPosts }: { videoPosts: SitePost[] }) {
               href={YOUTUBE_CHANNEL_URL}
               target="_blank"
               rel={EXTERNAL_LINK_REL}
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(248,113,113,0.44)] bg-[rgba(185,28,28,0.58)] px-4 py-2.5 font-sans text-[11px] uppercase tracking-[0.22em] text-red-50 transition-colors hover:bg-[rgba(220,38,38,0.75)]"
+              className="inline-flex items-center gap-2 rounded-xl border border-cyan-500/55 bg-slate-900 px-4 py-2.5 font-sans text-[11px] uppercase tracking-[0.22em] text-cyan-300 transition-colors hover:border-blue-600 hover:text-white"
             >
               <YouTubeIcon className="h-4 w-4" />
               Odoberať YouTube
             </a>
             <Link
               href="/video"
-              className="inline-flex items-center rounded-xl border border-[rgba(248,113,113,0.3)] px-4 py-2.5 font-sans text-[11px] uppercase tracking-[0.22em] text-red-100/90 transition-colors hover:border-[rgba(248,113,113,0.5)] hover:text-white"
+              className="inline-flex items-center rounded-xl border border-slate-700 px-4 py-2.5 font-sans text-[11px] uppercase tracking-[0.22em] text-slate-200 transition-colors hover:border-cyan-500/70 hover:text-white"
             >
               Otvoriť video sekciu
             </Link>
           </div>
         </div>
 
-        <div className="rounded-xl border border-[rgba(248,113,113,0.24)] bg-[rgba(41,11,20,0.56)] p-4">
-          <div className="mb-3 font-sans text-[10px] uppercase tracking-[0.2em] text-red-100/76">Najnovšie video titulky</div>
+        <div className="rounded-xl border border-slate-700 bg-slate-900/90 p-4">
+          <div className="mb-3 font-sans text-[10px] uppercase tracking-[0.2em] text-slate-300">Najnovšie video titulky</div>
           {topVideoPosts.length > 0 ? (
             <div className="space-y-3">
               {topVideoPosts.map((post, index) => (
-                <article key={post.id} className="rounded-lg border border-[rgba(248,113,113,0.16)] bg-[rgba(20,8,14,0.42)] p-3">
-                  <div className="mb-2 flex items-center gap-2 font-sans text-[10px] uppercase tracking-[0.18em] text-red-100/66">
+                <article key={post.id} className="rounded-lg border border-slate-800 bg-slate-950/70 p-3">
+                  <div className="mb-2 flex items-center gap-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-400">
                     <span>{String(index + 1).padStart(2, "0")}</span>
-                    <span className="h-1 w-1 rounded-full bg-red-200/60" />
+                    <span className="h-1 w-1 rounded-full bg-cyan-400/70" />
                     <span>{post.publishedAt}</span>
                   </div>
-                  <Link href={post.href} className="font-serif text-base leading-snug text-white transition-colors hover:text-red-100">
+                  <Link href={post.href} className="font-serif text-base leading-snug text-white transition-colors hover:text-cyan-400">
                     {post.title}
                   </Link>
                 </article>
               ))}
             </div>
           ) : (
-            <p className="text-sm leading-relaxed text-red-100/78">Zatiaľ nemáme pripravené video články.</p>
+            <p className="text-sm leading-relaxed text-slate-300">Zatiaľ nemáme pripravené video články.</p>
           )}
         </div>
       </div>
@@ -134,29 +136,18 @@ function VideoNewsroomPanel({ videoPosts }: { videoPosts: SitePost[] }) {
 
 function QuickAccessStrip() {
   return (
-    <section className="mt-6 rounded-xl border border-[rgba(111,231,255,0.1)] bg-[rgba(5,30,38,0.56)] px-4 py-3 md:backdrop-blur-md">
+    <section className="mt-6 rounded-xl border border-slate-800 bg-slate-900/95 px-4 py-3 md:backdrop-blur-md">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-sans text-[10px] uppercase tracking-[0.22em] text-slate-300/64">Rýchly prístup</span>
-        <a
-          href={TELEGRAM_CHANNEL_URL}
-          target="_blank"
-          rel={EXTERNAL_LINK_REL}
-          className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] bg-[rgba(10,72,88,0.3)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/86 transition-colors hover:border-(--accent) hover:text-white"
-        >
-          Telegram
-        </a>
-        <a
-          href={YOUTUBE_CHANNEL_URL}
-          target="_blank"
-          rel={EXTERNAL_LINK_REL}
-          className="inline-flex items-center gap-2 rounded-lg border border-[rgba(248,113,113,0.24)] bg-[rgba(153,27,27,0.26)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-red-100/88 transition-colors hover:border-[rgba(248,113,113,0.44)] hover:text-white"
-        >
-          <YouTubeIcon className="h-3.5 w-3.5 text-red-200" />
-          YouTube
-        </a>
+        <span className="font-sans text-[10px] uppercase tracking-[0.22em] text-slate-400">Rýchly prístup</span>
+        <SocialLinksRow
+          include={["telegram", "youtube"]}
+          className="flex flex-wrap items-center gap-2"
+          itemClassName="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-200 transition-colors hover:border-cyan-500/70 hover:text-white"
+          iconClassName="h-3.5 w-3.5 text-cyan-400"
+        />
         <Link
           href="/video"
-          className="inline-flex items-center gap-2 rounded-lg border border-[rgba(111,231,255,0.16)] px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-100/82 transition-colors hover:border-(--accent) hover:text-white"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-800 px-3 py-2 font-sans text-[10px] uppercase tracking-[0.18em] text-slate-200 transition-colors hover:border-cyan-500/70 hover:text-white"
         >
           Video sekcia
         </Link>
@@ -167,10 +158,11 @@ function QuickAccessStrip() {
 
 export default function MatrixHero({ data }: MatrixHeroProps) {
   return (
-    <div className="home-ambient-wrap relative min-h-screen text-slate-100">
-      <div aria-hidden className="home-matrix-ambient">
-        <div className="home-matrix-rail home-matrix-rail--left" />
-        <div className="home-matrix-rail home-matrix-rail--right" />
+    <div className="relative isolate min-h-screen text-slate-100">
+      <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-32 left-1/2 h-[38rem] w-[38rem] -translate-x-1/2 rounded-full bg-blue-600/25 blur-3xl" />
+        <div className="absolute left-[-8rem] top-[22rem] h-[22rem] w-[22rem] rounded-full bg-cyan-500/20 blur-3xl" />
+        <div className="absolute right-[-9rem] top-[46rem] h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
@@ -182,8 +174,8 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
             {data.featuredPost ? (
               <FeaturedPost post={data.featuredPost} />
             ) : (
-              <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(4,30,38,0.60)] p-6 md:backdrop-blur-md sm:p-8">
-                <div className="font-sans text-[11px] uppercase tracking-[0.28em] text-(--accent)">Žiadny featured článok</div>
+              <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 md:backdrop-blur-md sm:p-8">
+                <div className="font-sans text-[11px] uppercase tracking-[0.28em] text-cyan-400">Žiadny featured článok</div>
                 <h2 className="mt-4 font-serif text-3xl leading-tight text-white sm:text-4xl">
                   WordPress nevrátil žiadne publikované články pre domovskú stránku.
                 </h2>
@@ -191,10 +183,10 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
             )}
           </section>
 
-          <section>
-            <div className="mb-5 flex items-end justify-between gap-4 border-b border-[rgba(111,231,255,0.08)] pb-3">
-              <h2 className="font-serif text-3xl text-white">Najnovšie články</h2>
-              <Link href="/domov" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+          <section className={SECTION_PANEL_CLASS_NAME}>
+            <div className="mb-5 flex items-end justify-between gap-4 border-b border-slate-800 pb-3">
+              <h2 className="font-serif text-3xl text-white drop-shadow-md">Najnovšie články</h2>
+              <Link href="/domov" className="font-sans text-[11px] uppercase tracking-[0.22em] text-cyan-400 transition-colors hover:text-white">
                 Prejsť na články
               </Link>
             </div>
@@ -205,13 +197,13 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-300/74">Najnovšie články zatiaľ nie sú dostupné.</p>
+              <p className="text-sm text-slate-300">Najnovšie články zatiaľ nie sú dostupné.</p>
             )}
           </section>
 
-          <section>
-            <div className="mb-5 border-b border-[rgba(111,231,255,0.08)] pb-3">
-              <h2 className="font-serif text-3xl text-white">Sekcie</h2>
+          <section className={SECTION_PANEL_CLASS_NAME}>
+            <div className="mb-5 border-b border-slate-800 pb-3">
+              <h2 className="font-serif text-3xl text-white drop-shadow-md">Sekcie</h2>
             </div>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <PostListColumn title="Domov" posts={data.domovPosts.slice(0, 3)} href="/domov" />
@@ -220,10 +212,10 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
             </div>
           </section>
 
-          <section>
-            <div className="mb-5 flex items-end justify-between gap-4 border-b border-[rgba(111,231,255,0.08)] pb-3">
-              <h2 className="font-serif text-3xl text-white">Video</h2>
-              <Link href="/video" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+          <section className={SECTION_PANEL_CLASS_NAME}>
+            <div className="mb-5 flex items-end justify-between gap-4 border-b border-slate-800 pb-3">
+              <h2 className="font-serif text-3xl text-white drop-shadow-md">Video</h2>
+              <Link href="/video" className="font-sans text-[11px] uppercase tracking-[0.22em] text-cyan-400 transition-colors hover:text-white">
                 Všetky videá
               </Link>
             </div>
@@ -237,14 +229,14 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-300/74">Video sekcia zatiaľ nemá články s vyplneným video linkom.</p>
+              <p className="text-sm text-slate-300">Video sekcia zatiaľ nemá články s vyplneným video linkom.</p>
             )}
           </section>
 
-          <section className="rounded-xl border border-[rgba(111,231,255,0.08)] bg-[rgba(5,30,38,0.62)] p-6 md:backdrop-blur-md">
-            <div className="mb-5 flex items-end justify-between gap-4 border-b border-[rgba(111,231,255,0.08)] pb-3">
-              <h2 className="font-serif text-3xl text-white">Reakcie</h2>
-              <Link href="/reakcie" className="font-sans text-[11px] uppercase tracking-[0.22em] text-(--accent) transition-colors hover:text-white">
+          <section className={SECTION_PANEL_CLASS_NAME}>
+            <div className="mb-5 flex items-end justify-between gap-4 border-b border-slate-800 pb-3">
+              <h2 className="font-serif text-3xl text-white drop-shadow-md">Reakcie</h2>
+              <Link href="/reakcie" className="font-sans text-[11px] uppercase tracking-[0.22em] text-cyan-400 transition-colors hover:text-white">
                 Všetky reakcie
               </Link>
             </div>
@@ -252,13 +244,13 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
             {data.recentComments.length > 0 ? (
               <div className="space-y-4">
                 {data.recentComments.map((comment) => (
-                  <article key={comment.id} className="rounded-lg border border-[rgba(111,231,255,0.08)] bg-[rgba(6,34,42,0.4)] p-4">
-                    <div className="mb-2 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300/70">
+                  <article key={comment.id} className="rounded-lg border border-slate-800 bg-slate-900/90 p-4">
+                    <div className="mb-2 font-sans text-[11px] uppercase tracking-[0.2em] text-slate-300">
                       {comment.authorName} · {comment.dateLabel}
                     </div>
-                    <p className="text-sm leading-relaxed text-slate-100/86">{comment.excerpt}</p>
+                    <p className="text-sm leading-relaxed text-slate-100">{comment.excerpt}</p>
                     {comment.postHref && comment.postTitle ? (
-                      <Link href={comment.postHref} className="mt-3 inline-block font-sans text-[11px] uppercase tracking-[0.2em] text-(--accent) transition-colors hover:text-white">
+                      <Link href={comment.postHref} className="mt-3 inline-block font-sans text-[11px] uppercase tracking-[0.2em] text-cyan-400 transition-colors hover:text-white">
                         K článku: {comment.postTitle}
                       </Link>
                     ) : null}
@@ -266,7 +258,7 @@ export default function MatrixHero({ data }: MatrixHeroProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-300/74">Zatiaľ nie sú schválené komentáre.</p>
+              <p className="text-sm text-slate-300">Zatiaľ nie sú schválené komentáre.</p>
             )}
           </section>
         </main>
