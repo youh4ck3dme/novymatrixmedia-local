@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: NMM Telegram Bridge
- * Description: Receives authenticated Telegram payloads and creates WordPress draft posts with NMM editorial meta.
- * Version: 0.1.0
+ * Description: Receives authenticated Telegram payloads and creates or updates WordPress posts with NMM editorial meta.
+ * Version: 0.2.0
  * Author: Novy Matrix Media
  */
 
@@ -11,6 +11,14 @@ if (!defined('ABSPATH')) {
 }
 
 const NMM_TELEGRAM_BRIDGE_ROUTE_NAMESPACE = 'nmm-telegram-bridge/v1';
+
+function nmm_telegram_bridge_is_enabled() {
+    if (!defined('NMM_TELEGRAM_BRIDGE_ENABLED')) {
+        return false;
+    }
+
+    return (bool) NMM_TELEGRAM_BRIDGE_ENABLED;
+}
 
 function nmm_telegram_bridge_register_meta() {
     $string_meta_keys = array(
@@ -39,6 +47,10 @@ function nmm_telegram_bridge_register_meta() {
 add_action('init', 'nmm_telegram_bridge_register_meta');
 
 function nmm_telegram_bridge_register_routes() {
+    if (!nmm_telegram_bridge_is_enabled()) {
+        return;
+    }
+
     register_rest_route(
         NMM_TELEGRAM_BRIDGE_ROUTE_NAMESPACE,
         '/ingest',
@@ -46,6 +58,16 @@ function nmm_telegram_bridge_register_routes() {
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => 'nmm_telegram_bridge_handle_ingest',
             'permission_callback' => 'nmm_telegram_bridge_authorize_request',
+        )
+    );
+
+    register_rest_route(
+        NMM_TELEGRAM_BRIDGE_ROUTE_NAMESPACE,
+        '/webhook',
+        array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => 'nmm_telegram_bridge_handle_webhook',
+            'permission_callback' => 'nmm_telegram_bridge_authorize_webhook_request',
         )
     );
 }
@@ -210,12 +232,104 @@ function nmm_telegram_bridge_get_request_token(WP_REST_Request $request) {
     return is_string($body_token) ? trim($body_token) : '';
 }
 
+function nmm_telegram_bridge_authorize_webhook_request(WP_REST_Request $request) {
+    $expected_secret = defined('NMM_TELEGRAM_WEBHOOK_SECRET') ? trim((string) NMM_TELEGRAM_WEBHOOK_SECRET) : '';
+    if ($expected_secret === '') {
+        return new WP_Error(
+            'nmm_telegram_bridge_missing_webhook_secret',
+            'NMM_TELEGRAM_WEBHOOK_SECRET is not configured.',
+            array('status' => 500)
+        );
+    }
+
+    $provided_secret = trim((string) $request->get_header('x-telegram-bot-api-secret-token'));
+    if ($provided_secret === '') {
+        $provided_secret = isset($_GET['secret']) ? sanitize_text_field(wp_unslash($_GET['secret'])) : '';
+    }
+
+    if ($provided_secret === '' || !hash_equals($expected_secret, $provided_secret)) {
+        return new WP_Error(
+            'nmm_telegram_bridge_webhook_forbidden',
+            'Invalid Telegram webhook secret.',
+            array('status' => 403)
+        );
+    }
+
+    return true;
+}
+
+function nmm_telegram_bridge_handle_webhook(WP_REST_Request $request) {
+    $update = $request->get_json_params();
+    if (!is_array($update) || empty($update)) {
+        return new WP_Error(
+            'nmm_telegram_bridge_invalid_webhook_payload',
+            'Webhook payload must be a valid Telegram update JSON object.',
+            array('status' => 400)
+        );
+    }
+
+    $is_edited_update = false;
+    $message = array();
+
+    if (!empty($update['channel_post']) && is_array($update['channel_post'])) {
+        $message = $update['channel_post'];
+    } elseif (!empty($update['edited_channel_post']) && is_array($update['edited_channel_post'])) {
+        $message = $update['edited_channel_post'];
+        $is_edited_update = true;
+    } elseif (!empty($update['message']) && is_array($update['message'])) {
+        $message = $update['message'];
+    } elseif (!empty($update['edited_message']) && is_array($update['edited_message'])) {
+        $message = $update['edited_message'];
+        $is_edited_update = true;
+    } else {
+        return rest_ensure_response(
+            array(
+                'success' => true,
+                'ignored' => true,
+                'reason' => 'unsupported_update_type',
+            )
+        );
+    }
+
+    $payload = nmm_telegram_bridge_normalize_webhook_payload($message);
+    if (is_wp_error($payload)) {
+        return $payload;
+    }
+
+    $result = nmm_telegram_bridge_upsert_post($payload, $is_edited_update ? 'upsert' : 'dedupe');
+    if (is_wp_error($result)) {
+        return $result;
+    }
+
+    $result['source'] = 'telegram-webhook';
+    $result['edited_update'] = $is_edited_update;
+    return rest_ensure_response($result);
+}
+
 function nmm_telegram_bridge_handle_ingest(WP_REST_Request $request) {
     $payload = $request->get_json_params();
     if (!is_array($payload) || empty($payload)) {
         $payload = $request->get_params();
     }
 
+    if (!is_array($payload) || empty($payload)) {
+        return new WP_Error(
+            'nmm_telegram_bridge_invalid_payload',
+            'Request payload is empty.',
+            array('status' => 400)
+        );
+    }
+
+    $result = nmm_telegram_bridge_upsert_post($payload, 'upsert');
+    if (is_wp_error($result)) {
+        return $result;
+    }
+
+    $result['source'] = 'manual-bridge';
+    return rest_ensure_response($result);
+}
+
+function nmm_telegram_bridge_upsert_post(array $payload, $mode = 'upsert') {
     $title = isset($payload['title']) ? sanitize_text_field(wp_unslash($payload['title'])) : '';
     $content = isset($payload['content']) ? wp_kses_post(wp_unslash($payload['content'])) : '';
 
@@ -227,6 +341,19 @@ function nmm_telegram_bridge_handle_ingest(WP_REST_Request $request) {
         );
     }
 
+    $existing_post_id = nmm_telegram_bridge_find_existing_post_id($payload);
+
+    if ($existing_post_id > 0 && $mode === 'dedupe') {
+        return array(
+            'success' => true,
+            'postId' => $existing_post_id,
+            'status' => get_post_status($existing_post_id),
+            'editLink' => get_edit_post_link($existing_post_id, 'raw'),
+            'permalink' => get_permalink($existing_post_id),
+            'action' => 'deduped',
+        );
+    }
+
     $postarr = array(
         'post_type' => 'post',
         'post_status' => nmm_telegram_bridge_get_post_status($payload),
@@ -235,13 +362,27 @@ function nmm_telegram_bridge_handle_ingest(WP_REST_Request $request) {
         'post_excerpt' => isset($payload['excerpt']) ? sanitize_textarea_field(wp_unslash($payload['excerpt'])) : '',
     );
 
+    if ($existing_post_id > 0) {
+        $postarr['ID'] = $existing_post_id;
+        $has_explicit_status = !empty($payload['status']) && is_string($payload['status']);
+        if (!$has_explicit_status) {
+            $existing_status = get_post_status($existing_post_id);
+            if (is_string($existing_status) && $existing_status !== '') {
+                $postarr['post_status'] = $existing_status;
+            }
+        }
+    }
+
     if (!empty($payload['slug']) && is_string($payload['slug'])) {
         $postarr['post_name'] = sanitize_title($payload['slug']);
     }
 
     if (!empty($payload['published_at']) && is_string($payload['published_at'])) {
-        $postarr['post_date_gmt'] = gmdate('Y-m-d H:i:s', strtotime($payload['published_at']));
-        $postarr['post_date'] = get_date_from_gmt($postarr['post_date_gmt']);
+        $timestamp = strtotime($payload['published_at']);
+        if (is_int($timestamp) && $timestamp > 0) {
+            $postarr['post_date_gmt'] = gmdate('Y-m-d H:i:s', $timestamp);
+            $postarr['post_date'] = get_date_from_gmt($postarr['post_date_gmt']);
+        }
     }
 
     $post_id = wp_insert_post(wp_slash($postarr), true);
@@ -261,15 +402,244 @@ function nmm_telegram_bridge_handle_ingest(WP_REST_Request $request) {
         }
     }
 
-    return rest_ensure_response(
+    return array(
+        'success' => true,
+        'postId' => $post_id,
+        'status' => get_post_status($post_id),
+        'editLink' => get_edit_post_link($post_id, 'raw'),
+        'permalink' => get_permalink($post_id),
+        'action' => $existing_post_id > 0 ? 'updated' : 'created',
+    );
+}
+
+function nmm_telegram_bridge_find_existing_post_id(array $payload) {
+    if (empty($payload['telegram']) || !is_array($payload['telegram'])) {
+        return 0;
+    }
+
+    $telegram = $payload['telegram'];
+    $message_id = isset($telegram['message_id']) ? sanitize_text_field((string) $telegram['message_id']) : '';
+    $chat_id = isset($telegram['chat_id']) ? sanitize_text_field((string) $telegram['chat_id']) : '';
+
+    if ($message_id === '' || $chat_id === '') {
+        return 0;
+    }
+
+    $existing_ids = get_posts(
         array(
-            'success' => true,
-            'postId' => $post_id,
-            'status' => get_post_status($post_id),
-            'editLink' => get_edit_post_link($post_id, 'raw'),
-            'permalink' => get_permalink($post_id),
+            'post_type' => 'post',
+            'post_status' => array('publish', 'pending', 'draft', 'future', 'private'),
+            'posts_per_page' => 1,
+            'fields' => 'ids',
+            'meta_query' => array(
+                array(
+                    'key' => 'nmm_telegram_message_id',
+                    'value' => $message_id,
+                ),
+                array(
+                    'key' => 'nmm_telegram_chat_id',
+                    'value' => $chat_id,
+                ),
+            ),
         )
     );
+
+    if (empty($existing_ids)) {
+        return 0;
+    }
+
+    return (int) $existing_ids[0];
+}
+
+function nmm_telegram_bridge_normalize_webhook_payload(array $message) {
+    $chat = isset($message['chat']) && is_array($message['chat']) ? $message['chat'] : array();
+    $chat_id = isset($chat['id']) ? sanitize_text_field((string) $chat['id']) : '';
+    $chat_title = isset($chat['title']) ? sanitize_text_field((string) $chat['title']) : 'Telegram';
+    $chat_username = isset($chat['username']) ? sanitize_key((string) $chat['username']) : '';
+
+    if (!nmm_telegram_bridge_is_source_chat_allowed($chat_id, $chat_username)) {
+        return new WP_Error(
+            'nmm_telegram_bridge_source_not_allowed',
+            'Telegram source chat is not allowed for ingestion.',
+            array('status' => 403)
+        );
+    }
+
+    $message_id = isset($message['message_id']) ? sanitize_text_field((string) $message['message_id']) : '';
+    if ($message_id === '') {
+        return new WP_Error(
+            'nmm_telegram_bridge_invalid_message',
+            'Telegram message_id is missing.',
+            array('status' => 422)
+        );
+    }
+
+    $raw_text = '';
+    if (!empty($message['text']) && is_string($message['text'])) {
+        $raw_text = $message['text'];
+    } elseif (!empty($message['caption']) && is_string($message['caption'])) {
+        $raw_text = $message['caption'];
+    }
+
+    $raw_text = trim((string) $raw_text);
+    if ($raw_text === '') {
+        return new WP_Error(
+            'nmm_telegram_bridge_empty_message',
+            'Telegram message does not contain text or caption.',
+            array('status' => 422)
+        );
+    }
+
+    $lines = preg_split('/\r\n|\r|\n/', $raw_text);
+    $clean_lines = array();
+    foreach ((array) $lines as $line) {
+        $normalized_line = trim((string) $line);
+        if ($normalized_line !== '') {
+            $clean_lines[] = $normalized_line;
+        }
+    }
+
+    $first_line = !empty($clean_lines) ? $clean_lines[0] : $raw_text;
+    $title = sanitize_text_field(wp_html_excerpt($first_line, 140, '…'));
+    if ($title === '') {
+        $title = 'Telegram post';
+    }
+
+    $paragraphs = array();
+    foreach ($clean_lines as $line) {
+        $paragraphs[] = '<p>' . esc_html($line) . '</p>';
+    }
+
+    $content = !empty($paragraphs) ? implode("\n", $paragraphs) : '<p>' . esc_html($raw_text) . '</p>';
+    $tags_and_categories = nmm_telegram_bridge_extract_message_tags($raw_text);
+    $source_url = nmm_telegram_bridge_build_webhook_permalink($chat_username, $message_id);
+
+    $published_at = '';
+    if (!empty($message['date']) && is_numeric($message['date'])) {
+        $published_at = gmdate('c', (int) $message['date']);
+    }
+
+    return array(
+        'title' => $title,
+        'excerpt' => sanitize_text_field(wp_html_excerpt($raw_text, 220, '…')),
+        'content' => $content,
+        'status' => defined('NMM_TELEGRAM_BRIDGE_DEFAULT_STATUS') ? (string) NMM_TELEGRAM_BRIDGE_DEFAULT_STATUS : 'draft',
+        'published_at' => $published_at,
+        'categories' => $tags_and_categories['categories'],
+        'tags' => $tags_and_categories['tags'],
+        'source_name' => $chat_title,
+        'source_url' => $source_url,
+        'author_name' => !empty($message['author_signature']) ? sanitize_text_field((string) $message['author_signature']) : 'Telegram',
+        'highlight_badge' => 'Telegram',
+        'telegram' => array(
+            'message_id' => $message_id,
+            'chat_id' => $chat_id,
+            'chat_title' => $chat_title,
+            'author' => !empty($message['author_signature']) ? sanitize_text_field((string) $message['author_signature']) : '',
+            'permalink' => $source_url,
+        ),
+    );
+}
+
+function nmm_telegram_bridge_is_source_chat_allowed($chat_id, $chat_username) {
+    $configured = defined('NMM_TELEGRAM_SOURCE_CHAT') ? trim((string) NMM_TELEGRAM_SOURCE_CHAT) : '';
+    if ($configured === '') {
+        return true;
+    }
+
+    $normalized_username = sanitize_key(ltrim((string) $chat_username, '@'));
+    $normalized_chat_id = trim((string) $chat_id);
+    $allowed_values = array_filter(array_map('trim', explode(',', $configured)));
+
+    foreach ($allowed_values as $allowed_value) {
+        $normalized_allowed = trim((string) $allowed_value);
+        if ($normalized_allowed === '') {
+            continue;
+        }
+
+        if ($normalized_allowed[0] === '@') {
+            if ($normalized_username !== '' && sanitize_key(ltrim($normalized_allowed, '@')) === $normalized_username) {
+                return true;
+            }
+            continue;
+        }
+
+        if ($normalized_chat_id !== '' && $normalized_allowed === $normalized_chat_id) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function nmm_telegram_bridge_extract_message_tags($text) {
+    $result = array(
+        'tags' => array(),
+        'categories' => array(),
+    );
+
+    if (!is_string($text) || trim($text) === '') {
+        return $result;
+    }
+
+    preg_match_all('/#([\p{L}\p{N}_-]+)/u', $text, $matches);
+    if (empty($matches[1]) || !is_array($matches[1])) {
+        return $result;
+    }
+
+    $known_categories = array(
+        'domov' => 'domov',
+        'zdomova' => 'domov',
+        'z-domova' => 'domov',
+        'zahranicie' => 'zahranicie',
+        'komentare' => 'komentare',
+        'zaujimave' => 'zaujimave',
+        'video' => 'video',
+    );
+
+    $tag_names = array();
+    $category_slugs = array();
+
+    foreach ($matches[1] as $raw_tag) {
+        $tag_name = sanitize_text_field((string) $raw_tag);
+        if ($tag_name === '') {
+            continue;
+        }
+
+        $tag_names[] = $tag_name;
+
+        $tag_slug = sanitize_title($tag_name);
+        if ($tag_slug !== '' && isset($known_categories[$tag_slug])) {
+            $category_slugs[] = $known_categories[$tag_slug];
+        }
+    }
+
+    $tag_names = array_values(array_unique($tag_names));
+    $category_slugs = array_values(array_unique($category_slugs));
+
+    $result['tags'] = $tag_names;
+    $result['categories'] = array_map(
+        function ($slug) {
+            return array(
+                'slug' => $slug,
+                'name' => ucwords(str_replace('-', ' ', $slug)),
+            );
+        },
+        $category_slugs
+    );
+
+    return $result;
+}
+
+function nmm_telegram_bridge_build_webhook_permalink($chat_username, $message_id) {
+    $username = sanitize_key(ltrim((string) $chat_username, '@'));
+    $message = sanitize_text_field((string) $message_id);
+
+    if ($username === '' || $message === '') {
+        return '';
+    }
+
+    return 'https://t.me/' . rawurlencode($username) . '/' . rawurlencode($message);
 }
 
 function nmm_telegram_bridge_get_post_status(array $payload) {
