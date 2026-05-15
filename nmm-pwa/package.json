@@ -8,6 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "test:smoke": "node scripts/smoke-test.mjs",
+    "test:e2e:install": "playwright install --with-deps chromium",
+    "test:e2e:gate": "node scripts/run-e2e.mjs --suite gate",
+    "test:e2e:full": "node scripts/run-e2e.mjs --suite full",
+    "ci:deploy-gate": "node scripts/ci-deploy-gate.mjs",
+    "ci:full-regression": "node scripts/ci-full-regression.mjs",
     "check-env": "node scripts/check-env.mjs",
     "check-env:live": "node scripts/check-env.mjs --live"
   },
@@ -23,6 +28,8 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

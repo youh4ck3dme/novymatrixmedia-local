@@ -1,0 +1,110 @@
+name: Vercel Deployment Checks
+
+on:
+  repository_dispatch:
+    types:
+      - vercel.deployment.ready
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: "Deployment URL (optional, for manual test)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  deployment-gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nmm-pwa
+    steps:
+      - name: Resolve deployment SHA
+        id: sha
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha =
+              context.payload.client_payload?.git?.sha
+              ?? context.payload.client_payload?.sha
+              ?? context.sha;
+            core.setOutput("sha", sha);
+
+      - name: Mark deploy gate as pending
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: "${{ steps.sha.outputs.sha }}",
+              state: "pending",
+              context: "vercel/e2e-gate",
+              description: "Running deploy quality gate",
+            });
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.sha.outputs.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install
+      - run: npm run test:e2e:install
+
+      - name: Resolve deployment URL value
+        id: deployment-url-value
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const rawUrl =
+              context.payload.client_payload?.url
+              ?? context.payload.inputs?.deployment_url
+              ?? "https://novymatrixmedia.sk";
+            core.setOutput("url", rawUrl);
+
+      - name: Normalize deployment URL
+        id: deployment-url
+        shell: bash
+        run: |
+          RAW_URL="${{ steps.deployment-url-value.outputs.url }}"
+          if [[ "$RAW_URL" != http* ]]; then
+            RAW_URL="https://$RAW_URL"
+          fi
+          echo "DEPLOY_BASE_URL=$RAW_URL" >> "$GITHUB_ENV"
+          echo "PLAYWRIGHT_BASE_URL=$RAW_URL" >> "$GITHUB_ENV"
+          echo "SMOKE_BASE_URL=$RAW_URL" >> "$GITHUB_ENV"
+          echo "url=$RAW_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Run deploy gate
+        id: gate
+        continue-on-error: true
+        run: npm run ci:deploy-gate
+
+      - name: Mark deploy gate final status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const state = "${{ steps.gate.outcome }}" === "success" ? "success" : "failure";
+            const description = state === "success"
+              ? "Deploy quality gate passed"
+              : "Deploy quality gate failed";
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: "${{ steps.sha.outputs.sha }}",
+              state,
+              context: "vercel/e2e-gate",
+              description,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Fail workflow when gate failed
+        if: steps.gate.outcome != 'success'
+        run: exit 1

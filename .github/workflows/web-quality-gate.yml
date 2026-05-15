@@ -1,0 +1,145 @@
+name: Web Quality Gate
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "nmm-pwa/**"
+      - ".github/workflows/web-quality-gate.yml"
+      - ".github/workflows/vercel-deployment-checks.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "nmm-pwa/**"
+      - ".github/workflows/web-quality-gate.yml"
+      - ".github/workflows/vercel-deployment-checks.yml"
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nmm-pwa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run lint
+
+  build:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nmm-pwa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run build
+
+  smoke:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nmm-pwa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - name: Start local dev server
+        run: |
+          npm run dev -- --port 3007 > /tmp/nmm-dev.log 2>&1 &
+          echo $! > /tmp/nmm-dev.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3007 >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3007 >/dev/null
+      - run: npm run test:smoke -- --base http://127.0.0.1:3007
+      - name: Stop local dev server
+        if: always()
+        run: |
+          if [ -f /tmp/nmm-dev.pid ]; then
+            kill "$(cat /tmp/nmm-dev.pid)" || true
+          fi
+
+  e2e-gate:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nmm-pwa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run test:e2e:install
+      - run: npm run test:e2e:gate
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3007
+
+  full-regression:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nmm-pwa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - name: Start local dev server
+        run: |
+          npm run dev -- --port 3007 > /tmp/nmm-dev.log 2>&1 &
+          echo $! > /tmp/nmm-dev.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3007 >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3007 >/dev/null
+      - run: npm run test:smoke -- --base http://127.0.0.1:3007
+      - run: npm run test:e2e:install
+      - run: npm run test:e2e:full
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3007
+      - name: Stop local dev server
+        if: always()
+        run: |
+          if [ -f /tmp/nmm-dev.pid ]; then
+            kill "$(cat /tmp/nmm-dev.pid)" || true
+          fi
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-full-regression-artifacts
+          path: nmm-pwa/test-results/e2e
