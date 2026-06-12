@@ -89,6 +89,14 @@ define( 'WP_DEBUG', false );
 
 /* Add any custom values between this line and the "stop editing" line. */
 
+/**
+ * Novy Matrix Media - Revalidation Settings
+ * 
+ * NMM_REVALIDATE_SECRET: Must match REVALIDATE_SECRET environment variable in Vercel.
+ * NMM_REVALIDATE_URL: The endpoint on your Next.js app that handles revalidation.
+ */
+define( 'NMM_REVALIDATE_SECRET', 'your_long_random_secret_here' );
+define( 'NMM_REVALIDATE_URL', 'https://novymatrixmedia.sk/api/revalidate' );
 
 
 /* That's all, stop editing! Happy publishing. */
