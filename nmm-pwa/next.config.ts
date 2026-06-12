@@ -80,6 +80,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    unoptimized: true,
     deviceSizes: [360, 414, 640, 750, 828, 1080, 1200, 1600, 1920],
     imageSizes: [96, 128, 256, 384],
     qualities: [60, 62, 65, 75, 88, 90, 92, 95],

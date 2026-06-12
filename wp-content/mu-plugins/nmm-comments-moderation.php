@@ -91,7 +91,7 @@ add_action(
 		$desired_options = array(
 			'comment_registration'       => '0',
 			'comment_moderation'         => '1',
-			'comment_whitelist'          => '0',
+			'comment_previously_approved' => '0',
 			'require_name_email'         => '1',
 			'default_comment_status'     => 'open',
 		);
