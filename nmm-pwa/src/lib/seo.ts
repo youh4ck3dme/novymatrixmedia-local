@@ -1,6 +1,4 @@
-import type { Metadata } from "next";
-
-import type { SiteCategory, SitePost } from "@/types/wordpress";
+import type { HomePageData, SiteCategory, SitePost } from "@/types/wordpress";
 
 const DEFAULT_TITLE = "Nový Matrix Media";
 const DEFAULT_DESCRIPTION = "Informačno-publicistický portál v novom rozmere.";
@@ -100,6 +98,36 @@ export function buildDefaultMetadata(): Metadata {
       card: "summary_large_image",
       title: DEFAULT_TITLE,
       description: DEFAULT_DESCRIPTION,
+    },
+  };
+}
+
+export function buildHomeMetadata(data: HomePageData): Metadata {
+  const featured = data.featuredPost;
+  if (!featured) {
+    return buildDefaultMetadata();
+  }
+
+  const title = DEFAULT_TITLE;
+  const description = DEFAULT_DESCRIPTION;
+  const ogImage = featured.ogImage || featured.imageUrl;
+
+  return {
+    ...buildDefaultMetadata(),
+    openGraph: {
+      title,
+      description,
+      url: getPublicSiteUrl(),
+      siteName: DEFAULT_TITLE,
+      locale: "sk_SK",
+      type: "website",
+      images: ogImage ? [{ url: ogImage, alt: featured.imageAlt }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined,
     },
   };
 }
