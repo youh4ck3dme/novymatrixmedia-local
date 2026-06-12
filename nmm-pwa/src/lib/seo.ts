@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import type { HomePageData, SiteCategory, SitePost } from "@/types/wordpress";
 
 const DEFAULT_TITLE = "Nový Matrix Media";
