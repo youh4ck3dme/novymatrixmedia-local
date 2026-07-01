@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import { getNavigationItems, getPhotoArchivePosts } from "@/lib/wp-queries";
 
-export const revalidate = 600;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Archív fotiek A-Z | Nový Matrix Media",
