@@ -76,7 +76,7 @@ async function fetchJson(path, expectedStatus = 200) {
 
 function pickFirstArticleHref(html) {
   const matches = Array.from(html.matchAll(/href="\/([^"#?][^"]*)"/g)).map((item) => `/${item[1]}`);
-  const ignoredPrefixes = ["/video", "/domov", "/zahranicie", "/komentare", "/zaujimave", "/reakcie", "/archiv-fotiek", "/ai", "/tech", "/veda", "/politika", "/diskusia", "/robots.txt", "/sitemap.xml"];
+  const ignoredPrefixes = ["/video", "/domov", "/zahranicie", "/komentare", "/zaujimave", "/reakcie", "/archiv-fotiek", "/ai", "/tech", "/veda", "/politika", "/diskusia", "/robots.txt", "/sitemap.xml", "/_next"];
   return matches.find((href) => !ignoredPrefixes.some((prefix) => href === prefix || href.startsWith(`${prefix}/`))) || null;
 }
 

@@ -4,7 +4,7 @@ import { resolveArticlePath, safeGoto } from "../_utils/site";
 
 test("[C11-T01][GATE][FULL] Homepage has non-empty document title", async ({ page }) => {
   await safeGoto(page, "/");
-  await expect(page).toHaveTitle(/NOVY MATRIX MEDIA|Novy Matrix Media|PWA/i);
+  await expect(page).toHaveTitle(/Nov[yý] Matrix Media|PWA/i);
 });
 
 test("[C11-T02][GATE][FULL] Homepage contains meta description", async ({ page }) => {

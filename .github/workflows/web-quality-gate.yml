@@ -66,6 +66,9 @@ jobs:
           node-version: "20"
       - run: npm install
       - name: Start local dev server
+        env:
+          NEXT_PUBLIC_WP_URL: https://info.novymatrixmedia.sk
+          NEXT_PUBLIC_API_URL: https://info.novymatrixmedia.sk/wp-json/wp/v2
         run: |
           npm run dev -- --port 3007 > /tmp/nmm-dev.log 2>&1 &
           echo $! > /tmp/nmm-dev.pid
@@ -100,6 +103,9 @@ jobs:
       - run: npm run test:e2e:gate
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:3007
+          NEXT_PUBLIC_WP_URL: https://info.novymatrixmedia.sk
+          NEXT_PUBLIC_API_URL: https://info.novymatrixmedia.sk/wp-json/wp/v2
+          NEXT_PUBLIC_SITE_URL: https://novymatrixmedia.sk
 
   full-regression:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
