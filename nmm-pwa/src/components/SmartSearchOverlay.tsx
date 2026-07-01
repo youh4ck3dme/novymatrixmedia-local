@@ -89,14 +89,12 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
       return;
     }
 
+    if (!canSearch) {
+      return;
+    }
+
     const controller = new AbortController();
     let timeoutId: number | null = null;
-
-    if (!canSearch) {
-      return () => {
-        controller.abort();
-      };
-    }
 
     timeoutId = window.setTimeout(async () => {
       try {

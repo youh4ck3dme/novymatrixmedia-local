@@ -66,6 +66,9 @@ jobs:
           node-version: "20"
       - run: npm install
       - name: Start local dev server
+        env:
+          NEXT_PUBLIC_WP_URL: https://info.novymatrixmedia.sk
+          NEXT_PUBLIC_API_URL: https://info.novymatrixmedia.sk/wp-json/wp/v2
         run: |
           npm run dev -- --port 3007 > /tmp/nmm-dev.log 2>&1 &
           echo $! > /tmp/nmm-dev.pid
