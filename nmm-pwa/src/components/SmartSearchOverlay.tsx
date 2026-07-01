@@ -67,9 +67,10 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
   const [isLoading, setIsLoading] = useState(false);
 
   const normalizedQuery = query.trim();
-  const firstResult = results[0] ?? null;
   const canSearch = normalizedQuery.length >= SEARCH_MIN_QUERY_LENGTH;
-  const hasSearched = canSearch || results.length > 0;
+  const visibleResults = canSearch ? results : [];
+  const firstResult = visibleResults[0] ?? null;
+  const hasSearched = canSearch || visibleResults.length > 0;
 
   useEffect(() => {
     if (!open) {
@@ -92,8 +93,6 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
     let timeoutId: number | null = null;
 
     if (!canSearch) {
-      setResults([]);
-      setIsLoading(false);
       return () => {
         controller.abort();
         if (timeoutId !== null) {
@@ -221,7 +220,7 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
         <div className="max-h-[calc(100vh-18rem)] overflow-y-auto p-4 sm:p-5">
           {hasSearched && results.length > 0 ? (
             <div className="space-y-3">
-              {results.map((result) => {
+              {visibleResults.map((result) => {
                 const excerpt = truncateText(stripHtml(result.excerpt), 120);
                 const isPhotoResult = result.resultType === "photo";
                 const hasImage = typeof result.imageUrl === "string" && result.imageUrl.trim() !== "";
