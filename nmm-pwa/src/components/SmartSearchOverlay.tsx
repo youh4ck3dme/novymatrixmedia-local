@@ -95,9 +95,6 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
     if (!canSearch) {
       return () => {
         controller.abort();
-        if (timeoutId !== null) {
-          window.clearTimeout(timeoutId);
-        }
       };
     }
 
