@@ -218,7 +218,7 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
         </div>
 
         <div className="max-h-[calc(100vh-18rem)] overflow-y-auto p-4 sm:p-5">
-          {hasSearched && results.length > 0 ? (
+          {hasSearched && visibleResults.length > 0 ? (
             <div className="space-y-3">
               {visibleResults.map((result) => {
                 const excerpt = truncateText(stripHtml(result.excerpt), 120);
