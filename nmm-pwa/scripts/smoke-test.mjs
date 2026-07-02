@@ -13,6 +13,8 @@ const baseIndex = args.indexOf("--base");
 const rawBase = baseIndex >= 0 ? args[baseIndex + 1] : process.env.NEXT_PUBLIC_SITE_URL;
 const baseUrl = (rawBase || "https://novymatrixmedia.sk").replace(/\/$/, "");
 
+const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || "";
+
 const colors = {
   reset: "\x1b[0m",
   green: "\x1b[32m",
@@ -41,12 +43,17 @@ function assert(condition, message) {
 }
 
 async function fetchText(path, expectedStatus = 200) {
+  const headers = {
+    "User-Agent": "nmm-smoke-test/1.0",
+    Accept: "text/html,application/json;q=0.9,*/*;q=0.8",
+  };
+  if (vercelBypassSecret) {
+    headers["x-vercel-protection-bypass"] = vercelBypassSecret;
+  }
+
   const response = await fetch(`${baseUrl}${path}`, {
     redirect: "follow",
-    headers: {
-      "User-Agent": "nmm-smoke-test/1.0",
-      Accept: "text/html,application/json;q=0.9,*/*;q=0.8",
-    },
+    headers,
   });
 
   assert(
@@ -58,12 +65,17 @@ async function fetchText(path, expectedStatus = 200) {
 }
 
 async function fetchJson(path, expectedStatus = 200) {
+  const headers = {
+    "User-Agent": "nmm-smoke-test/1.0",
+    Accept: "application/json",
+  };
+  if (vercelBypassSecret) {
+    headers["x-vercel-protection-bypass"] = vercelBypassSecret;
+  }
+
   const response = await fetch(`${baseUrl}${path}`, {
     redirect: "follow",
-    headers: {
-      "User-Agent": "nmm-smoke-test/1.0",
-      Accept: "application/json",
-    },
+    headers,
   });
 
   assert(
@@ -197,12 +209,17 @@ async function run() {
     {
       name: "Comments submit validation still enforced",
       run: async () => {
+        const postHeaders = {
+          "Content-Type": "application/json; charset=utf-8",
+          "User-Agent": "nmm-smoke-test/1.0",
+        };
+        if (vercelBypassSecret) {
+          postHeaders["x-vercel-protection-bypass"] = vercelBypassSecret;
+        }
+
         const response = await fetch(`${baseUrl}/api/comments`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "User-Agent": "nmm-smoke-test/1.0",
-          },
+          headers: postHeaders,
           body: JSON.stringify({}),
         });
 

@@ -89,20 +89,14 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
     }
 
     const controller = new AbortController();
-    let timeoutId: number | null = null;
 
-    if (!canSearch) {
-      setResults([]);
-      setIsLoading(false);
-      return () => {
-        controller.abort();
-        if (timeoutId !== null) {
-          window.clearTimeout(timeoutId);
-        }
-      };
-    }
+    const timeoutId = window.setTimeout(async () => {
+      if (!canSearch) {
+        setResults([]);
+        setIsLoading(false);
+        return;
+      }
 
-    timeoutId = window.setTimeout(async () => {
       try {
         setIsLoading(true);
         const url = `/api/search?q=${encodeURIComponent(normalizedQuery)}&mode=${mode}`;
@@ -127,13 +121,11 @@ export default function SmartSearchOverlay({ open, onClose }: SmartSearchOverlay
           setIsLoading(false);
         }
       }
-    }, SEARCH_DEBOUNCE_MS);
+    }, canSearch ? SEARCH_DEBOUNCE_MS : 0);
 
     return () => {
       controller.abort();
-      if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
-      }
+      window.clearTimeout(timeoutId);
     };
   }, [open, normalizedQuery, mode, canSearch]);
 

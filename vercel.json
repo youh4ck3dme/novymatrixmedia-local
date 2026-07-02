@@ -1,0 +1,7 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd nmm-pwa && npm install",
+  "buildCommand": "cd nmm-pwa && npm run build",
+  "outputDirectory": "nmm-pwa/.next",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- nmm-pwa/"
+}
